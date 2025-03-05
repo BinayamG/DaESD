@@ -1,0 +1,266 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>UniHub Create Account</title>
+  {% load static %}
+  <style>
+    * {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+    }
+
+    body {
+    font-family: 'Helvetica Neue', Arial, sans-serif;
+    background-color: #f5f5f5;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100vh;
+    }
+
+    .container {
+    background-color: #fff;
+    padding: 40px;
+    border-radius: 8px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+    text-align: center;
+    max-width: 600px;
+    width: 100%;
+    }
+
+    .logo {
+      margin-bottom: 20px;
+      font-size: 24px;
+      font-weight: bold;
+      color: #5a67d8;
+      text-decoration: none;
+    }
+    
+    h1 {
+    font-size: 24px;
+    font-weight: bold;
+    margin-bottom: 30px;
+    }
+
+    form {
+    text-align: left;
+    }
+
+    form input, form select {
+    width: 100%;
+    padding: 12px 16px;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    font-size: 16px;
+    margin-bottom: 16px;
+    }
+
+    .row {
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 16px;
+    }
+
+    .row input {
+    width: 48%;
+    }
+
+    form p {
+    font-size: 14px;
+    color: #666;
+    margin-bottom: 16px;
+    }
+
+    form button {
+    background-color: #5a67d8;
+    color: #fff;
+    border: none;
+    padding: 12px 24px;
+    border-radius: 4px;
+    font-size: 16px;
+    cursor: pointer;
+    width: 100%;
+    }
+    .password-container {
+      position: relative;
+    }
+
+    .password-container input {
+      padding-right: 50px;
+    }
+
+    .toggle-password {
+      position: absolute;
+      top: 40%;
+      right: -240px;
+      transform: translateY(-50%);
+      border: none;
+      background: transparent;
+      cursor: pointer;
+      outline: none;
+      padding: 0;
+    }
+
+    .toggle-password img {
+      width: 20px;
+      height: 20px;
+    }
+    .no-account {
+      margin-top: 20px;
+      font-size: 14px;
+    }
+
+    .no-account a {
+      color: #5a67d8;
+      text-decoration: none;
+    }
+
+    .no-account a:hover {
+      text-decoration: underline;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="logo">
+        <a href="{% url 'home' %}" class="logo">UniHub</a>
+    </div>
+    <h1>UWE's Student Engagment Platform</h1>
+    <form method="POST" id="signupform">
+      <input type="email" name="email" placeholder="University email*" required>
+      <div class="error" id="emailError"></div>
+      <div class="row">
+        <input type="text" name="username" placeholder="First name*" required>
+        <input type="text" name="last_name" placeholder="Last name*" required>
+      </div>
+      <div class="password-container">
+        <input type="password" name="password" id="loginPassword" placeholder="Enter your password" required>
+        <button type="button" id="togglePassword" class="toggle-password">
+          <img id="passwordIcon" src="{% static 'images/hide.png' %}" alt="Toggle Password">
+        </button>
+      </div>
+      <div class="error" id="passwordError"></div>
+      <input type="text" name="Student Number" placeholder="Student Number*" required>
+      <!-- Degree Program dropdown -->
+      <select name="degree_program" id="degreeProgram" required>
+        <option value="">Degree Program*</option>
+        <option value="Bachelors">Bachelors Degree</option>
+        <option value="Masters">Masters Degree</option>
+        <option value="Phd">Phd Degree</option>
+      </select>
+
+      <!-- Major dropdown -->
+      <select name="major" id="major" required>
+        <option value="">Major *</option>
+        <!-- Options will be populated dynamically -->
+      </select>      
+      
+      <p>
+        Subject to UniHub's Privacy Policy, you agree to allow UniHub to contact you via the email provided for scheduling and marketing purposes.
+      </p>
+      <button type="submit">Sign Up</button>
+      <div class="no-account">
+        <span>Already have an account?</span>
+        <a href="{% url 'login' %}">Sign In</a>
+      </div>
+    </form>
+  </div>
+  <script>
+    document.addEventListener('DOMContentLoaded', function() {
+      const toggleLoginPasswordBtn = document.getElementById('toggleLoginPasswordBtn');
+      const loginPassword = document.getElementById('loginPassword');
+      const toggleLoginPasswordImg = document.getElementById('toggleLoginPasswordImg');
+    
+      toggleLoginPasswordBtn.addEventListener('click', function() {
+        if (loginPassword.type === 'password') {
+          loginPassword.type = 'text';
+          toggleLoginPasswordImg.src = "{% static 'images/hide.png' %}";
+        } else {
+          loginPassword.type = 'password';
+          toggleLoginPasswordImg.src = "{% static 'images/view.png' %}";
+        }
+      });
+    });
+    document.getElementById("signupform").addEventListener("submit", function (event) {
+      event.preventDefault();
+
+      const email = document.getElementById("email").value;
+      const password = document.getElementById("password").value;
+      const emailError = document.getElementById("emailError");
+      const passwordError = document.getElementById("passwordError");
+
+      emailError.textContent = "";
+      passwordError.textContent = "";
+
+      const emailRegex = /^[a-zA-Z0-9._%+-]+@uwe\.ac\.uk$/;
+      if (!emailRegex.test(email)) {
+        emailError.textContent = "Enter a valid UWE email address.";
+        return;
+      }
+
+      const passwordRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[!@#$£%^&*(),.?":{}|<>]).{8,}$/;
+      if (!passwordRegex.test(password)) {
+        passwordError.textContent = "Password must be at least 8 characters, include an uppercase letter, a number, and a special character.";
+        return;
+      }
+
+      this.submit();
+    });
+    document.addEventListener('DOMContentLoaded', function() {
+    const degreeProgramSelect = document.getElementById('degreeProgram');
+    const majorSelect = document.getElementById('major');
+
+    // Object mapping degree programs to their respective courses
+    const degreeMajors = {
+      'Bachelors': [
+        'Accounting and Business Management', 'Aerospace Engineering', 'Animation', 'Architecture', 'Automotive Engineering',
+        'Banking and Finance', 'Biological Sciences', 'Biomedical Science', 'Building Surveying', 'Business and Events Management',
+        'Business and Human Resource Management', 'Business Computing', 'Business Management', 'Civil Engineering', 'Computer Science',
+        'Construction Project Management', 'Criminology', 'Cyber Security and Digital Forensics', 'Data Science', 'Economics',
+        'Electrical and Electronic Engineering', 'Environmental Science', 'Fashion Communication', 'Filmmaking', 'Finance',
+        'Fine Art', 'Games Technology', 'Geography', 'Graphic Design', 'Illustration', 'Interior Design',
+        'International Business', 'Law', 'Marketing', 'Mathematics', 'Mechanical Engineering', 'Midwifery',
+        'Music Technology', 'Nursing', 'Optometry', 'Paramedic Science', 'Philosophy', 'Photography',
+        'Physics', 'Politics and International Relations', 'Primary Education', 'Product Design', 'Psychology', 'Quantity Surveying',
+        'Real Estate', 'Robotics', 'Sociology', 'Software Engineering', 'Sport Rehabilitation', 'Urban Planning'
+      ],
+      'Masters': [
+        'MSc Accounting and Finance', 'MSc Artificial Intelligence', 'MSc Biomedical Science', 'MSc Business Management',
+        'MSc Civil Engineering', 'MSc Computer Science', 'MSc Construction Project Management', 'MSc Cyber Security', 'MSc Data Science',
+        'MSc Digital Marketing', 'MSc Economics', 'MSc Engineering Management', 'MSc Environmental Management', 'MSc Finance',
+        'MSc Forensic Science', 'MSc Health Psychology', 'MSc Human Resource Management', 'MSc Information Technology',
+        'MSc International Management', 'MSc Marketing', 'MSc Mechanical Engineering', 'MSc Project Management',
+        'MSc Public Health', 'MSc Real Estate Management', 'MSc Robotics', 'MSc Sport and Exercise Psychology',
+        'MSc Strategic Leadership', 'MSc Sustainable Development', 'MSc Transport Planning'
+      ],
+      'PhD': [
+        'PhD in Business and Management', 'PhD in Computer Science', 'PhD in Engineering', 'PhD in Environmental Science',
+        'PhD in Health Sciences', 'PhD in Law', 'PhD in Psychology', 'PhD in Sociology', 'PhD in Urban Planning'
+      ]
+    };
+
+    // Function to populate majors based on selected degree program
+    function populateMajors() {
+      majorSelect.innerHTML = '<option value="">Select Major*</option>';
+      const selectedDegree = degreeProgramSelect.value;
+      if (selectedDegree && degreeMajors[selectedDegree]) {
+        degreeMajors[selectedDegree].forEach(major => {
+          const option = document.createElement('option');
+          option.value = major;
+          option.textContent = major;
+          majorSelect.appendChild(option);
+        });
+      }
+    }
+
+    // Event listener for degree program selection change
+    degreeProgramSelect.addEventListener('change', populateMajors);
+  });   
+
+</script>
+</body>
+
+</html>
