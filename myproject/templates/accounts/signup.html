@@ -170,17 +170,17 @@
   </div>
   <script>
     document.addEventListener('DOMContentLoaded', function() {
-      const toggleLoginPasswordBtn = document.getElementById('toggleLoginPasswordBtn');
+      const togglePassword = document.getElementById('togglePassword');
       const loginPassword = document.getElementById('loginPassword');
-      const toggleLoginPasswordImg = document.getElementById('toggleLoginPasswordImg');
-    
-      toggleLoginPasswordBtn.addEventListener('click', function() {
+      const passwordIcon = document.getElementById('passwordIcon');
+
+      togglePassword.addEventListener('click', function() {
         if (loginPassword.type === 'password') {
           loginPassword.type = 'text';
-          toggleLoginPasswordImg.src = "{% static 'images/hide.png' %}";
+          passwordIcon.src = "{% static 'images/view.png' %}"; // Change to "view" when visible
         } else {
           loginPassword.type = 'password';
-          toggleLoginPasswordImg.src = "{% static 'images/view.png' %}";
+          passwordIcon.src = "{% static 'images/hide.png' %}"; // Change to "hide" when hidden
         }
       });
     });
