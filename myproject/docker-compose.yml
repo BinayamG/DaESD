@@ -1,4 +1,4 @@
-version: '3'
+version: '2.4'
 
 services:
   web:
@@ -10,7 +10,8 @@ services:
     ports:
       - "8000:8000"
     depends_on:
-      - db
+      db:
+        condition: service_healthy  # Wait for db to be healthy
     environment:
       - DEBUG=True
       - DB_NAME=mydatabase
@@ -30,7 +31,26 @@ services:
     ports:
       - "5432:5432"
     volumes:
-      - postgres_data:/var/lib/postgresql/data
+      - postgres_data:/var/lib/postgresql/data  # Named volume for PostgreSQL data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U myuser -d mydatabase -h localhost"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+  ppgadmin:
+    image: dpage/pgadmin4
+    container_name: pgadmin
+    environment:
+      PGADMIN_DEFAULT_EMAIL: admin@admin.com
+      PGADMIN_DEFAULT_PASSWORD: admin
+    ports:
+      - "5050:80"
+    volumes:
+      - pgadmin_data:/var/lib/pgadmin  # Named volume for pgAdmin configuration
+    depends_on:
+      - db
 
 volumes:
-  postgres_data:
+  postgres_data:  # Volume for PostgreSQL data
+  pgadmin_data: # Volume for pgAdmin configuration

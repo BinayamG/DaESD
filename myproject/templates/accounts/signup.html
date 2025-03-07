@@ -130,11 +130,13 @@
     </div>
     <h1>UWE's Student Engagment Platform</h1>
     <form method="POST" id="signupform">
-      <input type="email" name="email" placeholder="University email*" required>
+      {% csrf_token %}  <!-- Add the CSRF token -->
+      <input type="email" name="email" id= "email" placeholder="University email*" required>
+      <input type="text" name="username" id="password" placeholder="Username*" required>
       <div class="error" id="emailError"></div>
       <div class="row">
-        <input type="text" name="username" placeholder="First name*" required>
-        <input type="text" name="last_name" placeholder="Last name*" required>
+        <input type="text" name="first_name" id="first_name" placeholder="First name*" required>
+        <input type="text" name="last_name" id="last_name" placeholder="Last name*" required>
       </div>
       <div class="password-container">
         <input type="password" name="password" id="loginPassword" placeholder="Enter your password" required>
@@ -143,7 +145,7 @@
         </button>
       </div>
       <div class="error" id="passwordError"></div>
-      <input type="text" name="Student Number" placeholder="Student Number*" required>
+      <input type="text" name="student_number" id="student_number" placeholder="Student Number*" required>
       <!-- Degree Program dropdown -->
       <select name="degree_program" id="degreeProgram" required>
         <option value="">Degree Program*</option>
