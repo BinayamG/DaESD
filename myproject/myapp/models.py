@@ -1,7 +1,6 @@
 from django.db import models
 from django.contrib.auth.models import AbstractUser
 
-# ✅ 1️⃣ User Model (Already Well-Structured)
 class CustomUser(AbstractUser):
     student_number = models.CharField(max_length=20, unique=True)
 
