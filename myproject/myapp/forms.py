@@ -12,11 +12,10 @@ class CustomUserCreationForm(UserCreationForm):
 
     class Meta:
         model = CustomUser
-        fields = ('username', 'email', 'password', 'first_name', 'last_name', 'student_number', 'degree_program', 'major')
+        fields = ('username', 'email', 'password1', 'password2', 'first_name', 'last_name', 'student_number', 'degree_program', 'major')
 
     def save(self, commit=True):
         user = super().save(commit=False)
-        user.set_password(self.cleaned_data["password"])  # Set the password
         if commit:
             user.save()
         return user
