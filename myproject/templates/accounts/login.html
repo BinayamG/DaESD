@@ -125,16 +125,20 @@
     <h1>Welcome back!</h1>
     <form method="POST" id="loginform">
       {% csrf_token %}
-      <input type="email" name="email" placeholder="Enter your email" required>
-      <div class="error" id="emailError"></div>
-
-      <div class="password-container">
-        <input type="password" name="password" id="loginPassword" placeholder="Enter your password" required>
-        <button type="button" id="toggleLoginPasswordBtn" class="toggle-password">
-          <img id="toggleLoginPasswordImg" src="{% static 'images/view.png' %}" alt="Toggle Password">
-        </button>
+      {{ form.non_field_errors }}
+      <div>
+        {{ form.username.label_tag }}
+        {{ form.username }}
+        {{ form.username.errors }}
       </div>
-
+      <div class="password-container">
+        {{ form.password.label_tag }}
+        {{ form.password }}
+        {{ form.password.errors }}
+        <!-- <button type="button" id="toggleLoginPasswordBtn" class="toggle-password">
+          <img id="toggleLoginPasswordImg" src="{% static 'images/view.png' %}" alt="Toggle Password">
+        </button> -->
+      </div>
       <div class="actions">
         <button type="submit">Continue</button>
       </div>
@@ -142,6 +146,8 @@
         <span>Don't have an account?</span>
         <a href="{% url 'signup' %}">Create an Account</a>
       </div>
+    </form>
+  </div>
     </form>
   </div>
   <script>
@@ -160,22 +166,7 @@
         }
       });
     });
-    document.getElementById("loginForm").addEventListener("submit", function(event) {
-        event.preventDefault();
-
-        const email = document.getElementById("email").value;
-        const emailError = document.getElementById("emailError");
-
-        emailError.textContent = "";
-
-        const emailRegex = /^[a-zA-Z0-9._%+-]+@uwe\.ac\.uk$/;
-        if (!emailRegex.test(email)) {
-          emailError.textContent = "Enter a valid UWE email address.";
-        return;
-        }
-
-        this.submit();
-      });
+    
     
   </script>
 </body>

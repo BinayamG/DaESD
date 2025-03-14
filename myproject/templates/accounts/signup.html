@@ -130,18 +130,24 @@
     </div>
     <h1>UWE's Student Engagment Platform</h1>
     <form method="POST" id="signupform">
-      {% csrf_token %}  <!-- Add the CSRF token -->
+      {% csrf_token %}  
       <input type="email" name="email" id= "email" placeholder="University email*" required>
-      <input type="text" name="username" id="password" placeholder="Username*" required>
       <div class="error" id="emailError"></div>
+      <input type="text" name="username" id="username" placeholder="Username*" required>
       <div class="row">
         <input type="text" name="first_name" id="first_name" placeholder="First name*" required>
         <input type="text" name="last_name" id="last_name" placeholder="Last name*" required>
       </div>
       <div class="password-container">
-        <input type="password" name="password" id="loginPassword" placeholder="Enter your password" required>
-        <button type="button" id="togglePassword" class="toggle-password">
-          <img id="passwordIcon" src="{% static 'images/hide.png' %}" alt="Toggle Password">
+        <input type="password" name="password1" id="loginPassword1" placeholder="Enter your password" required>
+        <button type="button" id="togglePassword1" class="toggle-password">
+          <img id="passwordIcon1" src="{% static 'images/hide.png' %}" alt="Toggle Password">
+        </button>
+      </div>
+      <div class="password-container">
+        <input type="password" name="password2" id="loginPassword2" placeholder="Confirm your password" required>
+        <button type="button" id="togglePassword2" class="toggle-password">
+          <img id="passwordIcon2" src="{% static 'images/hide.png' %}" alt="Toggle Password">
         </button>
       </div>
       <div class="error" id="passwordError"></div>
@@ -172,27 +178,36 @@
   </div>
   <script>
     document.addEventListener('DOMContentLoaded', function() {
-      const togglePassword = document.getElementById('togglePassword');
-      const loginPassword = document.getElementById('loginPassword');
-      const passwordIcon = document.getElementById('passwordIcon');
+  // Function to toggle password visibility
+      function setupPasswordToggle(passwordFieldId, toggleButtonId, passwordIconId) {
+        const togglePassword = document.getElementById(toggleButtonId);
+        const loginPassword = document.getElementById(passwordFieldId);
+        const passwordIcon = document.getElementById(passwordIconId);
 
-      togglePassword.addEventListener('click', function() {
-        if (loginPassword.type === 'password') {
-          loginPassword.type = 'text';
-          passwordIcon.src = "{% static 'images/view.png' %}"; // Change to "view" when visible
-        } else {
-          loginPassword.type = 'password';
-          passwordIcon.src = "{% static 'images/hide.png' %}"; // Change to "hide" when hidden
-        }
-      });
+        togglePassword.addEventListener('click', function() {
+          if (loginPassword.type === 'password') {
+            loginPassword.type = 'text';
+            passwordIcon.src = "{% static 'images/view.png' %}"; // Change to "view" when visible
+          } else {
+            loginPassword.type = 'password';
+            passwordIcon.src = "{% static 'images/hide.png' %}"; // Change to "hide" when hidden
+          }
+        });
+      }
+
+      // Set up toggles for both password fields
+      setupPasswordToggle('loginPassword1', 'togglePassword1', 'passwordIcon1');
+      setupPasswordToggle('loginPassword2', 'togglePassword2', 'passwordIcon2');
     });
     document.getElementById("signupform").addEventListener("submit", function (event) {
       event.preventDefault();
 
       const email = document.getElementById("email").value;
-      const password = document.getElementById("password").value;
+      const password1 = document.getElementById("loginPassword1").value;
+      const password2 = document.getElementById("loginPassword2").value;
       const emailError = document.getElementById("emailError");
       const passwordError = document.getElementById("passwordError");
+
 
       emailError.textContent = "";
       passwordError.textContent = "";
@@ -203,11 +218,29 @@
         return;
       }
 
-      const passwordRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[!@#$£%^&*(),.?":{}|<>]).{8,}$/;
-      if (!passwordRegex.test(password)) {
-        passwordError.textContent = "Password must be at least 8 characters, include an uppercase letter, a number, and a special character.";
+      if (password1 !== password2) {
+        passwordError.textContent = "Passwords do not match.";
+        event.preventDefault(); 
         return;
       }
+
+      if (password1.length < 8) {
+        passwordError.textContent = "Password must be at least 8 characters.";
+        event.preventDefault(); 
+        return;
+      }
+
+      if (/^\d+$/.test(password1)) {
+        passwordError.textContent = "Password cannot be entirely numeric.";
+        event.preventDefault(); 
+        return;
+      }
+
+      // const passwordRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[!@#$£%^&*(),.?":{}|<>]).{8,}$/;
+      // if (!passwordRegex.test(password)) {
+      //   passwordError.textContent = "Password must be at least 8 characters, include an uppercase letter, a number, and a special character.";
+      //   return;
+      // }
 
       this.submit();
     });

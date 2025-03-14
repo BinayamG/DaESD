@@ -3,8 +3,6 @@ from django.contrib.auth.models import AbstractUser
 
 # Create your models here.
 class CustomUser(AbstractUser):
-    # Fields inherited from AbstractUser:
-    # username, first_name, last_name, email, password, etc.
     
     # Custom fields from the signup form:
     student_number = models.CharField(max_length=20, unique=True)
