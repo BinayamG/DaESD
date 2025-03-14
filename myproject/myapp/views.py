@@ -1,7 +1,7 @@
 from django.shortcuts import render, redirect
 from django.contrib.auth import authenticate, login
 from django.contrib.auth.forms import AuthenticationForm
-from .forms import CustomUserCreationForm
+from .forms import CustomUserCreationForm, CommunityForm
 
 
 def home_view(request):
@@ -43,3 +43,17 @@ def signup_view(request):
 
 def main_view(request):
     return render(request, "accounts/main.html")
+
+def create_community_view(request):
+    if request.method == "POST":
+        form = CommunityForm(request.POST)
+        if form.is_valid():
+            community = form.save(commit=False)
+            community.created_by = request.user 
+            community.save()
+            community.members.add(request.user) 
+            return redirect("main")  
+    else:
+        form = CommunityForm()
+
+    return render(request, "communityForm.html", {"form": form})
