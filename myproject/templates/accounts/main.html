@@ -66,7 +66,7 @@
         <div class="account-info-picture">
           <img src="static/images/student-avatar.png" alt="Profile Picture">
         </div>
-        <div class="account-info-name">Student Name</div>
+        <div class="account-info-name">{{ username }}</div>
       </button>
     </div>
 
@@ -85,7 +85,7 @@
 
       <!-- Home Tab: Campus Feed -->
       <div class="tab-content" id="home">
-        <h2>Welcome, Student Name!</h2>
+        <h2>Welcome, {{ full_name }}!</h2>
         <p>Stay updated with the latest campus news and activities.</p>
         <div class="news-feed">
           <div class="post">
@@ -155,50 +155,63 @@
       <div class="tab-content" id="profile" style="display: none;">
         <div class="profile-section">
           <h2>Profile Details</h2>
+          {% if messages %}
+            <div class="messages">
+              {% for message in messages %}
+                <div class="alert {% if message.tags %}alert-{{ message.tags }}{% endif %}">
+                  {{ message }}
+                </div>
+              {% endfor %}
+            </div>
+          {% endif %}
           <div class="profile-card">
             <h3>Personal Information</h3>
-            <p><strong>Name:</strong> <span class="dynamic-text">Student Name</span></p>
-            <p><strong>Email:</strong> <span class="dynamic-text">student@example.com</span></p>
+            <p><strong>Name:</strong> <span class="dynamic-text">{{ full_name }}</span></p>
+            <p><strong>Email:</strong> <span class="dynamic-text">{{ email }}</span></p>
             <p><strong>University:</strong> <span class="dynamic-text">UWE Bristol</span></p>
-            <p><strong>Major:</strong> <span class="dynamic-text">Computer Science</span></p>
+            <p><strong>Student Number:</strong> <span class="dynamic-text">{{ student_number }}</span></p>
           </div>
           <div class="profile-card">
             <h3>Account Settings</h3>
-            <form action="/update-profile" method="POST">
-              <label for="full-name">Full Name</label>
-              <input type="text" id="full-name" name="full_name" value="Student Name" required>
+            <form method="POST" id="update-profile-form">
+              {% csrf_token %}
+              <label for="first-name">First Name</label>
+              <input type="text" id="first-name" name="first_name" placeholder="{{ first_name }}" >
+              <label for="last-name">Last Name</label>
+              <input type="text" id="last-name" name="last_name" placeholder="{{ last_name }}">
               <label for="email">Email</label>
-              <input type="email" id="email" name="email" value="student@example.com" required>
-              <label for="major">Major</label>
-              <input type="text" id="major" name="major" value="Computer Science" required>
-              <button type="submit" class="submit-button">Update Profile</button>
+              <input type="email" id="email" name="email" placeholder="{{ email }}">
+              <label for="student_number">Student Number</label>
+              <input type="text" id="student-number" name="student_number" placeholder="{{ student_number }}" >
+              <button type="submit" class="submit-button" name="update-profile-form">Update Profile</button>
             </form>
           </div>
           <div class="profile-card">
             <h3>Security</h3>
-            <form action="/change-password" method="POST">
+            <form method="POST" id="change-password-form">
+              {% csrf_token %}
               <label for="current-password">Current Password</label>
               <div class="password-container">
-                <input type="password" id="current-password" name="current_password" required>
+                <input type="password" id="current-password" name="current_password" placeholder="Enter current password" required>
                 <button type="button" class="toggle-password" onclick="togglePassword('current-password','toggleCurrentPasswordImg')">
                   <img id="toggleCurrentPasswordImg" src="../../static/images/view.png" alt="Toggle">
                 </button>
               </div>
               <label for="new-password">New Password</label>
               <div class="password-container">
-                <input type="password" id="new-password" name="new_password" required>
+                <input type="password" id="new-password" name="new_password" placeholder="Enter new password" required>
                 <button type="button" class="toggle-password" onclick="togglePassword('new-password','toggleNewPasswordImg')">
                   <img id="toggleNewPasswordImg" src="../../static/images/view.png" alt="Toggle">
                 </button>
               </div>
               <label for="confirm-password">Confirm New Password</label>
               <div class="password-container">
-                <input type="password" id="confirm-password" name="confirm_password" required>
+                <input type="password" id="confirm-password" name="confirm_password" placeholder="Confirm new password" required>
                 <button type="button" class="toggle-password" onclick="togglePassword('confirm-password','toggleConfirmPasswordImg')">
                   <img id="toggleConfirmPasswordImg" src="../../static/images/view.png" alt="Toggle">
                 </button>
               </div>
-              <button type="submit" class="submit-button">Change Password</button>
+              <button type="submit" class="submit-button" name="change-password-form">Change Password</button>
             </form>
           </div>
           <div class="profile-card">
