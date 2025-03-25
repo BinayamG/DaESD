@@ -130,6 +130,11 @@
     margin-left: 10px;
     font-size: 1rem;
   }
+
+  .account-info a:hover,
+  .account-info a:active {
+    background-color: var(--sidebar-hover-link);
+  }
   
   /* Main Content */
   .app-content {

@@ -64,7 +64,7 @@
       </ul>
       <button class="account-info" data-tab="profile">
         <div class="account-info-picture">
-          <img src="static/images/student-avatar.png" alt="Profile Picture">
+          <img src="../../static/images/avatar.jpg" alt="Profile Picture">
         </div>
         <div class="account-info-name">{{ username }}</div>
       </button>
@@ -106,7 +106,10 @@
       <div class="tab-content" id="communities" style="display: none;">
         <div class="tab-header">
           <h2>Your Communities</h2>
-          <button class="create-button">Create New Community</button>
+          <div class="events-controls">
+            <input type="text" class="search-bar" placeholder="Search communities...">
+            <button class="create-button">Create New Community</button>
+          </div>
         </div>
         <div class="card-grid">
           <div class="card">
@@ -179,10 +182,10 @@
               <input type="text" id="first-name" name="first_name" placeholder="{{ first_name }}" >
               <label for="last-name">Last Name</label>
               <input type="text" id="last-name" name="last_name" placeholder="{{ last_name }}">
-              <label for="email">Email</label>
+              <!-- <label for="email">Email</label>
               <input type="email" id="email" name="email" placeholder="{{ email }}">
               <label for="student_number">Student Number</label>
-              <input type="text" id="student-number" name="student_number" placeholder="{{ student_number }}" >
+              <input type="text" id="student-number" name="student_number" placeholder="{{ student_number }}" > -->
               <button type="submit" class="submit-button" name="update-profile-form">Update Profile</button>
             </form>
           </div>
