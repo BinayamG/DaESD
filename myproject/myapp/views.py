@@ -2,7 +2,7 @@ from django.shortcuts import render, redirect
 from django.contrib.auth import authenticate, login, update_session_auth_hash
 from django.contrib.auth.forms import AuthenticationForm
 from django.contrib.auth.decorators import login_required
-from .forms import CustomUserCreationForm
+from .forms import CustomUserCreationForm, CommunityForm
 from django.contrib import messages
 
 
@@ -100,3 +100,18 @@ def delete_account_view(request):
         messages.success(request, "Your account has been deleted successfully")
         return redirect('signup')
     return render('main')
+
+
+def create_community_view(request):
+    if request.method == "POST":
+        form = CommunityForm(request.POST)
+        if form.is_valid():
+            community = form.save(commit=False)
+            community.created_by = request.user 
+            community.save()
+            community.members.add(request.user) 
+            return redirect("main")  
+    else:
+        form = CommunityForm()
+
+    return render(request, "communityForm.html", {"form": form})
