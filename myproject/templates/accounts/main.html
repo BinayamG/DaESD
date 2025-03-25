@@ -216,8 +216,12 @@
           </div>
           <div class="profile-card">
             <h3>Logout</h3>
-            <a href="/logout" class="action-button">Logout</a>
-            <form action="/delete-account" method="POST" onsubmit="return confirm('Are you sure you want to delete your account? This action cannot be undone.');">
+            <form method="POST" action="{% url 'logout' %}" id="logout-form">
+              {% csrf_token %}
+              <button type="submit" class="submit-button">Logout</button>
+            </form>
+            <form action="{% url 'delete-account' %}" method="POST" id="delete-account-form" onsubmit="return confirm('Are you sure you want to delete your account? This action cannot be undone.');">
+              {% csrf_token %}
               <button type="submit" class="delete-account-button">Delete Account</button>
             </form>
           </div>

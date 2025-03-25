@@ -63,7 +63,7 @@ def main_view(request):
                 user.save()
                 messages.success(request, 'Profile updated successfully')
 
-            elif 'update-password-form' in request.POST:
+            elif 'change-password-form' in request.POST:
                 current_password = request.POST.get('current_password')
                 new_password = request.POST.get('new_password')
                 confirm_password = request.POST.get('confirm_password')
@@ -72,6 +72,10 @@ def main_view(request):
                     messages.error(request, 'Current password is incorrect')
                 elif new_password != confirm_password:
                     messages.error(request, 'New password and confirm password do not match')
+                elif len(new_password) < 8:
+                    messages.error(request, "password must be at least 8 characters")
+                elif new_password.isdigit():
+                    messages.error(request, "password must contain at least one letter")
                 else:
                     user.set_password(new_password)
                     user.save()
@@ -87,3 +91,12 @@ def main_view(request):
         'student_number': user.student_number,
     }
     return render(request, "accounts/main.html", context)
+
+@login_required
+def delete_account_view(request):
+    user = request.user
+    if request.method == 'POST':
+        user.delete()
+        messages.success(request, "Your account has been deleted successfully")
+        return redirect('signup')
+    return render('main')
