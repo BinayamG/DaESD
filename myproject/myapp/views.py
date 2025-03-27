@@ -2,8 +2,10 @@ from django.shortcuts import render, redirect
 from django.contrib.auth import authenticate, login, update_session_auth_hash
 from django.contrib.auth.forms import AuthenticationForm
 from django.contrib.auth.decorators import login_required
-from .forms import CustomUserCreationForm, CommunityForm
+from .forms import CustomUserCreationForm, CommunityRequestForm
+from .models import CommunityRequest
 from django.contrib import messages
+from django.contrib.admin.views.decorators import staff_member_required
 
 
 def home_view(request):
@@ -83,12 +85,13 @@ def main_view(request):
                     messages.success(request, 'Password updated successfully')
 
     context = {
-        'full_name': user.get_full_name(),
-        'username': user.username,
-        'email': user.email,
-        'first_name': user.first_name,
-        'last_name': user.last_name,
-        'student_number': user.student_number,
+        "username": user.username,
+        "full_name": f"{user.first_name} {user.last_name}",
+        "email": user.email,
+        "student_number": user.student_number,
+        "first_name": user.first_name,
+        "last_name": user.last_name,
+        "is_superuser": user.is_superuser, 
     }
     return render(request, "accounts/main.html", context)
 
@@ -102,24 +105,38 @@ def delete_account_view(request):
     return render('main')
 
 
-def create_community_view(request):
+@login_required
+def request_community_creation_view(request):
     if request.method == "POST":
-        form = CommunityForm({
-            'name': request.POST.get('name'),
-            'description': request.POST.get('description'),
-            'tags': request.POST.get('tags'),
-        })
+        form = CommunityRequestForm(request.POST)
 
         if form.is_valid():
-            community = form.save(commit=False)
-            community.created_by = request.user 
-            community.save()
-            community.members.add(request.user) 
-            return redirect("main")  
-        else:
-            return render(request, "communityForm.html", {"form": form, "form_errors": form.errors})
-    
+            request_obj = form.save(commit=False)
+            request_obj.requested_by = request.user
+            request_obj.save()
+            messages.success(request, "Your community creation request was sent to an admin for review")
+
+            return redirect("main")
     else:
-        form = CommunityForm()
+        form = CommunityRequestForm()
 
     return render(request, "communityForm.html", {"form": form})
+
+@staff_member_required
+def community_request_review_view(request):
+    pending_requests = CommunityRequest.objects.filter(is_approved=False, is_rejected=False)
+    
+    if request.method == "POST":
+        action = request.POST.get("action")
+        req_id = request.POST.get("request_id")
+        request_obj = CommunityRequest.objects.get(id=req_id)
+
+        if action == "approve":
+            request_obj.approve(request.user)
+            messages.success(request, f"Approved community: {request_obj.name}")
+        elif action == "reject":
+            reason = request.POST.get("rejection_reason", "")
+            request_obj.reject(request.user, reason)
+            messages.error(request, f"Rejected community: {request_obj.name}")
+
+    return render(request, "review_admin_dashboard.html", {"pending_requests": pending_requests})

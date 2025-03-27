@@ -1,6 +1,6 @@
 from django import forms
 from django.contrib.auth.forms import UserCreationForm
-from .models import CustomUser, Community
+from .models import CustomUser, Community, CommunityRequest
 
 class CustomUserCreationForm(UserCreationForm):
     email = forms.EmailField(required=True)
@@ -20,11 +20,14 @@ class CustomUserCreationForm(UserCreationForm):
             user.save()
         return user
     
-
 # Community form (templates/communityForm.html)
+# class CommunityForm(forms.ModelForm):
+#     class Meta:
+#         model = Community
+#         fields = ['name', 'description', 'tags']
 
-class CommunityForm(forms.ModelForm):
-
+# Community Request form replaced from original (templates/communityForm.html)
+class CommunityRequestForm(forms.ModelForm):
     class Meta:
-        model = Community
+        model = CommunityRequest
         fields = ['name', 'description', 'tags']
