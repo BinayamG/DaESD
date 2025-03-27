@@ -1,9 +1,10 @@
-from django.shortcuts import render, redirect
+from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth import authenticate, login, update_session_auth_hash
 from django.contrib.auth.forms import AuthenticationForm
 from django.contrib.auth.decorators import login_required
 from .forms import CustomUserCreationForm, CommunityForm
 from django.contrib import messages
+from .models import Community
 
 
 def home_view(request):
@@ -82,6 +83,13 @@ def main_view(request):
                     update_session_auth_hash(request, user)
                     messages.success(request, 'Password updated successfully')
 
+    all_communities = Community.objects.all()
+
+    joined_communities = user.joined_communities.all()
+    owned_communities = user.owned_communities.all()
+
+    user_communities = joined_communities | owned_communities
+
     context = {
         'full_name': user.get_full_name(),
         'username': user.username,
@@ -89,6 +97,8 @@ def main_view(request):
         'first_name': user.first_name,
         'last_name': user.last_name,
         'student_number': user.student_number,
+        'user_communities': user_communities,
+        'all_communities': all_communities,
     }
     return render(request, "accounts/main.html", context)
 
@@ -123,3 +133,13 @@ def create_community_view(request):
         form = CommunityForm()
 
     return render(request, "communityForm.html", {"form": form})
+
+@login_required
+def join_community(request, community_id):
+    community = get_object_or_404(Community, id=community_id)
+    if request.user in community.members.all():
+        messages.info(request, "You are already a member of this community.")
+    else:
+        community.members.add(request.user)
+        messages.success(request, f"You have successfully joined the community: {community.name}")
+    return redirect('main')  # Redirect to the main page or communities tab

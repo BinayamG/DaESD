@@ -31,7 +31,7 @@
 
         <!-- Communities (Parent) -->
         <li class="sidebar-list-item" data-tab="communities" id="communitiesParent">
-          <a href="#">
+          <a href="#"> 
             <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2">
               <circle cx="9" cy="9" r="8"></circle>
               <path d="M13 13l-4-4 4-4"/>
@@ -42,16 +42,18 @@
 
         <!-- Sub-list for user's joined communities (always visible) -->
         <ul class="sidebar-sub-list" id="communitiesSubList">
-          <!-- Hardcoded joined communities -->
-          <li class="sidebar-sub-list-item" data-community-id="1">
-            <a href="#">Community 1</a>
-          </li>
-          <li class="sidebar-sub-list-item" data-community-id="2">
-            <a href="#">Community 2</a>
-          </li>
-          <li class="sidebar-sub-list-item" data-community-id="3">
-            <a href="#">Community 3</a>
-          </li>
+          {% for community in user_communities %}
+            <li class="sidebar-sub-list-item" 
+              data-community-id="{{ community.id }}"
+              data-community-name="{{ community.name }}"
+              data-community-description="{{ community.description }}">
+              <a href="#">{{ community.name }}</a>
+            </li>
+          {% empty %}
+            <li class="sidebar-sub-list-item">
+              <a href="#">You have not joined any community yet</a>
+            </li>
+          {% endfor %}
         </ul>
 
         <!-- Events -->
@@ -110,10 +112,6 @@
 
       <!-- Communities Tab -->
       <div class="tab-content" id="communities" style="display: none;">
-        <!-- Two possible views: 
-             1) communitiesGrid (All Communities) 
-             2) communityDetail (Joined Community) 
-        -->
         <div id="communitiesGrid">
           <div class="tab-header">
             <h2>All Communities</h2>
@@ -123,42 +121,38 @@
             </div>
           </div>
           <div class="card-grid">
-            <div class="card">
-              <h3>Academic Circle</h3>
-              <p>Discuss study strategies and share academic resources.</p>
-              <span class="card-meta">150 members</span>
-              <button class="action-button">Join</button>
-            </div>
-            <div class="card">
-              <h3>Sports Hub</h3>
-              <p>Connect with fellow sports enthusiasts and stay active.</p>
-              <span class="card-meta">200 members</span>
-              <button class="action-button">Join</button>
-            </div>
+            {% for community in all_communities %}
+              <div class="card">
+                <h3>{{ community.name }}</h3>
+                <p>{{ community.description }}</p>
+                <span class="card-meta">{{ community.members.count }} members</span>
+                <form method="POST" action="{% url 'join_community' community.id %}">
+                  {% csrf_token %}
+                  <button type="submit" class="action-button">Join</button>
+                </form>
+              </div>
+            {% empty %}
+              <div class="card">
+                <h3>No communities available</h3>
+              </div>
+            {% endfor %}
           </div>
         </div>
 
-        <!-- Community Detail (Discord-like) -->
         <div id="communityDetail" style="display: none;">
-          <!-- Top bar with community name/desc on left, leave button on right -->
           <div class="community-header">
             <div class="community-title-desc">
-              <h2 id="communityName">Community 1</h2>
-              <p id="communityDescription">
-                This is the description for Community 1. Here you can participate in discussions and view community posts.
-              </p>
+              <h2 id="communityName">Community Name</h2>
+              <h3 id="communityDescription">Community description will appear here.</h3>
             </div>
             <button class="leave-button">Leave Community</button>
           </div>
-
-          <!-- Community profile link below description -->
           <button class="community-profile-btn">View Community Profile</button>
-
-          <!-- Scrollable feed of posts (like a chat) -->
+          <p> Here you can participate in discussions and view community posts.</p>
           <div class="community-posts-container">
             <div class="community-posts">
               <div class="post">
-                <p><strong>User1:</strong> This is a sample post in Community 1.</p>
+                <p><strong>User1:</strong> This is a sample post in the community.</p>
               </div>
               <div class="post">
                 <p><strong>User2:</strong> Another sample post with an image.</p>
@@ -166,8 +160,6 @@
               </div>
             </div>
           </div>
-
-          <!-- Post creation form at the bottom -->
           <div class="post-creation">
             <h3>Create a Post</h3>
             <form>
@@ -178,7 +170,6 @@
           </div>
         </div>
       </div>
-      <!-- End Communities Tab -->
 
       <!-- Events Tab -->
       <div class="tab-content" id="events" style="display: none;">
@@ -284,38 +275,54 @@
   <script>
     // ---- Tab Navigation Logic (Top-Level) ----
     const topLevelTabs = document.querySelectorAll('.sidebar-list-item[data-tab], .account-info[data-tab]');
+    const tabContents = document.querySelectorAll('.tab-content');
+
     topLevelTabs.forEach(tab => {
-      tab.addEventListener('click', function() {
-        // Hide all .tab-content
-        document.querySelectorAll('.tab-content').forEach(content => content.style.display = 'none');
-        // Mark all top-level items as inactive
+      tab.addEventListener('click', function () {
+        // Hide all tab-content sections
+        tabContents.forEach(content => content.style.display = 'none');
+
+        // Remove the active class from all top-level tabs
         topLevelTabs.forEach(item => item.classList.remove('active'));
 
-        // Show the correct tab
+        // Show the correct tab-content section
         const tabId = this.getAttribute('data-tab');
         if (tabId) {
-          document.getElementById(tabId).style.display = 'block';
-          this.classList.add('active');
-          window.location.hash = tabId;
+          const activeTab = document.getElementById(tabId);
+          if (activeTab) {
+            activeTab.style.display = 'block';
+            this.classList.add('active');
+            window.location.hash = tabId; // Update the URL hash
+          }
         }
       });
     });
 
-    // On page load, check if there's a hash
-    document.addEventListener('DOMContentLoaded', function() {
-      const hash = window.location.hash.substring(1);
+    // On page load, check if there's a hash in the URL
+    document.addEventListener('DOMContentLoaded', function () {
+      const hash = window.location.hash.substring(1); // Get the hash without the #
       if (hash) {
-        // Hide all .tab-content
-        document.querySelectorAll('.tab-content').forEach(content => content.style.display = 'none');
+        // Hide all tab-content sections
+        tabContents.forEach(content => content.style.display = 'none');
+
+        // Show the tab-content section matching the hash
         const activeTab = document.getElementById(hash);
         if (activeTab) {
           activeTab.style.display = 'block';
-          // Mark the correct top-level nav item as active
+
+          // Mark the corresponding top-level tab as active
           topLevelTabs.forEach(item => {
             if (item.getAttribute('data-tab') === hash) {
               item.classList.add('active');
             }
           });
+        }
+      } else {
+        // Default to showing the "home" tab if no hash is present
+        const defaultTab = document.getElementById('home');
+        if (defaultTab) {
+          defaultTab.style.display = 'block';
+          document.querySelector('.sidebar-list-item[data-tab="home"]').classList.add('active');
         }
       }
     });
@@ -324,7 +331,12 @@
     const communitiesParent = document.getElementById('communitiesParent');
     const communitiesGrid = document.getElementById('communitiesGrid');
     const communityDetail = document.getElementById('communityDetail');
-    communitiesParent.addEventListener('click', function() {
+    communitiesParent.addEventListener('click', function () {
+      // Ensure the general tab logic works
+      document.querySelectorAll('.tab-content').forEach(content => content.style.display = 'none');
+      document.getElementById('communities').style.display = 'block';
+
+      // Show the grid and hide the detail view
       communitiesGrid.style.display = 'block';
       communityDetail.style.display = 'none';
     });
@@ -335,8 +347,9 @@
     const communityDescEl = document.getElementById('communityDescription');
 
     communitySubItems.forEach(item => {
-      item.addEventListener('click', function(e) {
-        e.stopPropagation(); // do not trigger parent logic
+      item.addEventListener('click', function (e) {
+        e.preventDefault(); // Prevent default link behavior
+
         // Switch to the "communities" tab
         document.querySelectorAll('.tab-content').forEach(content => content.style.display = 'none');
         document.getElementById('communities').style.display = 'block';
@@ -345,10 +358,12 @@
         communitiesGrid.style.display = 'none';
         communityDetail.style.display = 'flex';
 
-        // Hardcoded detail
-        const commId = this.dataset.communityId;
-        communityNameEl.textContent = `Community ${commId}`;
-        communityDescEl.textContent = `This is the description for Community ${commId}. Here you can participate in discussions and view community posts.`;
+        // Dynamically update the community details
+        const communityName = this.dataset.communityName;
+        const communityDescription = this.dataset.communityDescription;
+
+        communityNameEl.textContent = communityName;
+        communityDescEl.textContent = communityDescription;
       });
     });
 
