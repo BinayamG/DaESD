@@ -1,17 +1,54 @@
-<!DOCTYPE html>
+<!-- <!DOCTYPE html>
 <html lang = "en">
 <head>
     <meta charset = "UTF-8">
     <meta name = "viewport" content = "width=device-width, initial-scale=1.0">
     <title>Create Community</title>
+    <link rel="stylesheet" href="/static/css/dashboard.css">
 </head>
 <body>
     <h2>Create a Community</h2>
     <form method = "POST">
         {% csrf_token %}
-        {{ form.as_p }}
-        <button type = "submit">Create Community</button>
+        <div class="form-group">
+
+            {{ form.as_p }}
+        </div>
+        <button type = "submit" class="btn btn-submit">Create Community</button>
     </form>
     <a href = "{% url 'main' %}">Back to Home</a>
+</body>
+</html>  -->
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Create a Community</title>
+
+    <link rel="stylesheet" href="/static/css/dashboard.css">
+</head>
+<body>
+    <div class="community-form-container">
+        <h2 class="form-heading">Create Your Community</h2>
+        <form method="POST" action="" class="community-form">
+
+            {% csrf_token %}
+            <div class="form-group">
+                <label for="id_name" class="form-label" name="name">Community Name</label>
+                <input type="text" class="form-control" id="id_name" name="name" required>
+            </div>
+            <div class="form-group">
+                <label for="id_description" class="form-label" name="description">Description</label>
+                <textarea class="form-control" id="id_description" name="description" rows="4" required></textarea>
+            </div>
+            <div class="form-group">
+                <label for="id_tags" class="form-label" name="tags">Tags</label>
+                <input type="text" class="form-control" id="id_tags" name="tags" placeholder="Separate with commas">
+            </div>
+            <button type="submit" class="btn btn-submit">Send For Approval</button>
+        </form>
+    </div>
 </body>
 </html>

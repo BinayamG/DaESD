@@ -104,13 +104,21 @@ def delete_account_view(request):
 
 def create_community_view(request):
     if request.method == "POST":
-        form = CommunityForm(request.POST)
+        form = CommunityForm({
+            'name': request.POST.get('name'),
+            'description': request.POST.get('description'),
+            'tags': request.POST.get('tags'),
+        })
+
         if form.is_valid():
             community = form.save(commit=False)
             community.created_by = request.user 
             community.save()
             community.members.add(request.user) 
             return redirect("main")  
+        else:
+            return render(request, "communityForm.html", {"form": form, "form_errors": form.errors})
+    
     else:
         form = CommunityForm()
 
