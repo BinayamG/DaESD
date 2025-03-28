@@ -3,7 +3,7 @@ from django.contrib.auth import authenticate, login, update_session_auth_hash
 from django.contrib.auth.forms import AuthenticationForm
 from django.contrib.auth.decorators import login_required, user_passes_test
 from .forms import CustomUserCreationForm, CommunityRequestForm, EventForm
-from .models import CommunityRequest, Community, Event
+from .models import CommunityRequest, Community
 from django.contrib import messages
 
 
