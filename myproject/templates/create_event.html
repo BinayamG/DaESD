@@ -1,6 +1,40 @@
-<h2>Create an Event for {{ community.name }}</h2>
-<form method="post">
-  {% csrf_token %}
-  {{ form.as_p }}
-  <button type="submit">Create Event</button>
-</form>
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Create an Event</title>
+    <link rel="stylesheet" href="/static/css/dashboard.css">
+    <link rel="stylesheet" href="/static/css/createevent.css">
+</head>
+<body>
+    <div class="app-container">
+        <div class="app-content">
+            <div class="app-content-header">
+                <h2>Create an Event for {{ community.name }}</h2>
+            </div>
+            
+            <form method="post" class="event-form">
+                {% csrf_token %}
+                
+                <label for="event-title">Event Title</label>
+                <input type="text" id="event-title" name="title" placeholder="Enter event title" required>
+                
+                <label for="event-details">Event Details</label>
+                <textarea id="event-details" name="details" placeholder="Describe your event" required></textarea>
+                
+                <label for="event-datetime">Event Date & Time</label>
+                <input type="datetime-local" id="event-datetime" name="datetime" required>
+                
+                <label for="event-location">Event Location (Optional)</label>
+                <input type="text" id="event-location" name="location" placeholder="Enter physical location">
+                
+                <label for="event-link">Event Link (Optional)</label>
+                <input type="url" id="event-link" name="link" placeholder="Enter online meeting link">
+                
+                <button type="submit" class="submit-button">Create Event</button>
+            </form>
+        </div>
+    </div>
+</body>
+</html>
