@@ -43,12 +43,21 @@ class CommunityRequest(models.Model):
     created_at = models.DateTimeField(auto_now_add=True)
 
     def approve(self, reviewer):
-        Community.objects.create(
-            name=self.name,
-            description=self.description,
-            tags=self.tags,
-            created_by=self.requested_by,
-        )
+        # Community.objects.create(
+        #     name=self.name,
+        #     description=self.description,
+        #     tags=self.tags,
+        #     created_by=self.requested_by,
+        # )
+
+        community = Community.objects.create(
+        name=self.name,
+        description=self.description,
+        tags=self.tags,
+        created_by=self.requested_by,
+    )
+        community.members.add(self.requested_by)
+
         self.is_approved = True
         self.reviewed_by = reviewer
         self.reviewed_at = timezone.now()
