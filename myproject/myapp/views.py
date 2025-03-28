@@ -2,9 +2,9 @@ from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth import authenticate, login, update_session_auth_hash
 from django.contrib.auth.forms import AuthenticationForm
 from django.contrib.auth.decorators import login_required
-from .forms import CustomUserCreationForm, CommunityForm
+from .forms import CustomUserCreationForm, CommunityForm, PostForm
 from django.contrib import messages
-from .models import Community
+from .models import Community, Post
 
 
 def home_view(request):
@@ -143,3 +143,26 @@ def join_community(request, community_id):
         community.members.add(request.user)
         messages.success(request, f"You have successfully joined the community: {community.name}")
     return redirect('main')  # Redirect to the main page or communities tab
+
+def community_detail(request, community_id):
+    community = get_object_or_404(Community, id=community_id)
+    posts = Post.objects.filter(community=community).order_by('-created_at')
+    is_member = request.user in community.members.all()
+    
+    if request.method == 'POST' and is_member:
+        form = PostForm(request.POST)
+        if form.is_valid():
+            post = form.save(commit=False)
+            post.user = request.user
+            post.community = community
+            post.save()
+            return redirect('community_detail', community_id=community.id)
+    else:
+        form = PostForm()
+    
+    return render(request, 'community_detail.html', {
+        'community': community,
+        'posts': posts,
+        'form': form,
+        'is_member': is_member
+    })

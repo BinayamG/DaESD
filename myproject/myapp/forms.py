@@ -1,6 +1,6 @@
 from django import forms
 from django.contrib.auth.forms import UserCreationForm
-from .models import CustomUser, Community
+from .models import CustomUser, Community, Post
 
 class CustomUserCreationForm(UserCreationForm):
     email = forms.EmailField(required=True)
@@ -28,3 +28,23 @@ class CommunityForm(forms.ModelForm):
     class Meta:
         model = Community
         fields = ['name', 'description', 'tags']
+
+# Post form (templates/accounts/main.html)
+class PostForm(forms.ModelForm):
+    class Meta:
+        model = Post
+        fields = ['title', 'content', 'category']
+        widgets = {
+            'title': forms.TextInput(attrs={
+                'class': 'form-control',
+                'placeholder': 'Post title'
+            }),
+            'content': forms.Textarea(attrs={
+                'class': 'form-control',
+                'rows': 4,
+                'placeholder': 'Write your post...'
+            }),
+            'category': forms.Select(attrs={
+                'class': 'form-control'
+            })
+        }

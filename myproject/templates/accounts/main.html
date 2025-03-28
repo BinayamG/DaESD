@@ -120,7 +120,7 @@
               <a href="{% url 'create_community' %}" class="create-button">Create New Community</a>
             </div>
           </div>
-          <div class="card-grid">
+          <!-- <div class="card-grid">
             {% for community in all_communities %}
               <div class="card">
                 <h3>{{ community.name }}</h3>
@@ -137,9 +137,38 @@
               </div>
             {% endfor %}
           </div>
+        </div> -->
+        <div class="card-grid">
+          {% for community in all_communities %}
+          <div class="card">
+            <a href="{% url 'community_detail' community.id %}" class="card-link">
+              <h3>{{ community.name }}</h3>
+              <p>{{ community.description }}</p>
+              <div class="card-meta-group">
+                <span class="card-meta">
+                  <i class="fas fa-users"></i> {{ community.members.count }}
+                </span>
+                <span class="card-meta">
+                  <i class="fas fa-comment"></i> {{ community.post_set.count }}
+                </span>
+              </div>
+            </a>
+            {% if request.user in community.members.all %}
+              <span class="status-badge">Joined</span>
+            {% else %}
+              <form method="POST" action="{% url 'join_community' community.id %}">
+                {% csrf_token %}
+                <button type="submit" class="action-button">Join</button>
+              </form>
+            {% endif %}
+          </div>
+          {% endfor %}
         </div>
+      </div>
+    </div>
 
-        <div id="communityDetail" style="display: none;">
+
+        <!-- <div id="communityDetail" style="display: none;">
           <div class="community-header">
             <div class="community-title-desc">
               <h2 id="communityName">Community Name</h2>
@@ -169,7 +198,8 @@
             </form>
           </div>
         </div>
-      </div>
+      </div> -->
+        <!-- community_detail.html -->
 
       <!-- Events Tab -->
       <div class="tab-content" id="events" style="display: none;">

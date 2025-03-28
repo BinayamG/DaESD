@@ -17,10 +17,11 @@ Including another URLconf
 
 from django.contrib import admin
 from django.urls import path,include
-from myapp.views import home_view
+from myapp.views import home_view, community_detail
 
 urlpatterns = [
     path("admin/", admin.site.urls),
     path('myapp/', include('myapp.urls')),
     path('', home_view, name="home"),
+    path('community/<int:community_id>/', community_detail, name='community_detail'),
 ]
