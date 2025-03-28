@@ -43,15 +43,15 @@
         <!-- Sub-list for user's joined communities (always visible) -->
         <ul class="sidebar-sub-list" id="communitiesSubList">
           {% for community in user_communities %}
-            <li class="sidebar-sub-list-item" 
-              data-community-id="{{ community.id }}"
-              data-community-name="{{ community.name }}"
-              data-community-description="{{ community.description }}">
-              <a href="#">{{ community.name }}</a>
+            <li class="sidebar-sub-list-item community-list-item" 
+                data-community-id="{{ community.id }}"
+                data-community-name="{{ community.name }}"
+                data-community-description="{{ community.description }}">
+              <a href="javascript:void(0);">{{ community.name }}</a>
             </li>
           {% empty %}
-            <li class="sidebar-sub-list-item">
-              <a href="#">You have not joined any community yet</a>
+            <li class="no-communities">
+              You have not joined any community yet
             </li>
           {% endfor %}
         </ul>
@@ -92,7 +92,7 @@
         </button>
       </div>
 
-      <!-- Home Tab: Campus Feed -->
+      <!-- HOME TAB -->
       <div class="tab-content" id="home">
         <h2>Welcome, {{ full_name }}!</h2>
         <p>Stay updated with the latest campus news and activities.</p>
@@ -110,8 +110,9 @@
         </div>
       </div>
 
-      <!-- Communities Tab -->
+      <!-- COMMUNITIES TAB -->
       <div class="tab-content" id="communities" style="display: none;">
+        <!-- All Communities Grid -->
         <div id="communitiesGrid">
           <div class="tab-header">
             <h2>All Communities</h2>
@@ -147,32 +148,31 @@
             {% endif %}
           </div>
         </div>
-      </div>
 
-        <div id="communityDetail" style="display: none;">
+        <!-- Specific Community Detail (hidden by default) -->
+        <div id="communityDetail" style="display: none; flex-direction: column;">
           <div class="community-header">
             <div class="community-title-desc">
               <h2 id="communityName">Community Name</h2>
               <h3 id="communityDescription">Community description will appear here.</h3>
             </div>
-            {% if user == community.created_by %}
-              <!-- If the user is the creator, show "Delete Community" -->
-              <form method="POST" action="{% url 'delete_community' %}" id="deleteCommunityForm">
-                {% csrf_token %}
-                <input type="hidden" name="community_id" id="deleteCommunityId" value="">
-                <button type="submit" class="delete-button">Delete Community</button>
-              </form>
-            {% else %}
-              <!-- If the user is not the creator, show "Leave Community" -->
-              <form method="POST" action="{% url 'leave_community' %}" id="leaveCommunityForm">
-                {% csrf_token %}
-                <input type="hidden" name="community_id" id="leaveCommunityId" value="">
-                <button type="submit" class="leave-button">Leave Community</button>
-              </form>
-            {% endif %}
+            <!-- Dynamic logic in Django template:
+                 If user is the community creator => show "Delete Community"
+                 Otherwise => show "Leave Community"
+                 We'll demonstrate a basic version here:
+            -->
+            <form method="POST" action="{% url 'leave_community' %}" id="leaveCommunityForm">
+              {% csrf_token %}
+              <input type="hidden" name="community_id" id="leaveCommunityId" value="">
+              <button type="submit" class="leave-button">Leave Community</button>
+            </form>
           </div>
+
+          <!-- Community profile link -->
           <button class="community-profile-btn">View Community Profile</button>
-          <p> Here you can participate in discussions and view community posts.</p>
+          <p>Here you can participate in discussions and view community posts.</p>
+
+          <!-- Scrollable posts container -->
           <div class="community-posts-container">
             <div class="community-posts">
               <div class="post">
@@ -184,8 +184,8 @@
               </div>
             </div>
           </div>
-        </div>
 
+          <!-- Post creation form at bottom -->
           <div class="post-creation">
             <h3>Create a Post</h3>
             <form>
@@ -196,8 +196,9 @@
           </div>
         </div>
       </div>
+      <!-- End Communities Tab -->
 
-      <!-- Events Tab -->
+      <!-- EVENTS TAB -->
       <div class="tab-content" id="events" style="display: none;">
         <div class="tab-header">
           <h2>Campus Events</h2>
@@ -222,7 +223,7 @@
         </div>
       </div>
 
-      <!-- Profile Tab -->
+      <!-- PROFILE TAB -->
       <div class="tab-content" id="profile" style="display: none;">
         <div class="profile-section">
           <h2>Profile Details</h2>
@@ -295,11 +296,12 @@
         </div>
       </div>
       <!-- End Profile Tab -->
+
     </div> <!-- End app-content -->
   </div> <!-- End app-container -->
 
   <script>
-    // ---- Tab Navigation Logic (Top-Level) ----
+    // Tab Navigation
     const topLevelTabs = document.querySelectorAll('.sidebar-list-item[data-tab], .account-info[data-tab]');
     const tabContents = document.querySelectorAll('.tab-content');
 
@@ -308,35 +310,32 @@
         // Hide all tab-content sections
         tabContents.forEach(content => content.style.display = 'none');
 
-        // Remove the active class from all top-level tabs
+        // Remove active class from all top-level tabs
         topLevelTabs.forEach(item => item.classList.remove('active'));
 
-        // Show the correct tab-content section
+        // Show the correct tab-content
         const tabId = this.getAttribute('data-tab');
         if (tabId) {
           const activeTab = document.getElementById(tabId);
           if (activeTab) {
             activeTab.style.display = 'block';
             this.classList.add('active');
-            window.location.hash = tabId; // Update the URL hash
+            window.location.hash = tabId;
           }
         }
       });
     });
 
-    // On page load, check if there's a hash in the URL
+    // On page load, check if there's a hash
     document.addEventListener('DOMContentLoaded', function () {
-      const hash = window.location.hash.substring(1); // Get the hash without the #
+      const hash = window.location.hash.substring(1);
       if (hash) {
-        // Hide all tab-content sections
+        // Hide all tab-content
         tabContents.forEach(content => content.style.display = 'none');
-
-        // Show the tab-content section matching the hash
         const activeTab = document.getElementById(hash);
         if (activeTab) {
           activeTab.style.display = 'block';
-
-          // Mark the corresponding top-level tab as active
+          // Mark the corresponding top-level nav item as active
           topLevelTabs.forEach(item => {
             if (item.getAttribute('data-tab') === hash) {
               item.classList.add('active');
@@ -344,7 +343,7 @@
           });
         }
       } else {
-        // Default to showing the "home" tab if no hash is present
+        // Default to showing "home" if no hash
         const defaultTab = document.getElementById('home');
         if (defaultTab) {
           defaultTab.style.display = 'block';
@@ -353,95 +352,51 @@
       }
     });
 
-    // ---- Clicking "Communities" top-level item shows the All Communities grid
+    // Clicking "Communities" top-level item => show #communitiesGrid, hide #communityDetail
     const communitiesParent = document.getElementById('communitiesParent');
     const communitiesGrid = document.getElementById('communitiesGrid');
     const communityDetail = document.getElementById('communityDetail');
-    communitiesParent.addEventListener('click', function () {
-      // Ensure the general tab logic works
-      document.querySelectorAll('.tab-content').forEach(content => content.style.display = 'none');
-      document.getElementById('communities').style.display = 'block';
 
-      // Show the grid and hide the detail view
+    communitiesParent.addEventListener('click', function () {
+      // Make sure #communities tab is visible
+      document.getElementById('communities').style.display = 'block';
+      // Show the grid, hide detail
       communitiesGrid.style.display = 'block';
       communityDetail.style.display = 'none';
     });
 
-    // ---- Handling specific joined community clicks ----
-    const communitySubItems = document.querySelectorAll('.sidebar-sub-list-item');
+    // For each joined community sub-list item
+    const communitySubItems = document.querySelectorAll('.community-list-item');
     const communityNameEl = document.getElementById('communityName');
     const communityDescEl = document.getElementById('communityDescription');
-
-    // Add event listener for the search button
-    // document.getElementById('searchButton').addEventListener('click', function () {
-    //   const query = document.getElementById('searchBar').value.trim();
-    //   const resultsContainer = document.getElementById('communityResults');
-
-    //   if (query) {
-    //     fetch(`/search-communities/?query=${encodeURIComponent(query)}`)
-    //       .then(response => response.json())
-    //       .then(data => {
-    //         // Clear the current results
-    //         resultsContainer.innerHTML = '';
-
-    //         // Check if there are any communities
-    //         if (data.communities.length > 0) {
-    //           data.communities.forEach(community => {
-    //             // Create a new card for each community
-    //             const card = document.createElement('div');
-    //             card.classList.add('card');
-    //             card.innerHTML = `
-    //               <h3>${community.name}</h3>
-    //               <p>${community.description}</p>
-    //               <span class="card-meta">${community.members_count} members</span>
-    //               <form method="POST" action="/join-community/${community.id}/">
-    //                 <input type="hidden" name="csrfmiddlewaretoken" value="${data.csrf_token}">
-    //                 <button type="submit" class="action-button">Join</button>
-    //               </form>
-    //             `;
-    //             resultsContainer.appendChild(card);
-    //           });
-    //         } else {
-    //           // Show a message if no communities are found
-    //           resultsContainer.innerHTML = '<div class="card"><h3>No communities found</h3></div>';
-    //         }
-    //       })
-    //       .catch(error => {
-    //         console.error('Error fetching search results:', error);
-    //         resultsContainer.innerHTML = '<div class="card"><h3>Error loading results</h3></div>';
-    //       });
-    //   } else {
-    //     // If the search query is empty, show a message
-    //     resultsContainer.innerHTML = '<div class="card"><h3>Please enter a search term</h3></div>';
-    //   }
-    // });
+    const leaveCommunityIdEl = document.getElementById('leaveCommunityId');
 
     communitySubItems.forEach(item => {
       item.addEventListener('click', function (e) {
-        e.preventDefault(); // Prevent default link behavior
-
-        // Switch to the "communities" tab
-        document.querySelectorAll('.tab-content').forEach(content => content.style.display = 'none');
+        e.preventDefault(); 
+        // If a user has joined communities, clicking on one will open the detail view
+        // Switch to "communities" tab
+        tabContents.forEach(content => content.style.display = 'none');
         document.getElementById('communities').style.display = 'block';
 
         // Hide the grid, show the detail
         communitiesGrid.style.display = 'none';
         communityDetail.style.display = 'flex';
 
-        // Dynamically update the community details
-        const communityName = this.dataset.communityName;
-        const communityDescription = this.dataset.communityDescription;
-        const communityId = this.dataset.communityId;
-
-        communityNameEl.textContent = communityName;
-        communityDescEl.textContent = communityDescription;
-
-        // Set the community ID in the hidden input field
-        document.getElementById('leaveCommunityId').value = communityId;
+        // Dynamically set the community info
+        const commId = this.dataset.communityId;
+        const commName = this.dataset.communityName;
+        const commDesc = this.dataset.communityDescription;
+        communityNameEl.textContent = commName;
+        communityDescEl.textContent = commDesc;
+        leaveCommunityIdEl.value = commId;
       });
     });
 
-    // ---- Toggle Password Visibility ----
+    // If the user has NOT joined any communities, there's a "no-communities" <li> 
+    // which is NOT clickable.
+
+    // Toggle Password Visibility
     function togglePassword(inputId, imgId) {
       const input = document.getElementById(inputId);
       const img = document.getElementById(imgId);
@@ -455,7 +410,7 @@
     }
     window.togglePassword = togglePassword;
 
-    // ---- Theme Switcher for Dark/Light Mode ----
+    // Theme Switcher
     const modeSwitch = document.querySelector('.mode-switch');
     modeSwitch.addEventListener('click', function() {
       document.documentElement.classList.toggle('light');
