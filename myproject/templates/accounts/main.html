@@ -116,28 +116,38 @@
           <div class="tab-header">
             <h2>All Communities</h2>
             <div class="events-controls">
-              <input type="text" class="search-bar" placeholder="Search communities...">
+              <input type="text" class="search-bar" id="searchBar" placeholder="Search communities...">
+              <button id="searchButton" class="create-button">Search</button>
               <a href="{% url 'create_community' %}" class="create-button">Create New Community</a>
             </div>
           </div>
-          <div class="card-grid">
-            {% for community in all_communities %}
+          <div class="card-grid" id="communityResults">
+            {% if all_communities %}
+              {% for community in all_communities %}
+                <div class="card">
+                  <h3>{{ community.name }}</h3>
+                  <p>{{ community.description }}</p>
+                  <span class="card-meta">{{ community.members.count }} members</span>
+                  {% if user == community.created_by or user in community.members.all %}
+                    <!-- If the user is the creator or already a member, show "Joined" -->
+                    <button class="action-button joined-button" disabled>Joined</button>
+                  {% else %}
+                    <!-- If the user is not a member or creator, show the "Join" button -->
+                    <form method="POST" action="{% url 'join_community' community.id %}">
+                      {% csrf_token %}
+                      <button type="submit" class="action-button">Join</button>
+                    </form>
+                  {% endif %}
+                </div>
+              {% endfor %}
+            {% else %}
               <div class="card">
-                <h3>{{ community.name }}</h3>
-                <p>{{ community.description }}</p>
-                <span class="card-meta">{{ community.members.count }} members</span>
-                <form method="POST" action="{% url 'join_community' community.id %}">
-                  {% csrf_token %}
-                  <button type="submit" class="action-button">Join</button>
-                </form>
+                <h3>No communities found</h3>
               </div>
-            {% empty %}
-              <div class="card">
-                <h3>No communities available</h3>
-              </div>
-            {% endfor %}
+            {% endif %}
           </div>
         </div>
+      </div>
 
         <div id="communityDetail" style="display: none;">
           <div class="community-header">
@@ -145,7 +155,21 @@
               <h2 id="communityName">Community Name</h2>
               <h3 id="communityDescription">Community description will appear here.</h3>
             </div>
-            <button class="leave-button">Leave Community</button>
+            {% if user == community.created_by %}
+              <!-- If the user is the creator, show "Delete Community" -->
+              <form method="POST" action="{% url 'delete_community' %}" id="deleteCommunityForm">
+                {% csrf_token %}
+                <input type="hidden" name="community_id" id="deleteCommunityId" value="">
+                <button type="submit" class="delete-button">Delete Community</button>
+              </form>
+            {% else %}
+              <!-- If the user is not the creator, show "Leave Community" -->
+              <form method="POST" action="{% url 'leave_community' %}" id="leaveCommunityForm">
+                {% csrf_token %}
+                <input type="hidden" name="community_id" id="leaveCommunityId" value="">
+                <button type="submit" class="leave-button">Leave Community</button>
+              </form>
+            {% endif %}
           </div>
           <button class="community-profile-btn">View Community Profile</button>
           <p> Here you can participate in discussions and view community posts.</p>
@@ -160,6 +184,8 @@
               </div>
             </div>
           </div>
+        </div>
+
           <div class="post-creation">
             <h3>Create a Post</h3>
             <form>
@@ -346,6 +372,50 @@
     const communityNameEl = document.getElementById('communityName');
     const communityDescEl = document.getElementById('communityDescription');
 
+    // Add event listener for the search button
+    // document.getElementById('searchButton').addEventListener('click', function () {
+    //   const query = document.getElementById('searchBar').value.trim();
+    //   const resultsContainer = document.getElementById('communityResults');
+
+    //   if (query) {
+    //     fetch(`/search-communities/?query=${encodeURIComponent(query)}`)
+    //       .then(response => response.json())
+    //       .then(data => {
+    //         // Clear the current results
+    //         resultsContainer.innerHTML = '';
+
+    //         // Check if there are any communities
+    //         if (data.communities.length > 0) {
+    //           data.communities.forEach(community => {
+    //             // Create a new card for each community
+    //             const card = document.createElement('div');
+    //             card.classList.add('card');
+    //             card.innerHTML = `
+    //               <h3>${community.name}</h3>
+    //               <p>${community.description}</p>
+    //               <span class="card-meta">${community.members_count} members</span>
+    //               <form method="POST" action="/join-community/${community.id}/">
+    //                 <input type="hidden" name="csrfmiddlewaretoken" value="${data.csrf_token}">
+    //                 <button type="submit" class="action-button">Join</button>
+    //               </form>
+    //             `;
+    //             resultsContainer.appendChild(card);
+    //           });
+    //         } else {
+    //           // Show a message if no communities are found
+    //           resultsContainer.innerHTML = '<div class="card"><h3>No communities found</h3></div>';
+    //         }
+    //       })
+    //       .catch(error => {
+    //         console.error('Error fetching search results:', error);
+    //         resultsContainer.innerHTML = '<div class="card"><h3>Error loading results</h3></div>';
+    //       });
+    //   } else {
+    //     // If the search query is empty, show a message
+    //     resultsContainer.innerHTML = '<div class="card"><h3>Please enter a search term</h3></div>';
+    //   }
+    // });
+
     communitySubItems.forEach(item => {
       item.addEventListener('click', function (e) {
         e.preventDefault(); // Prevent default link behavior
@@ -361,9 +431,13 @@
         // Dynamically update the community details
         const communityName = this.dataset.communityName;
         const communityDescription = this.dataset.communityDescription;
+        const communityId = this.dataset.communityId;
 
         communityNameEl.textContent = communityName;
         communityDescEl.textContent = communityDescription;
+
+        // Set the community ID in the hidden input field
+        document.getElementById('leaveCommunityId').value = communityId;
       });
     });
 

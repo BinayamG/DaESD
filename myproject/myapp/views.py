@@ -5,6 +5,7 @@ from django.contrib.auth.decorators import login_required
 from .forms import CustomUserCreationForm, CommunityForm
 from django.contrib import messages
 from .models import Community
+from django.http import JsonResponse
 
 
 def home_view(request):
@@ -111,7 +112,7 @@ def delete_account_view(request):
         return redirect('signup')
     return render('main')
 
-
+@login_required
 def create_community_view(request):
     if request.method == "POST":
         form = CommunityForm({
@@ -143,3 +144,51 @@ def join_community(request, community_id):
         community.members.add(request.user)
         messages.success(request, f"You have successfully joined the community: {community.name}")
     return redirect('main')  # Redirect to the main page or communities tab
+
+@login_required
+def leave_community(request):
+    if request.method == "POST":
+        community_id = request.POST.get("community_id")
+        community = get_object_or_404(Community, id=community_id)
+        # Remove the user from the community's members
+        community.members.remove(request.user)
+        # Redirect back to the communities page or dashboard
+        return redirect("main")
+    
+# @login_required
+# def delete_community(request):
+#     if request.method == "POST":
+#         community_id = request.POST.get("community_id")
+#         community = get_object_or_404(Community, id=community_id)
+
+#         # Check if the user is the creator of the community
+#         if request.user == community.created_by:
+#             community.delete()  # Delete the community and its relationships
+#             messages.success(request, "Community deleted successfully.")
+#         else:
+#             messages.error(request, "You are not authorized to delete this community.")
+
+#     return redirect("main")  # Redirect to the main page or communities tab
+    
+# def search_communities(request):
+#     query = request.GET.get('query', '').strip()
+#     communities = Community.objects.all()
+
+#     if query:
+#         communities = communities.filter(
+#             name__icontains=query
+#         ) | communities.filter(
+#             description__icontains=query
+#         )
+
+#     community_data = [
+#         {
+#             'id': community.id,
+#             'name': community.name,
+#             'description': community.description,
+#             'members_count': community.members.count(),
+#         }
+#         for community in communities
+#     ]
+
+#     return JsonResponse({'communities': community_data, 'csrf_token': request.META.get('CSRF_COOKIE')})
