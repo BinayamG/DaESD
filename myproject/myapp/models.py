@@ -1,5 +1,6 @@
 from django.db import models
 from django.contrib.auth.models import AbstractUser
+from django.utils import timezone
 
 # Create your models here.
 class CustomUser(AbstractUser):
@@ -29,6 +30,36 @@ class Community(models.Model):
     def __str__(self):
         return self.name
 
+class CommunityRequest(models.Model):
+    name = models.CharField(max_length=255)
+    description = models.TextField()
+    tags = models.CharField(max_length=255, blank=True)
+    requested_by = models.ForeignKey(CustomUser, on_delete=models.CASCADE)
+    is_approved = models.BooleanField(default=False)
+    is_rejected = models.BooleanField(default=False)
+    rejection_reason = models.TextField(blank=True)
+    reviewed_by = models.ForeignKey(CustomUser, null=True, blank=True, on_delete=models.SET_NULL, related_name='reviewed_requests')
+    reviewed_at = models.DateTimeField(null=True, blank=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    def approve(self, reviewer):
+        Community.objects.create(
+            name=self.name,
+            description=self.description,
+            tags=self.tags,
+            created_by=self.requested_by,
+        )
+        self.is_approved = True
+        self.reviewed_by = reviewer
+        self.reviewed_at = timezone.now()
+        self.save()
+
+    def reject(self, reviewer, reason):
+        self.is_rejected = True
+        self.rejection_reason = reason
+        self.reviewed_by = reviewer
+        self.reviewed_at = timezone.now()
+        self.save()
 
 class Event(models.Model):
     EVENT_TYPE_CHOICES = [

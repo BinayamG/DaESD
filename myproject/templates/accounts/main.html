@@ -70,6 +70,19 @@
         </li>
       </ul>
 
+      <!-- Super user approval for community creation -->
+      {% if is_superuser %}
+      <li class="sidebar-list-item">
+        <a href="{% url 'review_admin_dashboard' %}">
+          <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M3 3h18v18H3z"/>
+            <path d="M7 7h10M7 12h10M7 17h10"/>
+          </svg>
+          <span>Review Requests</span>
+        </a>
+      </li>
+
+      {% endif %}
       <!-- Profile -->
       <button class="account-info" data-tab="profile">
         <div class="account-info-picture">
@@ -119,7 +132,7 @@
             <div class="events-controls">
               <input type="text" class="search-bar" id="searchBar" placeholder="Search communities...">
               <button id="searchButton" class="create-button">Search</button>
-              <a href="{% url 'create_community' %}" class="create-button">Create New Community</a>
+              <a href="{% url 'request_community' %}" class="create-button">Create New Community</a>
             </div>
           </div>
           <div class="card-grid" id="communityResults">
@@ -204,7 +217,7 @@
           <h2>Campus Events</h2>
           <div class="events-controls">
             <input type="text" class="search-bar" placeholder="Search events...">
-            <button class="create-button">Create New Event</button>
+            <a href="{% url 'create_event_view' community_id=1 %}" class="create-button">Create New Event</a>  <!-- Community ID currently = 1 need to merge-->
           </div>
         </div>
         <div class="card-grid">

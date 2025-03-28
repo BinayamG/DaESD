@@ -1,12 +1,14 @@
 from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth import authenticate, login, update_session_auth_hash
 from django.contrib.auth.forms import AuthenticationForm
-from django.contrib.auth.decorators import login_required
-from .forms import CustomUserCreationForm, CommunityForm
+from django.contrib.auth.decorators import login_required, user_passes_test
+from .forms import CustomUserCreationForm, CommunityRequestForm, EventForm
 from django.contrib import messages
-from .models import Community
+from .models import CommunityRequest, Community
 from django.http import JsonResponse
 
+# Decorator for super_users
+superuser_required = user_passes_test(lambda u: u.is_authenticated and u.is_superuser)
 
 def home_view(request):
     return render(request, "home.html")
@@ -100,6 +102,7 @@ def main_view(request):
         'student_number': user.student_number,
         'user_communities': user_communities,
         'all_communities': all_communities,
+        "is_superuser": user.is_superuser, 
     }
     return render(request, "accounts/main.html", context)
 
@@ -113,27 +116,61 @@ def delete_account_view(request):
     return render('main')
 
 @login_required
-def create_community_view(request):
+def request_community_creation_view(request):
     if request.method == "POST":
-        form = CommunityForm({
-            'name': request.POST.get('name'),
-            'description': request.POST.get('description'),
-            'tags': request.POST.get('tags'),
-        })
+        form = CommunityRequestForm(request.POST)
 
         if form.is_valid():
-            community = form.save(commit=False)
-            community.created_by = request.user 
-            community.save()
-            community.members.add(request.user) 
-            return redirect("main")  
-        else:
-            return render(request, "communityForm.html", {"form": form, "form_errors": form.errors})
-    
+            request_obj = form.save(commit=False)
+            request_obj.requested_by = request.user
+            request_obj.save()
+            messages.success(request, "Your community creation request was sent to an admin for review")
+
+            return redirect("main")
     else:
-        form = CommunityForm()
+        form = CommunityRequestForm()
 
     return render(request, "communityForm.html", {"form": form})
+
+@superuser_required
+def community_request_review_view(request):
+    pending_requests = CommunityRequest.objects.filter(is_approved=False, is_rejected=False)
+    
+    if request.method == "POST":
+        action = request.POST.get("action")
+        req_id = request.POST.get("request_id")
+        request_obj = CommunityRequest.objects.get(id=req_id)
+
+        if action == "approve":
+            request_obj.approve(request.user)
+            messages.success(request, f"Approved community: {request_obj.name}")
+        elif action == "reject":
+            reason = request.POST.get("rejection_reason", "")
+            request_obj.reject(request.user, reason)
+            messages.error(request, f"Rejected community: {request_obj.name}")
+
+    return render(request, "review_admin_dashboard.html", {"pending_requests": pending_requests})
+
+@login_required
+def create_event_view(request, community_id):
+    community = get_object_or_404(Community, id=community_id)
+
+    if community.created_by != request.user:
+        return messages.error(request, 'Only the community leader can create events')
+    
+    if request.method == 'POST':
+        form = EventForm(request.POST)
+        if form.is_valid():
+            event = form.save(commit=False)
+            event.community = community
+            event.created_by = request.user
+            event.save()
+            return redirect('main')
+        
+    else: 
+        form = EventForm()
+
+    return render(request, 'create_event.html', {'form': form, 'community': community})
 
 @login_required
 def join_community(request, community_id):

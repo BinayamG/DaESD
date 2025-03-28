@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Review Community Requests</title>
+    <link rel="stylesheet" href="/static/css/dashboard.css">
+</head>
+<body>
+    <div class="community-form-container">
+        <h2 class="form-heading">Pending Community Requests</h2>
+
+        {% if pending_requests %}
+            {% for req in pending_requests %}
+                <div class="form-group" style="border: 1px solid #ccc; padding: 20px; margin-bottom: 20px; border-radius: 8px;">
+                    <h3>{{ req.name }}</h3>
+                    <p><strong>Description:</strong> {{ req.description }}</p>
+                    <p><strong>Tags:</strong> {{ req.tags }}</p>
+
+                    <form method="POST" class="community-form">
+                        {% csrf_token %}
+                        <input type="hidden" name="request_id" value="{{ req.id }}">
+
+                        <div class="form-group">
+                            <label for="rejection_reason_{{ req.id }}" class="form-label">Rejection Reason (if applicable)</label>
+                            <textarea name="rejection_reason" id="rejection_reason_{{ req.id }}" class="form-control" placeholder="Optional reason for rejection..." rows="2"></textarea>
+                        </div>
+
+                        <div class="form-group" style="margin-top: 10px;">
+                            <button type="submit" name="action" value="approve" class="btn btn-submit">✅ Approve</button>
+                            <button type="submit" name="action" value="reject" class="btn btn-danger">❌ Reject</button>
+                        </div>
+                    </form>
+                </div>
+            {% endfor %}
+        {% else %}
+            <p>No pending requests.</p>
+        {% endif %}
+
+        <div style="margin-top: 20px;">
+            <a href="{% url 'main' %}" class="btn btn-secondary">← Back to Dashboard</a>
+        </div>
+    </div>
+</body>
+</html>
