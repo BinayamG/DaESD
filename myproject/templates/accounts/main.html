@@ -207,7 +207,7 @@
           <h2>Campus Events</h2>
           <div class="events-controls">
             <input type="text" class="search-bar" placeholder="Search events...">
-            <button class="create-button">Create New Event</button>
+            <a href="{% url 'create_event_view' community_id=1 %}" class="create-button">Create New Event</a>  <!-- Community ID currently = 1 cause template mismatch.-->
           </div>
         </div>
         <div class="card-grid">

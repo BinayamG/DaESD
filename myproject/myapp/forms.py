@@ -1,6 +1,6 @@
 from django import forms
 from django.contrib.auth.forms import UserCreationForm
-from .models import CustomUser, Community, CommunityRequest
+from .models import CustomUser, CommunityRequest, Event
 
 class CustomUserCreationForm(UserCreationForm):
     email = forms.EmailField(required=True)
@@ -26,8 +26,18 @@ class CustomUserCreationForm(UserCreationForm):
 #         model = Community
 #         fields = ['name', 'description', 'tags']
 
-# Community Request form replaced from original (templates/communityForm.html)
+# Community Request form replaced from original 
 class CommunityRequestForm(forms.ModelForm):
     class Meta:
         model = CommunityRequest
         fields = ['name', 'description', 'tags']
+
+# Event Creation form
+class EventForm(forms.ModelForm):
+    class Meta:
+        model = Event
+        fields = ['title', 'description', 'date', 'location', 'event_type']
+        widgets = {
+            'date': forms.DateTimeInput(attrs={'type': 'datetime-local'})
+        }
+        

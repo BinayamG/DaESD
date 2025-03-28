@@ -1,9 +1,9 @@
-from django.shortcuts import render, redirect
+from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth import authenticate, login, update_session_auth_hash
 from django.contrib.auth.forms import AuthenticationForm
 from django.contrib.auth.decorators import login_required
-from .forms import CustomUserCreationForm, CommunityRequestForm
-from .models import CommunityRequest
+from .forms import CustomUserCreationForm, CommunityRequestForm, EventForm
+from .models import CommunityRequest, Community, Event
 from django.contrib import messages
 from django.contrib.admin.views.decorators import staff_member_required
 
@@ -140,3 +140,25 @@ def community_request_review_view(request):
             messages.error(request, f"Rejected community: {request_obj.name}")
 
     return render(request, "review_admin_dashboard.html", {"pending_requests": pending_requests})
+
+@login_required
+def create_event_view(request, community_id):
+    community = get_object_or_404(Community, id=community_id)
+
+    if community.created_by != request.user:
+        return messages.error(request, 'Only the community leader can create events')
+    
+    if request.method == 'POST':
+        form = EventForm(request.POST)
+        if form.is_valid():
+            event = form.save(commit=False)
+            event.community = community
+            event.created_by = request.user
+            event.save()
+            return redirect('main')
+        
+    else: 
+        form = EventForm()
+
+    return render(request, 'create_event.html', {'form': form, 'community': community})
+     
