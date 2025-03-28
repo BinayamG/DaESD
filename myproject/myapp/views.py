@@ -1,12 +1,14 @@
 from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth import authenticate, login, update_session_auth_hash
 from django.contrib.auth.forms import AuthenticationForm
-from django.contrib.auth.decorators import login_required
+from django.contrib.auth.decorators import login_required, user_passes_test
 from .forms import CustomUserCreationForm, CommunityRequestForm, EventForm
 from .models import CommunityRequest, Community, Event
 from django.contrib import messages
-from django.contrib.admin.views.decorators import staff_member_required
 
+
+#Function for super_users
+superuser_required = user_passes_test(lambda u: u.is_authenticated and u.is_superuser)
 
 def home_view(request):
     return render(request, "home.html")
@@ -122,7 +124,7 @@ def request_community_creation_view(request):
 
     return render(request, "communityForm.html", {"form": form})
 
-@staff_member_required
+@superuser_required
 def community_request_review_view(request):
     pending_requests = CommunityRequest.objects.filter(is_approved=False, is_rejected=False)
     
