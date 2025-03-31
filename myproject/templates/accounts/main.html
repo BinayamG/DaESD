@@ -221,17 +221,21 @@
           </div>
         </div>
         <div class="card-grid">
-          <div class="card">
-            <h3>Orientation Week Kickoff</h3>
-            <p>Join the celebration with activities, meetups, and more.</p>
-            <span class="card-meta">Sept 1, 2025, 10:00 AM | Main Quad</span>
-            <button class="action-button">Join Event</button>
-          </div>
-          <div class="card">
-            <h3>Virtual Study Group</h3>
-            <p>Participate in online sessions to enhance your study skills.</p>
-            <span class="card-meta">Sept 3, 2025, 3:00 PM | Online</span>
-            <button class="action-button">Join Event</button>
+          <div class="card-grid">
+            {% for event in events %}
+              <div class="card">
+                <h3>{{ event.title }}</h3>
+                <p>{{ event.description }}</p>
+                <span class="card-meta">
+                  {{ event.date|date:"F j, Y, g:i A" }} | {{ event.location }}
+                </span>
+                <button class="action-button">Join Event</button>
+              </div>
+            {% empty %}
+              <div class="card">
+                <h3>No events available</h3>
+              </div>
+            {% endfor %}
           </div>
         </div>
       </div>

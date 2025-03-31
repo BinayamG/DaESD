@@ -4,8 +4,9 @@ from django.contrib.auth.forms import AuthenticationForm
 from django.contrib.auth.decorators import login_required, user_passes_test
 from .forms import CustomUserCreationForm, CommunityRequestForm, EventForm
 from django.contrib import messages
-from .models import CommunityRequest, Community
+from .models import CommunityRequest, Community, Event
 from django.http import JsonResponse
+
 
 # Decorator for super_users
 superuser_required = user_passes_test(lambda u: u.is_authenticated and u.is_superuser)
@@ -93,6 +94,8 @@ def main_view(request):
 
     user_communities = joined_communities | owned_communities
 
+    events = Event.objects.all()
+
     context = {
         'full_name': user.get_full_name(),
         'username': user.username,
@@ -103,6 +106,7 @@ def main_view(request):
         'user_communities': user_communities,
         'all_communities': all_communities,
         "is_superuser": user.is_superuser, 
+        "events": events,
     }
     return render(request, "accounts/main.html", context)
 

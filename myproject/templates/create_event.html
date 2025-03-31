@@ -8,7 +8,7 @@
     <link rel="stylesheet" href="/static/css/createevent.css">
 </head>
 <body>
-    <div class="app-container">
+    <!-- <div class="app-container">
         <div class="app-content">
             <div class="app-content-header">
                 <h2>Create an Event for {{ community.name }}</h2>
@@ -35,6 +35,14 @@
                 <button type="submit" class="submit-button">Create Event</button>
             </form>
         </div>
-    </div>
+    </div> -->
+    |<h2>Create an Event for {{ community.name }}</h2>
+    <form method="post">
+      {% csrf_token %}
+      {{ form.as_p }}
+      <button type="submit">Create Event</button>
+    </form>
 </body>
 </html>
+
+
