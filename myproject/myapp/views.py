@@ -159,8 +159,10 @@ def community_request_review_view(request):
 def create_event_view(request, community_id):
     community = get_object_or_404(Community, id=community_id)
 
+    # Check if the logged-in user is the creator of the community
     if community.created_by != request.user:
-        return messages.error(request, 'Only the community leader can create events')
+        messages.error(request, 'Only the community leader can create events')
+        return redirect('main')  # Redirect to the main page or another appropriate page
     
     if request.method == 'POST':
         form = EventForm(request.POST)
@@ -169,7 +171,8 @@ def create_event_view(request, community_id):
             event.community = community
             event.created_by = request.user
             event.save()
-            return redirect('main')
+            messages.success(request, 'Event created successfully!')
+            return redirect('main')  # Redirect to the main page or another appropriate page
         
     else: 
         form = EventForm()

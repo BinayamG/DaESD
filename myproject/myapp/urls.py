@@ -14,6 +14,6 @@ urlpatterns = [
     # path('delete-community/', delete_community, name='delete_community'),
     path("request_community/", request_community_creation_view, name="request_community"),
     path("review_admin_dashboard/", community_request_review_view, name="review_admin_dashboard"),
-    path('create-event/<int:community_id>/', create_event_view, name='create_event_view'),
+    path('create-event/<int:community_id>/', create_event_view, name='create_event'),
 
 ]

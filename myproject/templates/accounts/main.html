@@ -46,7 +46,8 @@
             <li class="sidebar-sub-list-item community-list-item" 
                 data-community-id="{{ community.id }}"
                 data-community-name="{{ community.name }}"
-                data-community-description="{{ community.description }}">
+                data-community-description="{{ community.description }}"
+                data-community-created-by="{{ community.created_by.id }}">
               <a href="javascript:void(0);">{{ community.name }}</a>
             </li>
           {% empty %}
@@ -182,6 +183,7 @@
           </div>
 
           <!-- Community profile link -->
+          <a id="createEventButton" href="{% url 'create_event' 0 %}" class="community-profile-btn" style="display: none;">Create New Event</a> 
           <button class="community-profile-btn">View Community Profile</button>
           <p>Here you can participate in discussions and view community posts.</p>
 
@@ -217,7 +219,6 @@
           <h2>Campus Events</h2>
           <div class="events-controls">
             <input type="text" class="search-bar" placeholder="Search events...">
-            <a href="{% url 'create_event_view' community_id=1 %}" class="create-button">Create New Event</a>  <!-- Community ID currently = 1 need to merge-->
           </div>
         </div>
         <div class="card-grid">
@@ -404,9 +405,23 @@
         const commId = this.dataset.communityId;
         const commName = this.dataset.communityName;
         const commDesc = this.dataset.communityDescription;
+        const commCreatedById = this.dataset.communityCreatedBy;
         communityNameEl.textContent = commName;
         communityDescEl.textContent = commDesc;
         leaveCommunityIdEl.value = commId;
+
+        // Replace the placeholder in the URL
+        const createEventBtn = document.getElementById('createEventButton');
+        const currentUserId = "{{ request.user.id }}";
+        if (commCreatedById === currentUserId) {
+          createEventBtn.style.display = ''; // Show the button
+        } else {
+          createEventBtn.style.display = 'none'; // Hide the button
+        }
+        // Get the full original URL from Django
+        const originalUrl = createEventBtn.getAttribute('href');
+        // Replace just the ID part (the last number before the last slash)
+        createEventBtn.href = originalUrl.replace(/\/(\d+)\/$/, `/${commId}/`);
       });
     });
 
