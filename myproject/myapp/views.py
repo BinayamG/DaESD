@@ -2,7 +2,7 @@ from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth import authenticate, login, update_session_auth_hash
 from django.contrib.auth.forms import AuthenticationForm
 from django.contrib.auth.decorators import login_required, user_passes_test
-from .forms import CustomUserCreationForm, CommunityRequestForm, EventForm
+from .forms import CustomUserCreationForm, CommunityRequestForm, EventForm, PostForm
 from django.contrib import messages
 from .models import CommunityRequest, Community
 from django.http import JsonResponse
@@ -87,11 +87,11 @@ def main_view(request):
                     messages.success(request, 'Password updated successfully')
 
     all_communities = Community.objects.all()
-
     joined_communities = user.joined_communities.all()
     owned_communities = user.owned_communities.all()
 
     user_communities = joined_communities | owned_communities
+    form = PostForm()
 
     context = {
         'full_name': user.get_full_name(),
@@ -103,6 +103,7 @@ def main_view(request):
         'user_communities': user_communities,
         'all_communities': all_communities,
         "is_superuser": user.is_superuser, 
+        'form': form, #Sumanth
     }
     return render(request, "accounts/main.html", context)
 
@@ -229,3 +230,19 @@ def leave_community(request):
 #     ]
 
 #     return JsonResponse({'communities': community_data, 'csrf_token': request.META.get('CSRF_COOKIE')})
+
+@login_required #Sumanth
+def create_post(request, community_id):
+    community = get_object_or_404(Community, id=community_id)
+
+    if request.method == 'POST':
+        form = PostForm(request.POST)
+        if form.is_valid():
+            post = form.save(commit=False)
+            post.user = request.user
+            post.community = community
+            post.save()
+            messages.success(request, "Post created successfully!")
+        else:
+            messages.error(request, "There was an error in your form.")
+    return redirect('main')

@@ -1,6 +1,6 @@
 from django import forms
 from django.contrib.auth.forms import UserCreationForm
-from .models import CustomUser, CommunityRequest, Event
+from .models import CustomUser, CommunityRequest, Event, Post
 
 class CustomUserCreationForm(UserCreationForm):
     email = forms.EmailField(required=True)
@@ -41,3 +41,12 @@ class EventForm(forms.ModelForm):
             'date': forms.DateTimeInput(attrs={'type': 'datetime-local'})
         }
         
+class PostForm(forms.ModelForm): #Sumanth
+    class Meta:
+        model = Post
+        fields = ['title', 'content', 'category']
+        widgets = {
+            'title': forms.TextInput(attrs={'placeholder': 'Post title'}),
+            'content': forms.Textarea(attrs={'rows': 3, 'placeholder': 'What’s on your mind?'}),
+            'category': forms.Select()
+        }
