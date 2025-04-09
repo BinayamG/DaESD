@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width,initial-scale=1.0">
   <title>Uni Hub Dashboard - Campus Community Experience</title>
   <link rel="stylesheet" href="/static/css/dashboard.css">
-  {% load static %}
+  {% load static %}  
 </head>
 <body>
   <div class="app-container">
@@ -120,7 +120,7 @@
               <a href="{% url 'create_community' %}" class="create-button">Create New Community</a>
             </div>
           </div>
-          <!-- <div class="card-grid">
+          <div class="card-grid">
             {% for community in all_communities %}
               <div class="card">
                 <h3>{{ community.name }}</h3>
@@ -137,68 +137,71 @@
               </div>
             {% endfor %}
           </div>
-        </div> -->
-        <div class="card-grid">
-          {% for community in all_communities %}
-          <div class="card">
-            <a href="{% url 'community_detail' community.id %}" class="card-link">
-              <h3>{{ community.name }}</h3>
-              <p>{{ community.description }}</p>
-              <div class="card-meta-group">
-                <span class="card-meta">
-                  <i class="fas fa-users"></i> {{ community.members.count }}
-                </span>
-                <span class="card-meta">
-                  <i class="fas fa-comment"></i> {{ community.post_set.count }}
-                </span>
-              </div>
-            </a>
-            {% if request.user in community.members.all %}
-              <span class="status-badge">Joined</span>
-            {% else %}
-              <form method="POST" action="{% url 'join_community' community.id %}">
-                {% csrf_token %}
-                <button type="submit" class="action-button">Join</button>
-              </form>
-            {% endif %}
-          </div>
-          {% endfor %}
         </div>
-      </div>
-    </div>
 
 
-        <!-- <div id="communityDetail" style="display: none;">
+        <div id="communityDetail" style="display: none;">
           <div class="community-header">
             <div class="community-title-desc">
-              <h2 id="communityName">Community Name</h2>
-              <h3 id="communityDescription">Community description will appear here.</h3>
+              <!-- <h2 id="communityName">Community Name</h2>
+              <h3 id="communityDescription">Community description will appear here.</h3> -->
+              <h2>{{ community.name }}</h2>
+             <p>{{ community.description }}</p>
             </div>
-            <button class="leave-button">Leave Community</button>
+            <!-- <button class="leave-button">Leave Community</button> -->
+            {% if is_member %}
+           <form method="POST" action="{% url 'leave_community' community.id %}">
+             {% csrf_token %}
+             <button type="submit" class="leave-button">Leave Community</button>
+           </form>
+           {% endif %}
           </div>
           <button class="community-profile-btn">View Community Profile</button>
           <p> Here you can participate in discussions and view community posts.</p>
           <div class="community-posts-container">
             <div class="community-posts">
-              <div class="post">
-                <p><strong>User1:</strong> This is a sample post in the community.</p>
+                  {% for post in posts %}
+            <div class="post">
+              <div class="post-header">
+                <strong>{{ post.user.username }}</strong>
+                <span class="post-category">{{ post.get_category_display }}</span>
+                <span class="post-date">{{ post.created_at|date:"M j, Y H:i" }}</span>
               </div>
-              <div class="post">
-                <p><strong>User2:</strong> Another sample post with an image.</p>
-                <img src="https://via.placeholder.com/150" alt="Sample Image">
-              </div>
+              <h4>{{ post.title }}</h4>
+              <p>{{ post.content }}</p>
+            </div>
+            {% empty %}
+            <div class="post">
+              <p>No posts yet.</p>
+            </div>
+            {% endfor %}
             </div>
           </div>
           <div class="post-creation">
             <h3>Create a Post</h3>
-            <form>
-              <textarea placeholder="Share something with the community..." required></textarea>
-              <input type="file" accept="image/*">
-              <button type="submit" class="submit-button">Post</button>
-            </form>
+            <!-- <form>
+                   <textarea placeholder="Share something with the community..." required></textarea>
+                   <input type="file" accept="image/*">
+                   <button type="submit" class="submit-button">Post</button>
+                </form> -->
+              <form method="POST" action="{% url 'create_post' community_id=1 %}">
+                    <textarea placeholder="Share something with the community..." required></textarea>
+                    <input type="file" accept="image/*">
+                    {% csrf_token %}
+                   <div class="form-group">
+                      {{ form.title }}
+                    </div>
+                    <div class="form-group">
+                      {{ form.content }}
+                    </div>
+                    <div class="form-group">
+                      {{ form.category }}
+                    </div>
+                    <button type="submit" class="btn-submit">Post</button>
+                   </form>
           </div>
         </div>
-      </div> -->
+      
         <!-- community_detail.html -->
 
       <!-- Events Tab -->

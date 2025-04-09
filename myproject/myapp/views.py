@@ -8,6 +8,13 @@ from .models import Community, Post
 
 
 def home_view(request):
+     # 获取最新的帖子（按时间倒序排列）
+    latest_posts = Post.objects.all().order_by('-created_at')[:5]  # 例如：显示最新的5篇帖子
+    
+    context = {
+        'latest_posts': latest_posts,  # 传递给模板
+        'user': request.user  # 检查用户是否登录
+    }
     return render(request, "home.html")
 
 def login_view(request): 
@@ -144,12 +151,21 @@ def join_community(request, community_id):
         messages.success(request, f"You have successfully joined the community: {community.name}")
     return redirect('main')  # Redirect to the main page or communities tab
 
-def community_detail(request, community_id):
+
+# 离开社区功能
+@login_required
+def leave_community(request, community_id):
     community = get_object_or_404(Community, id=community_id)
-    posts = Post.objects.filter(community=community).order_by('-created_at')
-    is_member = request.user in community.members.all()
-    
-    if request.method == 'POST' and is_member:
+    if request.user in community.members.all():
+        community.members.remove(request.user)
+        messages.success(request, f"You have left {community.name}")
+    return redirect('community_detail', community_id=community_id)
+
+# 创建帖子功能
+@login_required
+def create_post_view(request, community_id):
+    community = get_object_or_404(Community, id=community_id)
+    if request.method == 'POST' and request.user in community.members.all():
         form = PostForm(request.POST)
         if form.is_valid():
             post = form.save(commit=False)
@@ -157,12 +173,4 @@ def community_detail(request, community_id):
             post.community = community
             post.save()
             return redirect('community_detail', community_id=community.id)
-    else:
-        form = PostForm()
-    
-    return render(request, 'community_detail.html', {
-        'community': community,
-        'posts': posts,
-        'form': form,
-        'is_member': is_member
-    })
+    return redirect('community_detail', community_id=community.id)

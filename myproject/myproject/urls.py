@@ -17,11 +17,14 @@ Including another URLconf
 
 from django.contrib import admin
 from django.urls import path,include
-from myapp.views import home_view, community_detail
+from myapp.views import home_view, community_detail, leave_community, create_post_view
 
 urlpatterns = [
     path("admin/", admin.site.urls),
     path('myapp/', include('myapp.urls')),
     path('', home_view, name="home"),
     path('community/<int:community_id>/', community_detail, name='community_detail'),
+    # 新增两个路由
+    path('leave-community/<int:community_id>/', leave_community, name='leave_community'),
+    path('create-post/<int:community_id>/', create_post_view, name='create_post'),
 ]
