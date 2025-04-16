@@ -185,18 +185,11 @@
             <button class="community-profile-btn">View Community Profile</button>
             <p>Here you can participate in discussions and view community posts.</p>
 
-            <!-- Scrollable posts container -->
+            <!-- Scrollable posts container SUMANTH-->
             <div class="community-posts-container">
-              <div class="community-posts">
-                <div class="post">
-                  <p><strong>User1:</strong> This is a sample post in the community.</p>
-                </div>
-                <div class="post">
-                  <p><strong>User2:</strong> Another sample post with an image.</p>
-                  <img src="https://via.placeholder.com/150" alt="Sample Image">
-                </div>
-              </div>
+              <div class="community-posts" id="communityPostsContainer"></div>
             </div>
+            
 
             <!-- Post creation form at bottom SUMANTH -->
             <div class="post-creation">
@@ -420,6 +413,25 @@
           leaveCommunityIdEl.value = commId;
           createPostForm.action = `/myapp/community/${commId}/post/`; //SUMANTH
           createPostCommunityId.value = commId;
+
+          // Load posts dynamically from the server and inject into the posts container (SUMANTH)
+          fetch(`/myapp/community/${commId}/posts/`)
+            .then(response => {
+              if (!response.ok) {
+                throw new Error('Failed to load posts');
+              }
+              return response.text();
+            })
+            .then(html => {
+              const container = document.getElementById('communityPostsContainer');
+              if (container) {
+                container.innerHTML = html;
+              }
+            })
+            .catch(error => {
+              console.error("Error fetching posts:", error);
+            });
+
         });
       });
 

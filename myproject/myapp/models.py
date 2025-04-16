@@ -97,7 +97,7 @@ class Post(models.Model):
     ]
 
     user = models.ForeignKey(CustomUser, on_delete=models.CASCADE)
-    community = models.ForeignKey(Community, on_delete=models.CASCADE, null=True, blank=True)
+    community = models.ForeignKey(Community, on_delete=models.CASCADE, related_name='posts', null=True, blank=True) #SUMANTH adding related_name = "posts"lets you access all posts from a community instance:
     title = models.CharField(max_length=255)
     content = models.TextField()
     category = models.CharField(max_length=50, choices=CATEGORY_CHOICES)

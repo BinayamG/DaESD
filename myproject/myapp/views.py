@@ -245,4 +245,11 @@ def create_post(request, community_id):
             messages.success(request, "Post created successfully!")
         else:
             messages.error(request, "There was an error in your form.")
-    return redirect('main')
+        html = render(request, 'myapp/post.html', {'post': post}).content.decode('utf-8')
+        return JsonResponse({'html': html})
+    
+@login_required #SUMANTH
+def load_community_posts(request, community_id):
+    community = get_object_or_404(Community, id=community_id)
+    posts = community.posts.order_by('-created_at')
+    return render(request, 'postList.html', {'posts': posts})
