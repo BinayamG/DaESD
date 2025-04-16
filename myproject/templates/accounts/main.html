@@ -1,463 +1,463 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width,initial-scale=1.0">
-  <title>Uni Hub Dashboard - Campus Community Experience</title>
-  <link rel="stylesheet" href="/static/css/dashboard.css">
-  {% load static %}
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>Uni Hub Dashboard - Campus Community Experience</title>
+<link rel="stylesheet" href="/static/css/dashboard.css">
+{% load static %}
 </head>
 <body>
-  <div class="app-container">
-    <!-- Sidebar Navigation -->
-    <div class="sidebar">
-      <div class="sidebar-header">
-        <div class="logo">
-          <a href="/">Uni Hub</a>
-        </div>
+<div class="app-container">
+  <!-- Sidebar Navigation -->
+  <div class="sidebar">
+    <div class="sidebar-header">
+      <div class="logo">
+        <a href="/">Uni Hub</a>
       </div>
+    </div>
 
-      <ul class="sidebar-list">
-        <!-- Home -->
-        <li class="sidebar-list-item active" data-tab="home">
-          <a href="#">
-            <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2">
-              <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/>
-              <polyline points="9 22 9 12 15 12 15 22"/>
-            </svg>
-            <span>Home</span>
-          </a>
-        </li>
-
-        <!-- Communities (Parent) -->
-        <li class="sidebar-list-item" data-tab="communities" id="communitiesParent">
-          <a href="#"> 
-            <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2">
-              <circle cx="9" cy="9" r="8"></circle>
-              <path d="M13 13l-4-4 4-4"/>
-            </svg>
-            <span>Communities</span>
-          </a>
-        </li>
-
-        <!-- Sub-list for user's joined communities (always visible) -->
-        <ul class="sidebar-sub-list" id="communitiesSubList">
-          {% for community in user_communities %}
-            <li class="sidebar-sub-list-item community-list-item" 
-                data-community-id="{{ community.id }}"
-                data-community-name="{{ community.name }}"
-                data-community-description="{{ community.description }}">
-              <a href="javascript:void(0);">{{ community.name }}</a>
-            </li>
-          {% empty %}
-            <li class="no-communities">
-              You have not joined any community yet
-            </li>
-          {% endfor %}
-        </ul>
-
-        <!-- Events -->
-        <li class="sidebar-list-item" data-tab="events">
-          <a href="#">
-            <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2">
-              <rect x="3" y="4" width="12" height="12" rx="2" ry="2"></rect>
-              <line x1="7" y1="2" x2="7" y2="4"></line>
-              <line x1="11" y1="2" x2="11" y2="4"></line>
-              <line x1="3" y1="8" x2="15" y2="8"></line>
-            </svg>
-            <span>Events</span>
-          </a>
-        </li>
-      </ul>
-
-      <!-- Super user approval for community creation -->
-      {% if is_superuser %}
-      <li class="sidebar-list-item">
-        <a href="{% url 'review_admin_dashboard' %}">
+    <ul class="sidebar-list">
+      <!-- Home -->
+      <li class="sidebar-list-item active" data-tab="home">
+        <a href="#">
           <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2">
-            <path d="M3 3h18v18H3z"/>
-            <path d="M7 7h10M7 12h10M7 17h10"/>
+            <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/>
+            <polyline points="9 22 9 12 15 12 15 22"/>
           </svg>
-          <span>Review Requests</span>
+          <span>Home</span>
         </a>
       </li>
 
-      {% endif %}
-      <!-- Profile -->
-      <button class="account-info" data-tab="profile">
-        <div class="account-info-picture">
-          <img src="{% static 'images/avatar.jpg' %}" alt="Profile Picture">
-        </div>
-        <div class="account-info-name">{{ username }}</div>
+      <!-- Communities (Parent) -->
+      <li class="sidebar-list-item" data-tab="communities" id="communitiesParent">
+        <a href="#"> 
+          <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2">
+            <circle cx="9" cy="9" r="8"></circle>
+            <path d="M13 13l-4-4 4-4"/>
+          </svg>
+          <span>Communities</span>
+        </a>
+      </li>
+
+      <!-- Sub-list for user's joined communities (always visible) -->
+      <ul class="sidebar-sub-list" id="communitiesSubList">
+        {% for community in user_communities %}
+          <li class="sidebar-sub-list-item community-list-item" 
+              data-community-id="{{ community.id }}"
+              data-community-name="{{ community.name }}"
+              data-community-description="{{ community.description }}">
+            <a href="javascript:void(0);">{{ community.name }}</a>
+          </li>
+        {% empty %}
+          <li class="no-communities">
+            You have not joined any community yet
+          </li>
+        {% endfor %}
+      </ul>
+
+      <!-- Events -->
+      <li class="sidebar-list-item" data-tab="events">
+        <a href="#">
+          <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2">
+            <rect x="3" y="4" width="12" height="12" rx="2" ry="2"></rect>
+            <line x1="7" y1="2" x2="7" y2="4"></line>
+            <line x1="11" y1="2" x2="11" y2="4"></line>
+            <line x1="3" y1="8" x2="15" y2="8"></line>
+          </svg>
+          <span>Events</span>
+        </a>
+      </li>
+    </ul>
+
+    <!-- Super user approval for community creation -->
+    {% if is_superuser %}
+    <li class="sidebar-list-item">
+      <a href="{% url 'review_admin_dashboard' %}">
+        <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2">
+          <path d="M3 3h18v18H3z"/>
+          <path d="M7 7h10M7 12h10M7 17h10"/>
+        </svg>
+        <span>Review Requests</span>
+      </a>
+    </li>
+
+    {% endif %}
+    <!-- Profile -->
+    <button class="account-info" data-tab="profile">
+      <div class="account-info-picture">
+        <img src="{% static 'images/avatar.jpg' %}" alt="Profile Picture">
+      </div>
+      <div class="account-info-name">{{ username }}</div>
+    </button>
+  </div>
+  <!-- End Sidebar -->
+
+  <!-- Main Content -->
+  <div class="app-content">
+    <!-- Header Area -->
+    <div class="app-content-header">
+      <h1>Uni Hub Dashboard</h1>
+      <button class="mode-switch" title="Switch Theme">
+        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="none" stroke="currentColor" stroke-width="2">
+          <path d="M21 12.79A9 9 0 1111.21 3 7 7 0 0021 12.79z"></path>
+        </svg>
       </button>
     </div>
-    <!-- End Sidebar -->
 
-    <!-- Main Content -->
-    <div class="app-content">
-      <!-- Header Area -->
-      <div class="app-content-header">
-        <h1>Uni Hub Dashboard</h1>
-        <button class="mode-switch" title="Switch Theme">
-          <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="none" stroke="currentColor" stroke-width="2">
-            <path d="M21 12.79A9 9 0 1111.21 3 7 7 0 0021 12.79z"></path>
-          </svg>
-        </button>
-      </div>
-
-      <!-- HOME TAB -->
-      <div class="tab-content" id="home">
-        <h2>Welcome, {{ full_name }}!</h2>
-        <p>Stay updated with the latest campus news and activities.</p>
-        <div class="news-feed">
-          <div class="post">
-            <h3>New Community Launched: Academic Circle</h3>
-            <p>Join fellow students to discuss study tips, share resources, and grow together.</p>
-            <span class="post-meta">Posted 2 hours ago</span>
-          </div>
-          <div class="post">
-            <h3>Orientation Week Kickoff</h3>
-            <p>Get ready for an exciting start to the semester with fun activities across campus!</p>
-            <span class="post-meta">Posted 5 hours ago</span>
-          </div>
+    <!-- HOME TAB -->
+    <div class="tab-content" id="home">
+      <h2>Welcome, {{ full_name }}!</h2>
+      <p>Stay updated with the latest campus news and activities.</p>
+      <div class="news-feed">
+        <div class="post">
+          <h3>New Community Launched: Academic Circle</h3>
+          <p>Join fellow students to discuss study tips, share resources, and grow together.</p>
+          <span class="post-meta">Posted 2 hours ago</span>
+        </div>
+        <div class="post">
+          <h3>Orientation Week Kickoff</h3>
+          <p>Get ready for an exciting start to the semester with fun activities across campus!</p>
+          <span class="post-meta">Posted 5 hours ago</span>
         </div>
       </div>
+    </div>
 
-      <!-- COMMUNITIES TAB -->
-      <div class="tab-content" id="communities" style="display: none;">
-        <!-- All Communities Grid -->
-        <div id="communitiesGrid">
-          <div class="tab-header">
-            <h2>All Communities</h2>
-            <div class="events-controls">
-              <input type="text" class="search-bar" id="searchBar" placeholder="Search communities...">
-              <button id="searchButton" class="create-button">Search</button>
-              <a href="{% url 'request_community' %}" class="create-button">Create New Community</a>
-            </div>
-          </div>
-          <div class="card-grid" id="communityResults">
-            {% if all_communities %}
-              {% for community in all_communities %}
-                <div class="card">
-                  <h3>{{ community.name }}</h3>
-                  <p>{{ community.description }}</p>
-                  <span class="card-meta">{{ community.members.count }} members</span>
-                  {% if user == community.created_by or user in community.members.all %}
-                    <!-- If the user is the creator or already a member, show "Joined" -->
-                    <button class="action-button joined-button" disabled>Joined</button>
-                  {% else %}
-                    <!-- If the user is not a member or creator, show the "Join" button -->
-                    <form method="POST" action="{% url 'join_community' community.id %}">
-                      {% csrf_token %}
-                      <button type="submit" class="action-button">Join</button>
-                    </form>
-                  {% endif %}
-                </div>
-              {% endfor %}
-            {% else %}
-              <div class="card">
-                <h3>No communities found</h3>
-              </div>
-            {% endif %}
-          </div>
-        </div>
-
-        <!-- Specific Community Detail (hidden by default) -->
-        <div id="communityDetail" style="display: none; flex-direction: column;">
-          <div class="community-header">
-            <div class="community-title-desc">
-              <h2 id="communityName">Community Name</h2>
-              <h3 id="communityDescription">Community description will appear here.</h3>
-            </div>
-            <!-- Dynamic logic in Django template:
-                If user is the community creator => show "Delete Community"
-                Otherwise => show "Leave Community"
-                We'll demonstrate a basic version here:
-            -->
-            <form method="POST" action="{% url 'leave_community' %}" id="leaveCommunityForm">
-              {% csrf_token %}
-              <input type="hidden" name="community_id" id="leaveCommunityId" value="">
-              <button type="submit" class="leave-button">Leave Community</button>
-            </form>
-          </div>
-
-          <!-- Community profile link -->
-          <button class="community-profile-btn">View Community Profile</button>
-          <p>Here you can participate in discussions and view community posts.</p>
-
-          <!-- Scrollable posts container SUMANTH-->
-          <div class="community-posts-container">
-            <div class="community-posts" id="communityPostsContainer"></div>
-          </div>
-          
-
-          <!-- Post creation form at bottom SUMANTH -->
-          <div class="post-creation">
-            <h3>Create a Post</h3> 
-            <form method="POST" id="createPostForm" action="#">
-              {% csrf_token %}
-              {{ form.non_field_errors }}
-              
-              <input type="hidden" name="community_id" id="createPostCommunityId">
-
-              <div class="form-group">
-                {{ form.title.label_tag }} {{ form.title }}
-              </div>
-              <div class="form-group">
-                {{ form.content.label_tag }} {{ form.content }}
-              </div>
-              <div class="form-group">
-                {{ form.category.label_tag }} {{ form.category }}
-              </div>
-              <button type="submit" class="submit-button">Post</button>
-            </form>
-          </div>
-
-          
-      <!-- End Communities Tab -->
-
-      <!-- EVENTS TAB -->
-      <div class="tab-content" id="events" style="display: none;">
+    <!-- COMMUNITIES TAB -->
+    <div class="tab-content" id="communities" style="display: none;">
+      <!-- All Communities Grid -->
+      <div id="communitiesGrid">
         <div class="tab-header">
-          <h2>Campus Events</h2>
+          <h2>All Communities</h2>
           <div class="events-controls">
-            <input type="text" class="search-bar" placeholder="Search events...">
-            <a href="{% url 'create_event_view' community_id=1 %}" class="create-button">Create New Event</a>  <!-- Community ID currently = 1 need to merge-->
+            <input type="text" class="search-bar" id="searchBar" placeholder="Search communities...">
+            <button id="searchButton" class="create-button">Search</button>
+            <a href="{% url 'request_community' %}" class="create-button">Create New Community</a>
           </div>
         </div>
-        <div class="card-grid">
-          <div class="card">
-            <h3>Orientation Week Kickoff</h3>
-            <p>Join the celebration with activities, meetups, and more.</p>
-            <span class="card-meta">Sept 1, 2025, 10:00 AM | Main Quad</span>
-            <button class="action-button">Join Event</button>
-          </div>
-          <div class="card">
-            <h3>Virtual Study Group</h3>
-            <p>Participate in online sessions to enhance your study skills.</p>
-            <span class="card-meta">Sept 3, 2025, 3:00 PM | Online</span>
-            <button class="action-button">Join Event</button>
-          </div>
-        </div>
-      </div>
-
-      <!-- PROFILE TAB -->
-      <div class="tab-content" id="profile" style="display: none;">
-        <div class="profile-section">
-          <h2>Profile Details</h2>
-          {% if messages %}
-            <div class="messages">
-              {% for message in messages %}
-                <div class="alert {% if message.tags %}alert-{{ message.tags }}{% endif %}">
-                  {{ message }}
-                </div>
-              {% endfor %}
+        <div class="card-grid" id="communityResults">
+          {% if all_communities %}
+            {% for community in all_communities %}
+              <div class="card">
+                <h3>{{ community.name }}</h3>
+                <p>{{ community.description }}</p>
+                <span class="card-meta">{{ community.members.count }} members</span>
+                {% if user == community.created_by or user in community.members.all %}
+                  <!-- If the user is the creator or already a member, show "Joined" -->
+                  <button class="action-button joined-button" disabled>Joined</button>
+                {% else %}
+                  <!-- If the user is not a member or creator, show the "Join" button -->
+                  <form method="POST" action="{% url 'join_community' community.id %}">
+                    {% csrf_token %}
+                    <button type="submit" class="action-button">Join</button>
+                  </form>
+                {% endif %}
+              </div>
+            {% endfor %}
+          {% else %}
+            <div class="card">
+              <h3>No communities found</h3>
             </div>
           {% endif %}
-          <div class="profile-card">
-            <h3>Personal Information</h3>
-            <p><strong>Debug - Username:</strong> {{ username }}</p>
-            <p><strong>Debug - Full name:</strong> {{ full_name }}</p>
-            <p><strong>Debug - Email:</strong> {{ email }}</p>
-            <p><strong>Debug - Student No:</strong> {{ student_number }}</p>
-            
-          </div>
-          <div class="profile-card">
-            <h3>Account Settings</h3>
-            <form method="POST" id="update-profile-form">
-              {% csrf_token %}
-              <label for="first-name">First Name</label>
-              <input type="text" id="first-name" name="first_name" placeholder="{{ first_name }}">
-              <label for="last-name">Last Name</label>
-              <input type="text" id="last-name" name="last_name" placeholder="{{ last_name }}">
-              <button type="submit" class="submit-button" name="update-profile-form">Update Profile</button>
-            </form>
-          </div>
-          <div class="profile-card">
-            <h3>Security</h3>
-            <form method="POST" id="change-password-form">
-              {% csrf_token %}
-              <label for="current-password">Current Password</label>
-              <div class="password-container">
-                <input type="password" id="current-password" name="current_password" placeholder="Enter current password" required>
-                <button type="button" class="toggle-password" onclick="togglePassword('current-password','toggleCurrentPasswordImg')">
-                  <img id="toggleCurrentPasswordImg" src="{% static 'images/view.png' %}" alt="Toggle">
-                </button>
-              </div>
-              <label for="new-password">New Password</label>
-              <div class="password-container">
-                <input type="password" id="new-password" name="new_password" placeholder="Enter new password" required>
-                <button type="button" class="toggle-password" onclick="togglePassword('new-password','toggleNewPasswordImg')">
-                  <img id="toggleNewPasswordImg" src="{% static 'images/view.png' %}" alt="Toggle">
-                </button>
-              </div>
-              <label for="confirm-password">Confirm New Password</label>
-              <div class="password-container">
-                <input type="password" id="confirm-password" name="confirm_password" placeholder="Confirm new password" required>
-                <button type="button" class="toggle-password" onclick="togglePassword('confirm-password','toggleConfirmPasswordImg')">
-                  <img id="toggleConfirmPasswordImg" src="{% static 'images/view.png' %}" alt="Toggle">
-                </button>
-              </div>
-              <button type="submit" class="submit-button" name="change-password-form">Change Password</button>
-            </form>
-          </div>
-          <div class="profile-card">
-            <h3>Logout</h3>
-            <form method="POST" action="{% url 'logout' %}" id="logout-form">
-              {% csrf_token %}
-              <button type="submit" class="submit-button">Logout</button>
-            </form>
-            <form action="{% url 'delete-account' %}" method="POST" id="delete-account-form" onsubmit="return confirm('Are you sure you want to delete your account? This action cannot be undone.');">
-              {% csrf_token %}
-              <button type="submit" class="delete-account-button">Delete Account</button>
-            </form>
-          </div>
         </div>
       </div>
-      <!-- End Profile Tab -->
+    </div>
+    
+      <!-- Specific Community Detail (hidden by default) -->
+      <div id="communityDetail" style="display: none; flex-direction: column;">
+        <div class="community-header">
+          <div class="community-title-desc">
+            <h2 id="communityName">Community Name</h2>
+            <h3 id="communityDescription">Community description will appear here.</h3>
+          </div>
+          <!-- Dynamic logic in Django template:
+              If user is the community creator => show "Delete Community"
+              Otherwise => show "Leave Community"
+              We'll demonstrate a basic version here:
+          -->
+          <form method="POST" action="{% url 'leave_community' %}" id="leaveCommunityForm">
+            {% csrf_token %}
+            <input type="hidden" name="community_id" id="leaveCommunityId" value="">
+            <button type="submit" class="leave-button">Leave Community</button>
+          </form>
+        </div>
 
-    </div> <!-- End app-content -->
-  </div> <!-- End app-container -->
+        <!-- Community profile link -->
+        <button class="community-profile-btn">View Community Profile</button>
+        <p>Here you can participate in discussions and view community posts.</p>
 
-  <script>
-    // Tab Navigation
-    const topLevelTabs = document.querySelectorAll('.sidebar-list-item[data-tab], .account-info[data-tab]');
-    const tabContents = document.querySelectorAll('.tab-content');
+        <!-- Scrollable posts container SUMANTH-->
+        <div class="community-posts-container">
+          <div class="community-posts" id="communityPostsContainer"></div>
+        </div>
+        
 
-    topLevelTabs.forEach(tab => {
-      tab.addEventListener('click', function () {
-        // Hide all tab-content sections
-        tabContents.forEach(content => content.style.display = 'none');
+        <!-- Post creation form at bottom SUMANTH -->
+        <div class="post-creation">
+          <h3>Create a Post</h3> 
+          <form method="POST" id="createPostForm" action="#">
+            {% csrf_token %}
+            {{ form.non_field_errors }}
+            
+            <input type="hidden" name="community_id" id="createPostCommunityId">
 
-        // Remove active class from all top-level tabs
-        topLevelTabs.forEach(item => item.classList.remove('active'));
+            <div class="form-group">
+              {{ form.title.label_tag }} {{ form.title }}
+            </div>
+            <div class="form-group">
+              {{ form.content.label_tag }} {{ form.content }}
+            </div>
+            <div class="form-group">
+              {{ form.category.label_tag }} {{ form.category }}
+            </div>
+            <button type="submit" class="submit-button">Post</button>
+          </form>
+        </div>
+      </div>
+        
+    <!-- End Communities Tab -->
 
-        // Show the correct tab-content
-        const tabId = this.getAttribute('data-tab');
-        if (tabId) {
-          const activeTab = document.getElementById(tabId);
-          if (activeTab) {
-            activeTab.style.display = 'block';
-            this.classList.add('active');
-            window.location.hash = tabId;
-          }
-        }
-      });
-    });
+    <!-- EVENTS TAB -->
+    <div class="tab-content" id="events" style="display: none;">
+      <div class="tab-header">
+        <h2>Campus Events</h2>
+        <div class="events-controls">
+          <input type="text" class="search-bar" placeholder="Search events...">
+          <a href="{% url 'create_event_view' community_id=1 %}" class="create-button">Create New Event</a>  <!-- Community ID currently = 1 need to merge-->
+        </div>
+      </div>
+      <div class="card-grid">
+        <div class="card">
+          <h3>Orientation Week Kickoff</h3>
+          <p>Join the celebration with activities, meetups, and more.</p>
+          <span class="card-meta">Sept 1, 2025, 10:00 AM | Main Quad</span>
+          <button class="action-button">Join Event</button>
+        </div>
+        <div class="card">
+          <h3>Virtual Study Group</h3>
+          <p>Participate in online sessions to enhance your study skills.</p>
+          <span class="card-meta">Sept 3, 2025, 3:00 PM | Online</span>
+          <button class="action-button">Join Event</button>
+        </div>
+      </div>
+    </div>
 
-    // On page load, check if there's a hash
-    document.addEventListener('DOMContentLoaded', function () {
-      const hash = window.location.hash.substring(1);
-      if (hash) {
-        // Hide all tab-content
-        tabContents.forEach(content => content.style.display = 'none');
-        const activeTab = document.getElementById(hash);
+    <!-- PROFILE TAB -->
+    <div class="tab-content" id="profile" style="display: none;">
+      <div class="profile-section">
+        <h2>Profile Details</h2>
+        {% if messages %}
+          <div class="messages">
+            {% for message in messages %}
+              <div class="alert {% if message.tags %}alert-{{ message.tags }}{% endif %}">
+                {{ message }}
+              </div>
+            {% endfor %}
+          </div>
+        {% endif %}
+        <div class="profile-card">
+          <h3>Personal Information</h3>
+          <p><strong>Name:</strong> <span class="dynamic-text">{{ full_name }}</span></p>
+          <p><strong>Email:</strong> <span class="dynamic-text">{{ email }}</span></p>
+          <p><strong>University:</strong> <span class="dynamic-text">UWE Bristol</span></p>
+          <p><strong>Student Number:</strong> <span class="dynamic-text">{{ student_number }}</span></p>
+        </div>
+        <div class="profile-card">
+          <h3>Account Settings</h3>
+          <form method="POST" id="update-profile-form">
+            {% csrf_token %}
+            <label for="first-name">First Name</label>
+            <input type="text" id="first-name" name="first_name" placeholder="{{ first_name }}">
+            <label for="last-name">Last Name</label>
+            <input type="text" id="last-name" name="last_name" placeholder="{{ last_name }}">
+            <button type="submit" class="submit-button" name="update-profile-form">Update Profile</button>
+          </form>
+        </div>
+        <div class="profile-card">
+          <h3>Security</h3>
+          <form method="POST" id="change-password-form">
+            {% csrf_token %}
+            <label for="current-password">Current Password</label>
+            <div class="password-container">
+              <input type="password" id="current-password" name="current_password" placeholder="Enter current password" required>
+              <button type="button" class="toggle-password" onclick="togglePassword('current-password','toggleCurrentPasswordImg')">
+                <img id="toggleCurrentPasswordImg" src="{% static 'images/view.png' %}" alt="Toggle">
+              </button>
+            </div>
+            <label for="new-password">New Password</label>
+            <div class="password-container">
+              <input type="password" id="new-password" name="new_password" placeholder="Enter new password" required>
+              <button type="button" class="toggle-password" onclick="togglePassword('new-password','toggleNewPasswordImg')">
+                <img id="toggleNewPasswordImg" src="{% static 'images/view.png' %}" alt="Toggle">
+              </button>
+            </div>
+            <label for="confirm-password">Confirm New Password</label>
+            <div class="password-container">
+              <input type="password" id="confirm-password" name="confirm_password" placeholder="Confirm new password" required>
+              <button type="button" class="toggle-password" onclick="togglePassword('confirm-password','toggleConfirmPasswordImg')">
+                <img id="toggleConfirmPasswordImg" src="{% static 'images/view.png' %}" alt="Toggle">
+              </button>
+            </div>
+            <button type="submit" class="submit-button" name="change-password-form">Change Password</button>
+          </form>
+        </div>
+        <div class="profile-card">
+          <h3>Logout</h3>
+          <form method="POST" action="{% url 'logout' %}" id="logout-form">
+            {% csrf_token %}
+            <button type="submit" class="submit-button">Logout</button>
+          </form>
+          <form action="{% url 'delete-account' %}" method="POST" id="delete-account-form" onsubmit="return confirm('Are you sure you want to delete your account? This action cannot be undone.');">
+            {% csrf_token %}
+            <button type="submit" class="delete-account-button">Delete Account</button>
+          </form>
+        </div>
+      </div>
+    </div>
+    <!-- End Profile Tab -->
+
+  </div> <!-- End app-content -->
+</div> <!-- End app-container -->
+
+<script>
+  // Tab Navigation
+  const topLevelTabs = document.querySelectorAll('.sidebar-list-item[data-tab], .account-info[data-tab]');
+  const tabContents = document.querySelectorAll('.tab-content');
+
+  topLevelTabs.forEach(tab => {
+    tab.addEventListener('click', function () {
+      // Hide all tab-content sections
+      tabContents.forEach(content => content.style.display = 'none');
+
+      // Remove active class from all top-level tabs
+      topLevelTabs.forEach(item => item.classList.remove('active'));
+
+      // Show the correct tab-content
+      const tabId = this.getAttribute('data-tab');
+      if (tabId) {
+        const activeTab = document.getElementById(tabId);
         if (activeTab) {
           activeTab.style.display = 'block';
-          // Mark the corresponding top-level nav item as active
-          topLevelTabs.forEach(item => {
-            if (item.getAttribute('data-tab') === hash) {
-              item.classList.add('active');
-            }
-          });
-        }
-      } else {
-        // Default to showing "home" if no hash
-        const defaultTab = document.getElementById('home');
-        if (defaultTab) {
-          defaultTab.style.display = 'block';
-          document.querySelector('.sidebar-list-item[data-tab="home"]').classList.add('active');
+          this.classList.add('active');
+          window.location.hash = tabId;
         }
       }
     });
+  });
 
-    // Clicking "Communities" top-level item => show #communitiesGrid, hide #communityDetail
-    const communitiesParent = document.getElementById('communitiesParent');
-    const communitiesGrid = document.getElementById('communitiesGrid');
-    const communityDetail = document.getElementById('communityDetail');
-
-    communitiesParent.addEventListener('click', function () {
-      // Make sure #communities tab is visible
-      document.getElementById('communities').style.display = 'block';
-      // Show the grid, hide detail
-      communitiesGrid.style.display = 'block';
-      communityDetail.style.display = 'none';
-    });
-
-    // For each joined community sub-list item
-    const communitySubItems = document.querySelectorAll('.community-list-item');
-    const communityNameEl = document.getElementById('communityName');
-    const communityDescEl = document.getElementById('communityDescription');
-    const leaveCommunityIdEl = document.getElementById('leaveCommunityId');
-    const createPostForm = document.getElementById('createPostForm'); // SUMANTH
-    const createPostCommunityId = document.getElementById('createPostCommunityId');
-
-    communitySubItems.forEach(item => {
-      item.addEventListener('click', function (e) {
-        e.preventDefault(); 
-        // If a user has joined communities, clicking on one will open the detail view
-        // Switch to "communities" tab
-        tabContents.forEach(content => content.style.display = 'none');
-        document.getElementById('communities').style.display = 'block';
-
-        // Hide the grid, show the detail
-        communitiesGrid.style.display = 'none';
-        communityDetail.style.display = 'flex';
-
-        // Dynamically set the community info
-        const commId = this.dataset.communityId;
-        const commName = this.dataset.communityName;
-        const commDesc = this.dataset.communityDescription;
-
-        communityNameEl.textContent = commName;
-        communityDescEl.textContent = commDesc;
-        leaveCommunityIdEl.value = commId;
-        createPostForm.action = `/myapp/community/${commId}/post/`; //SUMANTH
-        createPostCommunityId.value = commId;
-
-        // Load posts dynamically from the server and inject into the posts container (SUMANTH)
-        fetch(`/myapp/community/${commId}/posts/`)
-          .then(response => {
-            if (!response.ok) {
-              throw new Error('Failed to load posts');
-            }
-            return response.text();
-          })
-          .then(html => {
-            const container = document.getElementById('communityPostsContainer');
-            if (container) {
-              container.innerHTML = html;
-            }
-          })
-          .catch(error => {
-            console.error("Error fetching posts:", error);
-          });
-
-      });
-    });
-
-    // If the user has NOT joined any communities, there's a "no-communities" <li> 
-    // which is NOT clickable.
-
-    // Toggle Password Visibility
-    function togglePassword(inputId, imgId) {
-      const input = document.getElementById(inputId);
-      const img = document.getElementById(imgId);
-      if (input.type === 'password') {
-        input.type = 'text';
-        img.src = "{% static 'images/hide.png' %}";
-      } else {
-        input.type = 'password';
-        img.src = "{% static 'images/view.png' %}";
+  // On page load, check if there's a hash
+  document.addEventListener('DOMContentLoaded', function () {
+    const hash = window.location.hash.substring(1);
+    if (hash) {
+      // Hide all tab-content
+      tabContents.forEach(content => content.style.display = 'none');
+      const activeTab = document.getElementById(hash);
+      if (activeTab) {
+        activeTab.style.display = 'block';
+        // Mark the corresponding top-level nav item as active
+        topLevelTabs.forEach(item => {
+          if (item.getAttribute('data-tab') === hash) {
+            item.classList.add('active');
+          }
+        });
+      }
+    } else {
+      // Default to showing "home" if no hash
+      const defaultTab = document.getElementById('home');
+      if (defaultTab) {
+        defaultTab.style.display = 'block';
+        document.querySelector('.sidebar-list-item[data-tab="home"]').classList.add('active');
       }
     }
-    window.togglePassword = togglePassword;
+  });
 
-    // Theme Switcher
-    const modeSwitch = document.querySelector('.mode-switch');
-    modeSwitch.addEventListener('click', function() {
-      document.documentElement.classList.toggle('light');
+  // Clicking "Communities" top-level item => show #communitiesGrid, hide #communityDetail
+  const communitiesParent = document.getElementById('communitiesParent');
+  const communitiesGrid = document.getElementById('communitiesGrid');
+  const communityDetail = document.getElementById('communityDetail');
+
+  communitiesParent.addEventListener('click', function () {
+    // Make sure #communities tab is visible
+    document.getElementById('communities').style.display = 'block';
+    // Show the grid, hide detail
+    communitiesGrid.style.display = 'block';
+    communityDetail.style.display = 'none';
+  });
+
+  // For each joined community sub-list item
+  const communitySubItems = document.querySelectorAll('.community-list-item');
+  const communityNameEl = document.getElementById('communityName');
+  const communityDescEl = document.getElementById('communityDescription');
+  const leaveCommunityIdEl = document.getElementById('leaveCommunityId');
+  const createPostForm = document.getElementById('createPostForm'); // SUMANTH
+  const createPostCommunityId = document.getElementById('createPostCommunityId');
+
+  communitySubItems.forEach(item => {
+    item.addEventListener('click', function (e) {
+      e.preventDefault(); 
+      // If a user has joined communities, clicking on one will open the detail view
+      // Switch to "communities" tab
+      tabContents.forEach(content => content.style.display = 'none');
+      document.getElementById('communities').style.display = 'block';
+
+      // Hide the grid, show the detail
+      communitiesGrid.style.display = 'none';
+      communityDetail.style.display = 'flex';
+
+      // Dynamically set the community info
+      const commId = this.dataset.communityId;
+      const commName = this.dataset.communityName;
+      const commDesc = this.dataset.communityDescription;
+
+      communityNameEl.textContent = commName;
+      communityDescEl.textContent = commDesc;
+      leaveCommunityIdEl.value = commId;
+      createPostForm.action = `/myapp/community/${commId}/post/`; //SUMANTH
+      createPostCommunityId.value = commId;
+
+      // Load posts dynamically from the server and inject into the posts container (SUMANTH)
+      try {
+        fetch(`/myapp/community/${commId}/posts/`)
+          .then(response => response.ok ? response.text() : "")
+          .then(html => {
+            const container = document.getElementById('communityPostsContainer');
+            if (container && html) {
+              container.innerHTML = html;
+            } else {
+              console.warn("No posts HTML returned or container missing");
+            }
+          })
+          .catch(error => console.error("Fetch error:", error));
+      } catch (err) {
+        console.error("Critical fetch issue:", err);
+      }
+
+
     });
-  </script>
+  });
+
+  // If the user has NOT joined any communities, there's a "no-communities" <li> 
+  // which is NOT clickable.
+
+  // Toggle Password Visibility
+  function togglePassword(inputId, imgId) {
+    const input = document.getElementById(inputId);
+    const img = document.getElementById(imgId);
+    if (input.type === 'password') {
+      input.type = 'text';
+      img.src = "{% static 'images/hide.png' %}";
+    } else {
+      input.type = 'password';
+      img.src = "{% static 'images/view.png' %}";
+    }
+  }
+  window.togglePassword = togglePassword;
+
+  // Theme Switcher
+  const modeSwitch = document.querySelector('.mode-switch');
+  modeSwitch.addEventListener('click', function() {
+    document.documentElement.classList.toggle('light');
+  });
+</script>
 </body>
 </html>
