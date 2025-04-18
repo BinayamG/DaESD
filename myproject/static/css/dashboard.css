@@ -482,6 +482,20 @@ gap: 20px;
   background-color: #D32F2F;
 }
 
+.delete-button {
+  background-color: #F44336;
+  color: #fff;
+  border: none;
+  padding: 8px 12px;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 0.9rem;
+}
+
+.delete-button:hover {
+  background-color: #D32F2F;
+}
+
 /* Profile button below the description */
 .community-profile-btn {
   align-self: flex-start;

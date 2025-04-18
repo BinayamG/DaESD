@@ -198,21 +198,31 @@ def leave_community(request):
         community.members.remove(request.user)
         # Redirect back to the communities page or dashboard
         return redirect("main")
+
+@login_required
+def delete_community(request):
+    if request.method == "POST":
+        community_id = request.POST.get("community_id")
+        try:
+            community = Community.objects.get(id=community_id)
+            
+            # Check if the current user is the creator of the community
+            if request.user != community.created_by:
+                messages.error(request, "You don't have permission to delete this community.")
+                return redirect('main')
+            
+            # Delete the community (CASCADE will automatically delete related events and posts)
+            community_name = community.name
+            community.delete()
+            
+            messages.success(request, f"Community '{community_name}' has been deleted successfully.")
+            return redirect('main')
+        
+        except Community.DoesNotExist:
+            messages.error(request, "Community not found.")
+            return redirect('main')
     
-# @login_required
-# def delete_community(request):
-#     if request.method == "POST":
-#         community_id = request.POST.get("community_id")
-#         community = get_object_or_404(Community, id=community_id)
-
-#         # Check if the user is the creator of the community
-#         if request.user == community.created_by:
-#             community.delete()  # Delete the community and its relationships
-#             messages.success(request, "Community deleted successfully.")
-#         else:
-#             messages.error(request, "You are not authorized to delete this community.")
-
-#     return redirect("main")  # Redirect to the main page or communities tab
+    return redirect('main')
     
 # def search_communities(request):
 #     query = request.GET.get('query', '').strip()
@@ -222,7 +232,7 @@ def leave_community(request):
 #         communities = communities.filter(
 #             name__icontains=query
 #         ) | communities.filter(
-#             description__icontains=query
+#             description__icontains(query)
 #         )
 
 #     community_data = [
