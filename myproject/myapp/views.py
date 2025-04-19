@@ -4,6 +4,7 @@ from django.contrib.auth.forms import AuthenticationForm
 from django.contrib.auth.decorators import login_required, user_passes_test
 from .forms import CustomUserCreationForm, CommunityRequestForm, EventForm
 from django.contrib import messages
+from django.db import models
 from .models import CommunityRequest, Community, Event
 from django.http import JsonResponse
 
@@ -94,7 +95,21 @@ def main_view(request):
 
     user_communities = joined_communities | owned_communities
 
-    events = Event.objects.all()
+    # Get user's community IDs for filtering events
+    user_community_ids = user_communities.values_list('id', flat=True)
+    
+    # Filter events based on event_type and user's community membership
+    # 1. Get public events
+    public_events = Event.objects.filter(event_type='Public')
+    
+    # 2. Get community-only events for communities the user is a member of
+    community_events = Event.objects.filter(
+        event_type='Community', 
+        community__id__in=user_community_ids
+    )
+    
+    # Combine the two querysets
+    events = public_events | community_events
 
     context = {
         'full_name': user.get_full_name(),
@@ -187,7 +202,8 @@ def join_community(request, community_id):
     else:
         community.members.add(request.user)
         messages.success(request, f"You have successfully joined the community: {community.name}")
-    return redirect('main')  # Redirect to the main page or communities tab
+    # Redirect to main with communities tab active
+    return redirect('/myapp/main/#communities')
 
 @login_required
 def leave_community(request):
@@ -196,8 +212,9 @@ def leave_community(request):
         community = get_object_or_404(Community, id=community_id)
         # Remove the user from the community's members
         community.members.remove(request.user)
-        # Redirect back to the communities page or dashboard
-        return redirect("main")
+        messages.success(request, f"You have left the community: {community.name}")
+        # Redirect back to the communities page
+        return redirect('/myapp/main/#communities')
 
 @login_required
 def delete_community(request):
@@ -209,40 +226,121 @@ def delete_community(request):
             # Check if the current user is the creator of the community
             if request.user != community.created_by:
                 messages.error(request, "You don't have permission to delete this community.")
-                return redirect('main')
+                return redirect('/myapp/main/#communities')
             
             # Delete the community (CASCADE will automatically delete related events and posts)
             community_name = community.name
             community.delete()
             
             messages.success(request, f"Community '{community_name}' has been deleted successfully.")
-            return redirect('main')
+            return redirect('/myapp/main/#communities')
         
         except Community.DoesNotExist:
             messages.error(request, "Community not found.")
-            return redirect('main')
+            return redirect('/myapp/main/#communities')
     
-    return redirect('main')
+    return redirect('/myapp/main/#communities')
     
-# def search_communities(request):
-#     query = request.GET.get('query', '').strip()
-#     communities = Community.objects.all()
+@login_required
+def search_communities(request):
+    user = request.user
+    query = request.GET.get('query', '').strip()
+    search_results = []
+    search_query = ''
+    
+    if query:
+        search_query = query
+        # Search for communities that match query in name, description, or tags
+        search_results = Community.objects.filter(
+            models.Q(name__icontains=query) | 
+            models.Q(description__icontains=query) | 
+            models.Q(tags__icontains=query)
+        ).distinct()
+    else:
+        # If no query, return all communities
+        search_results = Community.objects.all()
+    
+    # Get user communities for the sidebar
+    joined_communities = user.joined_communities.all()
+    owned_communities = user.owned_communities.all()
+    user_communities = joined_communities | owned_communities
+    
+    # Get events for the events tab
+    events = Event.objects.all()
+    
+    context = {
+        'search_query': search_query,
+        'all_communities': search_results,
+        'user_communities': user_communities,
+        'full_name': user.get_full_name(),
+        'username': user.username,
+        'email': user.email,
+        'first_name': user.first_name,
+        'last_name': user.last_name,
+        'student_number': user.student_number,
+        'is_superuser': user.is_superuser,
+        'events': events,
+        'active_tab': 'communities',  # Set the active tab to communities
+    }
+    
+    return render(request, 'accounts/main.html', context)
 
-#     if query:
-#         communities = communities.filter(
-#             name__icontains=query
-#         ) | communities.filter(
-#             description__icontains(query)
-#         )
-
-#     community_data = [
-#         {
-#             'id': community.id,
-#             'name': community.name,
-#             'description': community.description,
-#             'members_count': community.members.count(),
-#         }
-#         for community in communities
-#     ]
-
-#     return JsonResponse({'communities': community_data, 'csrf_token': request.META.get('CSRF_COOKIE')})
+@login_required
+def search_events(request):
+    user = request.user
+    query = request.GET.get('query', '').strip()
+    search_query = ''
+    
+    # Get user's community IDs for filtering events
+    joined_communities = user.joined_communities.all()
+    owned_communities = user.owned_communities.all()
+    user_communities = joined_communities | owned_communities
+    user_community_ids = user_communities.values_list('id', flat=True)
+    
+    if query:
+        search_query = query
+        # Get public events matching the query
+        public_events = Event.objects.filter(
+            event_type='Public'
+        ).filter(
+            models.Q(title__icontains=query) | 
+            models.Q(description__icontains=query) | 
+            models.Q(community__name__icontains=query)
+        )
+        
+        # Get community-only events for communities the user is a member of
+        community_events = Event.objects.filter(
+            event_type='Community',
+            community__id__in=user_community_ids
+        ).filter(
+            models.Q(title__icontains=query) | 
+            models.Q(description__icontains=query) | 
+            models.Q(community__name__icontains=query)
+        )
+        
+        # Combine the querysets
+        search_results = public_events | community_events
+    else:
+        # If no query, return all accessible events (public or from user's communities)
+        public_events = Event.objects.filter(event_type='Public')
+        community_events = Event.objects.filter(
+            event_type='Community',
+            community__id__in=user_community_ids
+        )
+        search_results = public_events | community_events
+    
+    context = {
+        'search_query': search_query,
+        'events': search_results,
+        'user_communities': user_communities,
+        'full_name': user.get_full_name(),
+        'username': user.username,
+        'email': user.email,
+        'first_name': user.first_name,
+        'last_name': user.last_name,
+        'student_number': user.student_number,
+        'is_superuser': user.is_superuser,
+        'active_tab': 'events',  # Set the active tab to events
+    }
+    
+    return render(request, 'accounts/main.html', context)

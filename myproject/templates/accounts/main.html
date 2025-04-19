@@ -129,13 +129,22 @@
         <!-- All Communities Grid -->
         <div id="communitiesGrid">
           <div class="tab-header">
-            <h2>All Communities</h2>
+            <h2>{% if search_query %}Search Communities: "{{ search_query }}"{% else %}All Communities{% endif %}</h2>
             <div class="events-controls">
-              <input type="text" class="search-bar" id="searchBar" placeholder="Search communities...">
-              <button id="searchButton" class="create-button">Search</button>
+              <form action="{% url 'search_communities' %}" method="GET" class="search-form">
+                <input type="text" class="search-bar" id="searchBar" name="query" placeholder="Search communities..." value="{{ search_query }}">
+                <button type="submit" id="searchButton" class="create-button">Search</button>
+              </form>
               <a href="{% url 'request_community' %}" class="create-button">Create New Community</a>
             </div>
           </div>
+          
+          {% if search_query %}
+          <div class="back-button-container">
+            <a href="{% url 'main' %}#communities" class="back-button" id="backToAllCommunitiesBtn">Back to All Communities</a>
+          </div>
+          {% endif %}
+          
           <div class="card-grid" id="communityResults">
             {% if all_communities %}
               {% for community in all_communities %}
@@ -157,7 +166,7 @@
               {% endfor %}
             {% else %}
               <div class="card">
-                <h3>No communities found</h3>
+                <h3>No communities found{% if search_query %} for "{{ search_query }}"{% endif %}</h3>
               </div>
             {% endif %}
           </div>
@@ -219,28 +228,36 @@
       <!-- EVENTS TAB -->
       <div class="tab-content" id="events" style="display: none;">
         <div class="tab-header">
-          <h2>Campus Events</h2>
+          <h2>{% if search_query %}Search Events: "{{ search_query }}"{% else %}Campus Events{% endif %}</h2>
           <div class="events-controls">
-            <input type="text" class="search-bar" placeholder="Search events...">
+            <form action="{% url 'search_events' %}" method="GET" class="search-form">
+              <input type="text" class="search-bar" id="eventSearchBar" name="query" placeholder="Search events..." value="{{ search_query }}">
+              <button type="submit" id="eventSearchButton" class="create-button">Search</button>
+            </form>
           </div>
         </div>
+        
+        {% if search_query %}
+        <div class="back-button-container">
+          <a href="{% url 'main' %}#events" class="back-button" id="backToAllEventsBtn">← Back to All Events</a>
+        </div>
+        {% endif %}
+        
         <div class="card-grid">
-          <div class="card-grid">
-            {% for event in events %}
-              <div class="card">
-                <h3>{{ event.title }}</h3>
-                <p>{{ event.description }}</p>
-                <span class="card-meta">
-                  {{ event.date|date:"F j, Y, g:i A" }} | {{ event.location }}
-                </span>
-                <button class="action-button">Join Event</button>
-              </div>
-            {% empty %}
-              <div class="card">
-                <h3>No events available</h3>
-              </div>
-            {% endfor %}
-          </div>
+          {% for event in events %}
+            <div class="card">
+              <h3>{{ event.title }}</h3>
+              <p>{{ event.description }}</p>
+              <span class="card-meta">
+                {{ event.date|date:"F j, Y, g:i A" }} | {{ event.location }}
+              </span>
+              <button class="action-button">Join Event</button>
+            </div>
+          {% empty %}
+            <div class="card">
+              <h3>No events {% if search_query %}found for "{{ search_query }}"{% else %}available{% endif %}</h3>
+            </div>
+          {% endfor %}
         </div>
       </div>
 
@@ -269,9 +286,9 @@
             <form method="POST" id="update-profile-form">
               {% csrf_token %}
               <label for="first-name">First Name</label>
-              <input type="text" id="first-name" name="first_name" placeholder="{{ first_name }}">
+              <input type="text" id="first-name" name="first_name" placeholder="{{ user.first_name }}">
               <label for="last-name">Last Name</label>
-              <input type="text" id="last-name" name="last_name" placeholder="{{ last_name }}">
+              <input type="text" id="last-name" name="last_name" placeholder="{{ user.last_name }}">
               <button type="submit" class="submit-button" name="update-profile-form">Update Profile</button>
             </form>
           </div>
@@ -326,51 +343,58 @@
     const topLevelTabs = document.querySelectorAll('.sidebar-list-item[data-tab], .account-info[data-tab]');
     const tabContents = document.querySelectorAll('.tab-content');
 
+    // Function to activate a specific tab
+    function activateTab(tabId) {
+      // Hide all tab-content sections
+      tabContents.forEach(content => content.style.display = 'none');
+
+      // Remove active class from all top-level tabs
+      topLevelTabs.forEach(item => item.classList.remove('active'));
+
+      // Show the correct tab-content
+      const activeTab = document.getElementById(tabId);
+      if (activeTab) {
+        activeTab.style.display = 'block';
+        // Mark the corresponding top-level nav item as active
+        topLevelTabs.forEach(item => {
+          if (item.getAttribute('data-tab') === tabId) {
+            item.classList.add('active');
+          }
+        });
+      }
+    }
+
     topLevelTabs.forEach(tab => {
       tab.addEventListener('click', function () {
-        // Hide all tab-content sections
-        tabContents.forEach(content => content.style.display = 'none');
-
-        // Remove active class from all top-level tabs
-        topLevelTabs.forEach(item => item.classList.remove('active'));
-
         // Show the correct tab-content
         const tabId = this.getAttribute('data-tab');
         if (tabId) {
-          const activeTab = document.getElementById(tabId);
-          if (activeTab) {
-            activeTab.style.display = 'block';
-            this.classList.add('active');
-            window.location.hash = tabId;
-          }
+          activateTab(tabId);
+          window.location.hash = tabId;
         }
       });
     });
 
-    // On page load, check if there's a hash
+    // On page load, check for active_tab or hash
     document.addEventListener('DOMContentLoaded', function () {
-      const hash = window.location.hash.substring(1);
-      if (hash) {
-        // Hide all tab-content
-        tabContents.forEach(content => content.style.display = 'none');
-        const activeTab = document.getElementById(hash);
-        if (activeTab) {
-          activeTab.style.display = 'block';
-          // Mark the corresponding top-level nav item as active
-          topLevelTabs.forEach(item => {
-            if (item.getAttribute('data-tab') === hash) {
-              item.classList.add('active');
-            }
-          });
+      {% if active_tab %}
+        // If active_tab is set (e.g. from search results), activate that tab
+        activateTab('{{ active_tab }}');
+        // If it's communities tab, make sure the grid is visible
+        if ('{{ active_tab }}' === 'communities') {
+          communitiesGrid.style.display = 'block';
+          communityDetail.style.display = 'none';
         }
-      } else {
-        // Default to showing "home" if no hash
-        const defaultTab = document.getElementById('home');
-        if (defaultTab) {
-          defaultTab.style.display = 'block';
-          document.querySelector('.sidebar-list-item[data-tab="home"]').classList.add('active');
+      {% else %}
+        // Otherwise check for hash in URL
+        const hash = window.location.hash.substring(1);
+        if (hash) {
+          activateTab(hash);
+        } else {
+          // Default to showing "home" if no hash or active_tab
+          activateTab('home');
         }
-      }
+      {% endif %}
     });
 
     // Clicking "Communities" top-level item => show #communitiesGrid, hide #communityDetail
