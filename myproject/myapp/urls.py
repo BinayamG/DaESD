@@ -4,7 +4,12 @@ from .views import (
     login_view, signup_view, main_view, delete_account_view, 
     join_community, leave_community, request_community_creation_view, 
     community_request_review_view, create_event_view, delete_community,
+<<<<<<< Updated upstream
     search_communities, search_events, create_post, load_community_posts
+=======
+    search_communities, search_events, toggle_event_interest,
+    update_event_view, delete_event
+>>>>>>> Stashed changes
 )
 
 urlpatterns = [
@@ -19,8 +24,14 @@ urlpatterns = [
     path("request_community/", request_community_creation_view, name="request_community"),
     path("review_admin_dashboard/", community_request_review_view, name="review_admin_dashboard"),
     path('create-event/<int:community_id>/', create_event_view, name='create_event'),
+    path('update-event/<int:event_id>/', update_event_view, name='update_event'),
+    path('delete-event/<int:event_id>/', delete_event, name='delete_event'),
     path('search-communities/', search_communities, name='search_communities'),
     path('search-events/', search_events, name='search_events'),
+<<<<<<< Updated upstream
     path('community/<int:community_id>/post/', create_post, name='create_post'), #SUMANTH
     path('community/<int:community_id>/posts/', load_community_posts, name='load_community_posts'), #SUMANTH
+=======
+    path('event/<int:event_id>/toggle-interest/', toggle_event_interest, name='toggle_event_interest'),
+>>>>>>> Stashed changes
 ]

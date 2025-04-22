@@ -93,9 +93,14 @@ def main_view(request):
     joined_communities = user.joined_communities.all()
     owned_communities = user.owned_communities.all()
 
+<<<<<<< Updated upstream
     user_communities = joined_communities | owned_communities
     form = PostForm() #SUMANTH
 
+=======
+    # Use distinct() to ensure no duplicates in user_communities
+    user_communities = (joined_communities | owned_communities).distinct()
+>>>>>>> Stashed changes
 
     # Get user's community IDs for filtering events
     user_community_ids = user_communities.values_list('id', flat=True)
@@ -298,7 +303,7 @@ def search_events(request):
     # Get user's community IDs for filtering events
     joined_communities = user.joined_communities.all()
     owned_communities = user.owned_communities.all()
-    user_communities = joined_communities | owned_communities
+    user_communities = (joined_communities | owned_communities).distinct()
     user_community_ids = user_communities.values_list('id', flat=True)
     
     if query:
@@ -349,6 +354,7 @@ def search_events(request):
     
     return render(request, 'accounts/main.html', context)
 
+<<<<<<< Updated upstream
 @login_required #Sumanth
 def create_post(request, community_id):
     community = get_object_or_404(Community, id=community_id)
@@ -379,3 +385,72 @@ def load_community_posts(request, community_id):
 #         post.delete()
 #         messages.success(request, "Post deleted succesfully)")
 #         return redirect("main")
+=======
+@login_required
+def toggle_event_interest(request, event_id):
+    """Toggle the current user's interest in an event"""
+    event = get_object_or_404(Event, id=event_id)
+    user = request.user
+    is_interested = False
+    
+    if user in event.interested_users.all():
+        # User is already interested, so remove interest
+        event.interested_users.remove(user)
+        messages.info(request, f"You are no longer interested in the event: {event.title}")
+    else:
+        # User is not interested, so add interest
+        event.interested_users.add(user)
+        is_interested = True
+        messages.success(request, f"You are now interested in the event: {event.title}")
+    
+    # If request is AJAX, return JSON response
+    if request.headers.get('x-requested-with') == 'XMLHttpRequest':
+        return JsonResponse({
+            'is_interested': is_interested,
+            'interest_count': event.interested_users.count()
+        })
+    
+    # Otherwise redirect back to the events page
+    return redirect('/myapp/main/#events')
+
+@login_required
+def update_event_view(request, event_id):
+    event = get_object_or_404(Event, id=event_id)
+    community = event.community
+    
+    # Check if the logged-in user is the creator of the community
+    if community.created_by != request.user:
+        messages.error(request, 'Only the community leader can update events')
+        return redirect('/myapp/main/#events')
+    
+    if request.method == 'POST':
+        form = EventForm(request.POST, instance=event)
+        if form.is_valid():
+            updated_event = form.save(commit=False)
+            updated_event.community = community  # Ensure community stays the same
+            updated_event.created_by = request.user  # Keep original creator
+            updated_event.save()
+            messages.success(request, 'Event updated successfully!')
+            return redirect('/myapp/main/#events')
+    else:
+        form = EventForm(instance=event)
+    
+    return render(request, 'update_event.html', {'form': form, 'event': event, 'community': community})
+
+@login_required
+def delete_event(request, event_id):
+    event = get_object_or_404(Event, id=event_id)
+    community = event.community
+    
+    # Check if the logged-in user is the creator of the community
+    if community.created_by != request.user:
+        messages.error(request, 'Only the community leader can delete events')
+        return redirect('/myapp/main/#events')
+    
+    if request.method == 'POST':
+        event_title = event.title
+        event.delete()
+        messages.success(request, f'Event "{event_title}" deleted successfully!')
+    
+    return redirect('/myapp/main/#events')
+>>>>>>> Stashed changes

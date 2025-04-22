@@ -69,6 +69,16 @@
             <span>Events</span>
           </a>
         </li>
+        <!-- Events -->
+        <li class="sidebar-list-item">
+          <a href="#">
+            <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M3 3h18v18H3z"/>
+              <path d="M7 7h10M7 12h10M7 17h10"/>
+            </svg>
+            <span>Review Friend Requests</span>
+          </a>
+        </li>
       </ul>
 
       <!-- Super user approval for community creation -->
@@ -102,6 +112,13 @@
         <button class="mode-switch" title="Switch Theme">
           <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="none" stroke="currentColor" stroke-width="2">
             <path d="M21 12.79A9 9 0 1111.21 3 7 7 0 0021 12.79z"></path>
+          </svg>
+        </button>
+        <button class="notification-button" title="Notifications">
+          <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="none" stroke="currentColor"
+               stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M18 8a6 6 0 0 0-12 0c0 7-3 9-3 9h18s-3-2-3-9" />
+            <path d="M13.73 21a2 2 0 0 1-3.46 0" />
           </svg>
         </button>
       </div>
@@ -247,13 +264,48 @@
         
         <div class="card-grid">
           {% for event in events %}
-            <div class="card">
+            <div class="card event-card" data-event-date="{{ event.date|date:'c' }}">
               <h3>{{ event.title }}</h3>
               <p>{{ event.description }}</p>
+              <p class="community-name">Community: <a href="#" onclick="showCommunityDetails('{{ event.community.id }}')">{{ event.community.name }}</a></p>
               <span class="card-meta">
-                {{ event.date|date:"F j, Y, g:i A" }} | {{ event.location }}
+                <strong>Date/Time:</strong> {{ event.date|date:"F j, Y, g:i A" }} <br>
+                <strong>Location:</strong> {{ event.location }}
               </span>
-              <button class="action-button">Join Event</button>
+              
+              <!-- Countdown timer -->
+              <div class="event-countdown">
+                Event starts in: <span class="countdown-value">calculating...</span>
+              </div>
+              
+              <!-- Interest/Join button based on location type -->
+              {% if event.location|slice:":4" == "http" or event.location|slice:":5" == "https" %}
+                <!-- Virtual event - show Join button -->
+                <a href="{{ event.location }}" target="_blank" class="action-button join-button">Join Virtual Event</a>
+              {% else %}
+                <!-- Physical event - show Interest button -->
+                <div class="interest-container">
+                  <span class="interest-count">{{ event.interested_users.count }} interested</span>
+                  {% if user in event.interested_users.all %}
+                    <form method="POST" action="{% url 'toggle_event_interest' event.id %}">
+                      {% csrf_token %}
+                      <button type="submit" class="action-button interested-button">Not Interested</button>
+                    </form>
+                  {% else %}
+                    <form method="POST" action="{% url 'toggle_event_interest' event.id %}">
+                      {% csrf_token %}
+                      <button type="submit" class="action-button">Interested</button>
+                    </form>
+                  {% endif %}
+                </div>
+              {% endif %}
+              
+              <!-- Update event button for community leaders -->
+              {% if event.community.created_by == user %}
+                <div class="update-event-container">
+                  <a href="{% url 'update_event' event.id %}" class="update-event-button">Update Event</a>
+                </div>
+              {% endif %}
             </div>
           {% empty %}
             <div class="card">
@@ -501,10 +553,15 @@
     }
     window.togglePassword = togglePassword;
 
-    // Theme Switcher
+    // Theme Switcher ( updated)
+    const root = document.documentElement;
     const modeSwitch = document.querySelector('.mode-switch');
-    modeSwitch.addEventListener('click', function() {
-      document.documentElement.classList.toggle('light');
+    const storedTheme = localStorage.getItem('theme') || 'dark';
+    root.classList.toggle('light', storedTheme === 'light');
+
+    modeSwitch.addEventListener('click', () => {
+      const isLight = root.classList.toggle('light');
+      localStorage.setItem('theme', isLight ? 'light' : 'dark');
     });
 
     // Confirm delete community
@@ -512,6 +569,53 @@
       return confirm('Are you sure you want to delete this community? This action cannot be undone.');
     }
     window.confirmDeleteCommunity = confirmDeleteCommunity;
+
+    // Countdown timer functionality for events
+    function updateEventCountdowns() {
+      const eventCards = document.querySelectorAll('.event-card');
+      const now = new Date();
+      
+      eventCards.forEach(card => {
+        const eventDateStr = card.dataset.eventDate;
+        if (!eventDateStr) return;
+        
+        const eventDate = new Date(eventDateStr);
+        const timeRemaining = eventDate - now;
+        
+        const countdownEl = card.querySelector('.countdown-value');
+        if (!countdownEl) return;
+        
+        if (timeRemaining <= 0) {
+          countdownEl.innerHTML = '<span class="event-live">Event is live now!</span>';
+        } else {
+          // Calculate days, hours, minutes
+          const days = Math.floor(timeRemaining / (1000 * 60 * 60 * 24));
+          const hours = Math.floor((timeRemaining % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+          const minutes = Math.floor((timeRemaining % (1000 * 60 * 60)) / (1000 * 60));
+          
+          countdownEl.textContent = `${days} days ${hours} hours ${minutes} minutes`;
+        }
+      });
+    }
+    
+    // Function to navigate to community detail when clicking community name in events
+    function showCommunityDetails(communityId) {
+      // Find the community item in the sidebar
+      const communityItem = document.querySelector(`.community-list-item[data-community-id="${communityId}"]`);
+      if (communityItem) {
+        communityItem.click();
+      } else {
+        // If not in sidebar (not joined), redirect to main with communities tab
+        window.location.href = "/myapp/main/#communities";
+      }
+      return false; // Prevent default link behavior
+    }
+    
+    // Run countdown updates on page load and every minute
+    document.addEventListener('DOMContentLoaded', function() {
+      updateEventCountdowns();
+      setInterval(updateEventCountdowns, 60000); // Update every minute
+    });
   </script>
 </body>
 </html>

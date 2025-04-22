@@ -84,10 +84,14 @@ class Event(models.Model):
 
     community = models.ForeignKey(Community, on_delete=models.CASCADE, related_name="events")
     created_by = models.ForeignKey(CustomUser, on_delete=models.CASCADE)
+    interested_users = models.ManyToManyField(CustomUser, related_name="interested_events", blank=True)
 
     def __str__(self):
         return self.title
-
+    
+    def is_virtual(self):
+        """Check if the event location is a virtual link"""
+        return self.location.startswith('http://') or self.location.startswith('https://')
 
 class Post(models.Model):
     CATEGORY_CHOICES = [

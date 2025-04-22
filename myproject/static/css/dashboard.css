@@ -645,6 +645,94 @@ gap: 20px;
   background-color: var(--action-color-hover);
 }
 
+/* Enhanced Event Card Styles */
+.event-card {
+  display: flex;
+  flex-direction: column;
+}
+
+.community-name {
+  font-size: 0.9rem;
+  margin-bottom: 8px;
+}
+
+.community-name a {
+  color: var(--action-color);
+  text-decoration: none;
+}
+
+.community-name a:hover {
+  text-decoration: underline;
+}
+
+.event-countdown {
+  background-color: rgba(0,0,0,0.05);
+  padding: 8px;
+  border-radius: 4px;
+  margin: 10px 0;
+  font-size: 0.9rem;
+  text-align: center;
+}
+
+.event-live {
+  color: #e74c3c;
+  font-weight: bold;
+}
+
+.interest-container {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-top: 10px;
+}
+
+.interest-count {
+  font-size: 0.9rem;
+  color: #666;
+}
+
+.interested-button {
+  background-color: #f1c40f;
+  color: #000;
+}
+
+.interested-button:hover {
+  background-color: #e67e22;
+}
+
+.join-button {
+  background-color: #2ecc71;
+}
+
+.join-button:hover {
+  background-color: #27ae60;
+}
+
+/* Update Event Button Styles */
+.update-event-container {
+  margin-top: 15px;
+  text-align: center;
+  border-top: 1px solid var(--table-border);
+  padding-top: 15px;
+}
+
+.update-event-button {
+  background-color: #3498db;
+  color: white;
+  padding: 8px 16px;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 0.9rem;
+  text-decoration: none;
+  display: inline-block;
+  transition: background 0.3s;
+}
+
+.update-event-button:hover {
+  background-color: #2980b9;
+}
+
 /* Responsive Styles */
 @media (max-width: 768px) {
   .app-container {

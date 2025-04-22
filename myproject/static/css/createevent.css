@@ -49,3 +49,137 @@
 .submit-button:hover {
     background-color: var(--action-color-hover);
 }
+
+/* Event Form Styles */
+.event-form-container {
+    max-width: 800px;
+    margin: 40px auto;
+    padding: 30px;
+    background-color: var(--app-content-secondary-color);
+    border-radius: 8px;
+    box-shadow: var(--filter-shadow);
+}
+
+.event-form-container h2 {
+    margin-bottom: 10px;
+    color: var(--chart-container-heading);
+}
+
+.community-info {
+    margin-bottom: 20px;
+    color: var(--action-color);
+    font-size: 1.1rem;
+}
+
+/* Form styling */
+form {
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+}
+
+form p {
+    margin: 0;
+}
+
+form label {
+    display: block;
+    margin-bottom: 5px;
+    font-weight: 500;
+}
+
+form input[type="text"],
+form input[type="url"],
+form input[type="datetime-local"],
+form select,
+form textarea {
+    width: 100%;
+    padding: 10px;
+    border: 1px solid var(--table-border);
+    border-radius: 4px;
+    background-color: var(--app-bg);
+    color: var(--app-content-main-color);
+}
+
+form textarea {
+    min-height: 120px;
+    resize: vertical;
+}
+
+.form-actions {
+    display: flex;
+    gap: 15px;
+    margin-top: 10px;
+}
+
+.submit-button {
+    background-color: var(--action-color);
+    color: var(--sidebar-main-color);
+    padding: 10px 20px;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 1rem;
+    transition: background 0.3s;
+}
+
+.submit-button:hover {
+    background-color: var(--action-color-hover);
+}
+
+.cancel-button {
+    background-color: #777;
+    color: white;
+    padding: 10px 20px;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 1rem;
+    text-decoration: none;
+    text-align: center;
+    transition: background 0.3s;
+}
+
+.cancel-button:hover {
+    background-color: #555;
+}
+
+/* Delete section */
+.delete-section {
+    margin-top: 40px;
+    padding-top: 20px;
+    border-top: 1px solid var(--table-border);
+}
+
+.delete-section h3 {
+    color: #e74c3c;
+    margin-bottom: 10px;
+}
+
+.delete-section p {
+    margin-bottom: 15px;
+    color: #777;
+}
+
+.delete-button {
+    background-color: #e74c3c;
+    color: white;
+    padding: 10px 20px;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 1rem;
+    transition: background 0.3s;
+}
+
+.delete-button:hover {
+    background-color: #c0392b;
+}
+
+/* Help text below form fields */
+.helptext {
+    display: block;
+    font-size: 0.85rem;
+    color: #777;
+    margin-top: 5px;
+}
