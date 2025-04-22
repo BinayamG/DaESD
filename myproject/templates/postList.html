@@ -1,0 +1,5 @@
+{% for post in posts %}
+    {% include 'post.html' %}
+{% empty %}
+  <p>No posts yet for this community.</p>
+{% endfor %}

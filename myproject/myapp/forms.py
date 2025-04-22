@@ -1,6 +1,6 @@
 from django import forms
 from django.contrib.auth.forms import UserCreationForm
-from .models import CustomUser, CommunityRequest, Event
+from .models import CustomUser, CommunityRequest, Event, Post #FriendRequest
 
 class CustomUserCreationForm(UserCreationForm):
     email = forms.EmailField(required=True)
@@ -19,12 +19,6 @@ class CustomUserCreationForm(UserCreationForm):
         if commit:
             user.save()
         return user
-    
-# Community form (templates/communityForm.html)
-# class CommunityForm(forms.ModelForm):
-#     class Meta:
-#         model = Community
-#         fields = ['name', 'description', 'tags']
 
 # Community Request form replaced from original 
 class CommunityRequestForm(forms.ModelForm):
@@ -41,3 +35,17 @@ class EventForm(forms.ModelForm):
             'date': forms.DateTimeInput(attrs={'type': 'datetime-local'})
         }
         
+class PostForm(forms.ModelForm): #Sumanth
+    class Meta:
+        model = Post
+        fields = ['title', 'content', 'category']
+        widgets = {
+            'title': forms.TextInput(attrs={'placeholder': 'Post title'}),
+            'content': forms.Textarea(attrs={'rows': 3, 'placeholder': 'What’s on your mind?'}),
+            'category': forms.Select()
+        }
+
+# class FriendRequestForm(forms.ModelForm):
+#     class Meta:
+#         model = FriendRequest
+#            fields = ['sender', 'receiver']

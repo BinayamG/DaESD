@@ -201,28 +201,29 @@
 
           <!-- Scrollable posts container -->
           <div class="community-posts-container">
-            <div class="community-posts">
-              <div class="post">
-                <p><strong>User1:</strong> This is a sample post in the community.</p>
-              </div>
-              <div class="post">
-                <p><strong>User2:</strong> Another sample post with an image.</p>
-                <img src="https://via.placeholder.com/150" alt="Sample Image">
-              </div>
-            </div>
-          </div>
+            <div class="community-posts" id="communityPostsContainer"></div>
+          </div>  
 
           <!-- Post creation form at bottom -->
           <div class="post-creation">
             <h3>Create a Post</h3>
-            <form>
-              <textarea placeholder="Share something with the community..." required></textarea>
-              <input type="file" accept="image/*">
+            <form method="POST" id="createPostForm" action="#">
+              {% csrf_token %}
+              {{ form.non_field_errors }}
+              <input type="hidden" name="community_id" id="createPostCommunityId">
+              <div class="form-group">
+                {{ form.title.label_tag }} {{ form.title }}
+              </div>
+              <div class="form-group">
+                {{ form.content.label_tag }} {{ form.content }}
+              </div>
+              <div class="form-group">
+                {{ form.category.label_tag }} {{ form.category }}
+              </div>
               <button type="submit" class="submit-button">Post</button>
             </form>
           </div>
         </div>
-      </div>
       <!-- End Communities Tab -->
 
       <!-- EVENTS TAB -->
@@ -236,7 +237,8 @@
             </form>
           </div>
         </div>
-        
+      </div>
+      
         {% if search_query %}
         <div class="back-button-container">
           <a href="{% url 'main' %}#events" class="back-button" id="backToAllEventsBtn">← Back to All Events</a>
@@ -419,6 +421,7 @@
     const leaveCommunityForm = document.getElementById('leaveCommunityForm');
     const deleteCommunityForm = document.getElementById('deleteCommunityForm');
 
+
     communitySubItems.forEach(item => {
       item.addEventListener('click', function (e) {
         e.preventDefault(); 
@@ -439,7 +442,28 @@
         communityNameEl.textContent = commName;
         communityDescEl.textContent = commDesc;
         leaveCommunityIdEl.value = commId;
+        const createPostForm = document.getElementById('createPostForm');
+        const createPostCommunityId = document.getElementById('createPostCommunityId');
         deleteCommunityIdEl.value = commId;
+
+        createPostForm.action = `/myapp/community/${commId}/post/`;
+        createPostCommunityId.value = commId;
+
+        try {
+        fetch(`/myapp/community/${commId}/posts/`)
+          .then(response => response.ok ? response.text() : "")
+          .then(html => {
+            const container = document.getElementById('communityPostsContainer');
+            if (container && html) {
+              container.innerHTML = html;
+            } else {
+              console.warn("No posts HTML returned or container missing");
+            }
+          })
+          .catch(error => console.error("Fetch error:", error));
+      } catch (err) {
+        console.error("Critical fetch issue:", err);
+      }
 
         // Replace the placeholder in the URL
         const createEventBtn = document.getElementById('createEventButton');

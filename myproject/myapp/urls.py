@@ -4,7 +4,7 @@ from .views import (
     login_view, signup_view, main_view, delete_account_view, 
     join_community, leave_community, request_community_creation_view, 
     community_request_review_view, create_event_view, delete_community,
-    search_communities, search_events
+    search_communities, search_events, create_post, load_community_posts
 )
 
 urlpatterns = [
@@ -21,4 +21,6 @@ urlpatterns = [
     path('create-event/<int:community_id>/', create_event_view, name='create_event'),
     path('search-communities/', search_communities, name='search_communities'),
     path('search-events/', search_events, name='search_events'),
+    path('community/<int:community_id>/post/', create_post, name='create_post'), #SUMANTH
+    path('community/<int:community_id>/posts/', load_community_posts, name='load_community_posts'), #SUMANTH
 ]

@@ -2,7 +2,7 @@ from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth import authenticate, login, update_session_auth_hash
 from django.contrib.auth.forms import AuthenticationForm
 from django.contrib.auth.decorators import login_required, user_passes_test
-from .forms import CustomUserCreationForm, CommunityRequestForm, EventForm
+from .forms import CustomUserCreationForm, CommunityRequestForm, EventForm, PostForm
 from django.contrib import messages
 from django.db import models
 from .models import CommunityRequest, Community, Event
@@ -94,6 +94,8 @@ def main_view(request):
     owned_communities = user.owned_communities.all()
 
     user_communities = joined_communities | owned_communities
+    form = PostForm() #SUMANTH
+
 
     # Get user's community IDs for filtering events
     user_community_ids = user_communities.values_list('id', flat=True)
@@ -122,6 +124,8 @@ def main_view(request):
         'all_communities': all_communities,
         "is_superuser": user.is_superuser, 
         "events": events,
+        'form': form, #Sumanth
+
     }
     return render(request, "accounts/main.html", context)
 
@@ -263,7 +267,7 @@ def search_communities(request):
     # Get user communities for the sidebar
     joined_communities = user.joined_communities.all()
     owned_communities = user.owned_communities.all()
-    user_communities = joined_communities | owned_communities
+    user_communities = (joined_communities | owned_communities).distinct()
     
     # Get events for the events tab
     events = Event.objects.all()
@@ -344,3 +348,34 @@ def search_events(request):
     }
     
     return render(request, 'accounts/main.html', context)
+
+@login_required #Sumanth
+def create_post(request, community_id):
+    community = get_object_or_404(Community, id=community_id)
+
+    if request.method == 'POST':
+        form = PostForm(request.POST)
+        if form.is_valid():
+            post = form.save(commit=False)
+            post.user = request.user
+            post.community = community
+            post.save()
+            messages.success(request, "Post created successfully!")
+        else:
+            messages.error(request, "There was an error in your form.")
+        html = render(request, 'post.html', {'post': post}).content.decode('utf-8')
+        return redirect("main")
+
+@login_required #SUMANTH
+def load_community_posts(request, community_id):
+    community = get_object_or_404(Community, id=community_id)
+    posts = community.posts.order_by('-created_at')
+    return render(request, 'postList.html', {'posts': posts})
+
+# @login_required #Sumanth
+# def delete_post(request, post_id):
+#     post = get_object_or_404(post_id)
+#     if request.method == 'POST':
+#         post.delete()
+#         messages.success(request, "Post deleted succesfully)")
+#         return redirect("main")

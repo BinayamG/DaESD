@@ -1,0 +1,12 @@
+<div class="post">
+    <h3>{{ post.title }}</h3>
+    <p>
+      {% if post.user.username %}
+        <strong>{{ post.user.username }}:</strong>
+      {% else %}
+        <strong>Unknown:</strong>
+      {% endif %}
+      {{ post.content }}
+    </p>
+      <span class="post-meta">Posted {{ post.created_at|timesince }} ago</span>
+  </div>

@@ -97,7 +97,7 @@ class Post(models.Model):
     ]
 
     user = models.ForeignKey(CustomUser, on_delete=models.CASCADE)
-    community = models.ForeignKey(Community, on_delete=models.CASCADE, null=True, blank=True)
+    community = models.ForeignKey(Community, on_delete=models.CASCADE, related_name='posts', null=True, blank=True) #SUMANTH adding related_name = "posts"lets you access all posts from a community instance:    
     title = models.CharField(max_length=255)
     content = models.TextField()
     category = models.CharField(max_length=50, choices=CATEGORY_CHOICES)
@@ -114,3 +114,19 @@ class Notification(models.Model):
 
     def __str__(self):
         return f"Notification for {self.user.username}"
+    
+# class FriendRequests(models.Model):
+#     sender = models.ForeignKey(CustomUser, on_delete=models.CASCADE, related_name='sent_requests')
+#     receiver = models.ForeignKey(CustomUser, on_delete=models.CASCADE, related_name='received_requests')
+#     created_at = models.DateTimeField(auto_now_add=True)
+
+#     def __str__(self):
+#         return f"{self.sender.username} -> {self.receiver.username}"
+
+# class Friends(models.Model):
+#     user = models.ForeignKey(CustomUser, on_delete=models.CASCADE, related_name='friends')
+#     friend = models.ForeignKey(CustomUser, on_delete=models.CASCADE, related_name='friend_of')
+#     created_at = models.DateTimeField(auto_now_add=True)
+
+#     def __str__(self):
+#         return f"{self.user.username} is friends with {self.friend.username}"
