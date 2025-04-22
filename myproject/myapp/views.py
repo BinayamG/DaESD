@@ -93,14 +93,9 @@ def main_view(request):
     joined_communities = user.joined_communities.all()
     owned_communities = user.owned_communities.all()
 
-<<<<<<< Updated upstream
-    user_communities = joined_communities | owned_communities
+    user_communities = (joined_communities | owned_communities).distinct()
     form = PostForm() #SUMANTH
 
-=======
-    # Use distinct() to ensure no duplicates in user_communities
-    user_communities = (joined_communities | owned_communities).distinct()
->>>>>>> Stashed changes
 
     # Get user's community IDs for filtering events
     user_community_ids = user_communities.values_list('id', flat=True)
@@ -354,38 +349,6 @@ def search_events(request):
     
     return render(request, 'accounts/main.html', context)
 
-<<<<<<< Updated upstream
-@login_required #Sumanth
-def create_post(request, community_id):
-    community = get_object_or_404(Community, id=community_id)
-
-    if request.method == 'POST':
-        form = PostForm(request.POST)
-        if form.is_valid():
-            post = form.save(commit=False)
-            post.user = request.user
-            post.community = community
-            post.save()
-            messages.success(request, "Post created successfully!")
-        else:
-            messages.error(request, "There was an error in your form.")
-        html = render(request, 'post.html', {'post': post}).content.decode('utf-8')
-        return redirect("main")
-
-@login_required #SUMANTH
-def load_community_posts(request, community_id):
-    community = get_object_or_404(Community, id=community_id)
-    posts = community.posts.order_by('-created_at')
-    return render(request, 'postList.html', {'posts': posts})
-
-# @login_required #Sumanth
-# def delete_post(request, post_id):
-#     post = get_object_or_404(post_id)
-#     if request.method == 'POST':
-#         post.delete()
-#         messages.success(request, "Post deleted succesfully)")
-#         return redirect("main")
-=======
 @login_required
 def toggle_event_interest(request, event_id):
     """Toggle the current user's interest in an event"""
@@ -453,4 +416,35 @@ def delete_event(request, event_id):
         messages.success(request, f'Event "{event_title}" deleted successfully!')
     
     return redirect('/myapp/main/#events')
->>>>>>> Stashed changes
+
+
+@login_required #Sumanth
+def create_post(request, community_id):
+    community = get_object_or_404(Community, id=community_id)
+
+    if request.method == 'POST':
+        form = PostForm(request.POST)
+        if form.is_valid():
+            post = form.save(commit=False)
+            post.user = request.user
+            post.community = community
+            post.save()
+            messages.success(request, "Post created successfully!")
+        else:
+            messages.error(request, "There was an error in your form.")
+        html = render(request, 'post.html', {'post': post}).content.decode('utf-8')
+        return redirect("main")
+
+@login_required #SUMANTH
+def load_community_posts(request, community_id):
+    community = get_object_or_404(Community, id=community_id)
+    posts = community.posts.order_by('-created_at')
+    return render(request, 'postList.html', {'posts': posts})
+
+# @login_required #Sumanth
+# def delete_post(request, post_id):
+#     post = get_object_or_404(post_id)
+#     if request.method == 'POST':
+#         post.delete()
+#         messages.success(request, "Post deleted succesfully)")
+#         return redirect("main")
