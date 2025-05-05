@@ -127,6 +127,12 @@
       <div class="tab-content" id="home">
         <h2>Welcome, {{ full_name }}!</h2>
         <p>Stay updated with the latest campus news and activities.</p>
+        <div class="tab-header">
+          <form action="{% url 'search_communities' %}" method="GET" class="search-form">
+            <input type="text" class="search-bar" id="searchBar" name="query" placeholder="Search communities..." value="{{ search_query }}">
+            <button type="submit" id="searchButton" class="create-button">Search</button>
+          </form>
+        </div>
         <div class="news-feed">
           <div class="post">
             <h3>New Community Launched: Academic Circle</h3>
@@ -334,6 +340,20 @@
             <p><strong>University:</strong> <span class="dynamic-text">UWE Bristol</span></p>
             <p><strong>Student Number:</strong> <span class="dynamic-text">{{ student_number }}</span></p>
           </div>
+
+          <div class="profile-card">
+            <h3>Academic Profile</h3>
+            <div class="profile-text-area">
+              <label for="campus-involvement"><strong>Campus Involvement:</strong></label>
+              <textarea id="campus-involvement" name="campus_involvement" rows="4" placeholder="Describe your campus involvement (clubs, organizations, etc.)">{{ user.campus_involvement }}</textarea>
+            </div>
+            <div class="profile-text-area">
+              <label for="achievements"><strong>Achievements:</strong></label>
+              <textarea id="achievements" name="achievements" rows="4" placeholder="List your academic and extracurricular achievements">{{ user.achievements }}</textarea>
+            </div>
+            <button type="submit" class="submit-button" onclick="saveAcademicProfile()">Save Academic Profile</button>
+          </div>
+
           <div class="profile-card">
             <h3>Account Settings</h3>
             <form method="POST" id="update-profile-form">
@@ -615,6 +635,38 @@
       updateEventCountdowns();
       setInterval(updateEventCountdowns, 60000); // Update every minute
     });
+
+    // Save Academic Profile
+    function saveAcademicProfile() {
+      const campusInvolvement = document.getElementById('campus-involvement').value;
+      const achievements = document.getElementById('achievements').value;
+      const csrfToken = document.querySelector('[name=csrfmiddlewaretoken]').value;
+
+      fetch('/myapp/save-academic-profile/', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'X-CSRFToken': csrfToken
+        },
+        body: JSON.stringify({
+          campus_involvement: campusInvolvement,
+          achievements: achievements
+        })
+      })
+      .then(response => response.json())
+      .then(data => {
+        if (data.success) {
+          alert('Academic profile updated successfully!');
+        } else {
+          alert('Error updating profile. Please try again.');
+        }
+      })
+      .catch(error => {
+        console.error('Error:', error);
+        alert('Error updating profile. Please try again.');
+      });
+    }
+    window.saveAcademicProfile = saveAcademicProfile;
   </script>
 </body>
 </html>

@@ -5,7 +5,7 @@ from .views import (
     join_community, leave_community, request_community_creation_view, 
     community_request_review_view, create_event_view, delete_community,
     search_communities, search_events, create_post, load_community_posts, toggle_event_interest,
-    update_event_view, delete_event
+    update_event_view, delete_event, save_academic_profile
 )
 
 urlpatterns = [
@@ -27,4 +27,5 @@ urlpatterns = [
     path('community/<int:community_id>/post/', create_post, name='create_post'), #SUMANTH
     path('community/<int:community_id>/posts/', load_community_posts, name='load_community_posts'), #SUMANTH
     path('event/<int:event_id>/toggle-interest/', toggle_event_interest, name='toggle_event_interest'),
+    path('save-academic-profile/', save_academic_profile, name='save_academic_profile'),
 ]

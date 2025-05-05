@@ -4,9 +4,10 @@ from django.contrib.auth.forms import AuthenticationForm
 from django.contrib.auth.decorators import login_required, user_passes_test
 from .forms import CustomUserCreationForm, CommunityRequestForm, EventForm, PostForm
 from django.contrib import messages
-from django.db import models
+from django.db import models, IntegrityError
 from .models import CommunityRequest, Community, Event
 from django.http import JsonResponse
+import json
 
 
 # Decorator for super_users
@@ -38,12 +39,21 @@ def signup_view(request):
     if request.method == 'POST':
         form = CustomUserCreationForm(request.POST)
         if form.is_valid():
-            form.save()
-            print("User successfully created!")  # Debug message
-            return redirect('login')
+            try:
+                form.save()
+                messages.success(request, "User successfully created! Please login.")
+                return redirect('login')
+            except IntegrityError as e:
+                if 'email' in str(e):
+                    messages.error(request, "An account with this email already exists.")
+                elif 'student_number' in str(e):
+                    messages.error(request, "An account with this student number already exists.")
+                else:
+                    messages.error(request, "An error occurred while creating your account.")
         else:
-            print("Form errors:", form.errors.as_json())  # Debugging errors
-
+            for field, errors in form.errors.items():
+                for error in errors:
+                    messages.error(request, f"{error}")
     else:
         form = CustomUserCreationForm()
     return render(request, "accounts/signup.html", {'form': form})
@@ -448,3 +458,17 @@ def load_community_posts(request, community_id):
 #         post.delete()
 #         messages.success(request, "Post deleted succesfully)")
 #         return redirect("main")
+
+@login_required
+def save_academic_profile(request):
+    if request.method == 'POST':
+        try:
+            data = json.loads(request.body)
+            user = request.user
+            user.campus_involvement = data.get('campus_involvement', '')
+            user.achievements = data.get('achievements', '')
+            user.save()
+            return JsonResponse({'success': True})
+        except Exception as e:
+            return JsonResponse({'success': False, 'error': str(e)})
+    return JsonResponse({'success': False, 'error': 'Invalid request method'})

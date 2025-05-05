@@ -21,6 +21,37 @@
     height: 100vh;
     }
 
+    .messages {
+        margin-bottom: 20px;
+        padding: 10px;
+    }
+
+    .alert {
+        padding: 12px;
+        margin-bottom: 10px;
+        border-radius: 4px;
+        font-size: 14px;
+    }
+
+    .alert-error {
+        background-color: #fee2e2;
+        color: #dc2626;
+        border: 1px solid #fecaca;
+    }
+
+    .alert-success {
+        background-color: #dcfce7;
+        color: #16a34a;
+        border: 1px solid #bbf7d0;
+    }
+
+    .error {
+        color: #dc2626;
+        font-size: 14px;
+        margin-top: -12px;
+        margin-bottom: 12px;
+    }
+
     .container {
     background-color: #fff;
     padding: 40px;
@@ -129,6 +160,17 @@
         <a href="{% url 'home' %}" class="logo">UniHub</a>
     </div>
     <h1>UWE's Student Engagment Platform</h1>
+    
+    {% if messages %}
+    <div class="messages">
+        {% for message in messages %}
+            <div class="alert {% if message.tags %}alert-{{ message.tags }}{% endif %}">
+                {{ message }}
+            </div>
+        {% endfor %}
+    </div>
+    {% endif %}
+
     <form method="POST" id="signupform">
       {% csrf_token %}  
       <input type="email" name="email" id= "email" placeholder="University email*" required>
@@ -157,7 +199,7 @@
         <option value="">Degree Program*</option>
         <option value="Bachelors">Bachelors Degree</option>
         <option value="Masters">Masters Degree</option>
-        <option value="Phd">Phd Degree</option>
+        <option value="PhD">Phd Degree</option>
       </select>
 
       <!-- Major dropdown -->
@@ -208,13 +250,12 @@
       const emailError = document.getElementById("emailError");
       const passwordError = document.getElementById("passwordError");
 
-
       emailError.textContent = "";
       passwordError.textContent = "";
 
-      const emailRegex = /^[a-zA-Z0-9._%+-]+@uwe\.ac\.uk$/;
+      const emailRegex = /^[a-zA-Z]+\.[a-zA-Z]+@live\.uwe\.ac\.uk$/;
       if (!emailRegex.test(email)) {
-        emailError.textContent = "Enter a valid UWE email address.";
+        emailError.textContent = "Please enter a valid UWE email in the format firstname.lastname@live.uwe.ac.uk";
         return;
       }
 

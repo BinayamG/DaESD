@@ -15,6 +15,8 @@ class CustomUser(AbstractUser):
     ]
     degree_program = models.CharField(max_length=20, choices=DEGREE_CHOICES)
     major = models.CharField(max_length=100)
+    campus_involvement = models.TextField(blank=True)
+    achievements = models.TextField(blank=True)
     
     def __str__(self):
         return self.username
