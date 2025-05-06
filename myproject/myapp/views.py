@@ -5,9 +5,13 @@ from django.contrib.auth.decorators import login_required, user_passes_test
 from .forms import CustomUserCreationForm, CommunityRequestForm, EventForm, PostForm
 from django.contrib import messages
 from django.db import models, IntegrityError
-from .models import CommunityRequest, Community, Event
+from django.db.models import Q
+from .models import CommunityRequest, Community, Event, CustomUser, FriendRequest
 from django.http import JsonResponse
 import json
+from django.utils import timezone
+import os
+from django.conf import settings
 
 
 # Decorator for super_users
@@ -123,6 +127,9 @@ def main_view(request):
     # Combine the two querysets
     events = public_events | community_events
 
+    # Get pending friend requests
+    friend_requests = FriendRequest.objects.filter(to_user=user, status='pending')
+
     context = {
         'full_name': user.get_full_name(),
         'username': user.username,
@@ -134,8 +141,8 @@ def main_view(request):
         'all_communities': all_communities,
         "is_superuser": user.is_superuser, 
         "events": events,
-        'form': form, #Sumanth
-
+        'form': form,
+        'friend_requests': friend_requests
     }
     return render(request, "accounts/main.html", context)
 
@@ -266,9 +273,9 @@ def search_communities(request):
         search_query = query
         # Search for communities that match query in name, description, or tags
         search_results = Community.objects.filter(
-            models.Q(name__icontains=query) | 
-            models.Q(description__icontains=query) | 
-            models.Q(tags__icontains=query)
+            Q(name__icontains=query) | 
+            Q(description__icontains=query) | 
+            Q(tags__icontains=query)
         ).distinct()
     else:
         # If no query, return all communities
@@ -314,12 +321,10 @@ def search_events(request):
     if query:
         search_query = query
         # Get public events matching the query
-        public_events = Event.objects.filter(
-            event_type='Public'
-        ).filter(
-            models.Q(title__icontains=query) | 
-            models.Q(description__icontains=query) | 
-            models.Q(community__name__icontains=query)
+        public_events = Event.objects.filter(event_type='Public').filter(
+            Q(title__icontains=query) | 
+            Q(description__icontains=query) | 
+            Q(community__name__icontains=query)
         )
         
         # Get community-only events for communities the user is a member of
@@ -327,15 +332,14 @@ def search_events(request):
             event_type='Community',
             community__id__in=user_community_ids
         ).filter(
-            models.Q(title__icontains=query) | 
-            models.Q(description__icontains=query) | 
-            models.Q(community__name__icontains=query)
+            Q(title__icontains=query) | 
+            Q(description__icontains=query) | 
+            Q(community__name__icontains=query)
         )
         
-        # Combine the querysets
         search_results = public_events | community_events
     else:
-        # If no query, return all accessible events (public or from user's communities)
+        # If no query, return all accessible events
         public_events = Event.objects.filter(event_type='Public')
         community_events = Event.objects.filter(
             event_type='Community',
@@ -354,7 +358,7 @@ def search_events(request):
         'last_name': user.last_name,
         'student_number': user.student_number,
         'is_superuser': user.is_superuser,
-        'active_tab': 'events',  # Set the active tab to events
+        'active_tab': 'events',
     }
     
     return render(request, 'accounts/main.html', context)
@@ -472,3 +476,199 @@ def save_academic_profile(request):
         except Exception as e:
             return JsonResponse({'success': False, 'error': str(e)})
     return JsonResponse({'success': False, 'error': 'Invalid request method'})
+
+@login_required
+def save_interests(request):
+    if request.method == 'POST':
+        try:
+            data = json.loads(request.body)
+            user = request.user
+            user.interests = data.get('interests', '')
+            if data.get('is_onboarding'):
+                user.is_first_login = False
+            user.save()
+            return JsonResponse({'success': True})
+        except Exception as e:
+            return JsonResponse({'success': False, 'error': str(e)})
+    return JsonResponse({'success': False, 'error': 'Invalid request method'})
+
+@login_required
+def get_community_members(request, community_id):
+    try:
+        community = Community.objects.get(id=community_id)
+        current_user = request.user
+        members_data = []
+        
+        # Add creator first
+        creator = community.created_by
+        if creator != current_user:  # Don't show friend options for self
+            friend_status = get_friend_status(current_user, creator)
+            members_data.append({
+                'id': creator.id,
+                'name': f"{creator.get_full_name()} ({creator.username})",
+                'role': 'Community Leader',
+                'friend_status': friend_status
+            })
+        
+        # Add other members
+        for member in community.members.all():
+            if member != current_user and member != creator:  # Skip self and creator
+                friend_status = get_friend_status(current_user, member)
+                members_data.append({
+                    'id': member.id,
+                    'name': f"{member.get_full_name()} ({member.username})",
+                    'role': 'Member',
+                    'friend_status': friend_status
+                })
+        
+        return JsonResponse({
+            'success': True,
+            'members': members_data
+        })
+    except Community.DoesNotExist:
+        return JsonResponse({
+            'success': False,
+            'error': 'Community not found'
+        })
+    except Exception as e:
+        return JsonResponse({
+            'success': False,
+            'error': str(e)
+        })
+
+def get_friend_status(user1, user2):
+    """Helper function to determine friend status between two users"""
+    # Check if they're already friends
+    if user1.friends.filter(id=user2.id).exists():
+        return 'friends'
+    
+    # Check for pending friend requests
+    pending_request = FriendRequest.objects.filter(
+        (models.Q(from_user=user1, to_user=user2) | 
+         models.Q(from_user=user2, to_user=user1)),
+        status='pending'
+    ).first()
+    
+    if pending_request:
+        return 'pending'
+    
+    return 'send'
+
+@login_required
+def send_friend_request(request, user_id):
+    to_user = get_object_or_404(CustomUser, id=user_id)
+    from_user = request.user
+
+    if from_user == to_user:
+        messages.error(request, "You cannot send a friend request to yourself.")
+        return JsonResponse({'success': False, 'error': 'Cannot friend yourself'})
+
+    # Check if a friend request already exists
+    if FriendRequest.objects.filter(
+        (models.Q(from_user=from_user) & models.Q(to_user=to_user)) |
+        (models.Q(from_user=to_user) & models.Q(to_user=from_user)),
+        status='pending'
+    ).exists():
+        messages.error(request, "A friend request already exists between you and this user.")
+        return JsonResponse({'success': False, 'error': 'Request already exists'})
+
+    # Check if they're already friends
+    if from_user.friends.filter(id=to_user.id).exists():
+        messages.error(request, "You are already friends with this user.")
+        return JsonResponse({'success': False, 'error': 'Already friends'})
+
+    FriendRequest.objects.create(from_user=from_user, to_user=to_user)
+    messages.success(request, f"Friend request sent to {to_user.get_full_name()}")
+    return JsonResponse({'success': True})
+
+@login_required
+def handle_friend_request(request, request_id):
+    friend_request = get_object_or_404(FriendRequest, id=request_id, to_user=request.user)
+    action = request.POST.get('action')
+
+    if action == 'accept':
+        friend_request.accept()
+        messages.success(request, f"You are now friends with {friend_request.from_user.get_full_name()}")
+    elif action == 'reject':
+        friend_request.reject()
+        messages.info(request, f"You rejected the friend request from {friend_request.from_user.get_full_name()}")
+    
+    return redirect('/myapp/main/#friend-requests')
+
+@login_required
+def friend_requests_view(request):
+    pending_requests = FriendRequest.objects.filter(to_user=request.user, status='pending')
+    return render(request, 'accounts/main.html', {'friend_requests': pending_requests, 'active_tab': 'friend-requests'})
+
+@login_required
+def friends_view(request):
+    user_friends = request.user.friends.all()
+    return render(request, 'accounts/main.html', {'friends': user_friends, 'active_tab': 'friends'})
+
+@login_required
+def remove_friend(request, friend_id):
+    if request.method == "POST":
+        friend = get_object_or_404(CustomUser, id=friend_id)
+        user = request.user
+        
+        # Remove both users from each other's friends list
+        user.friends.remove(friend)
+        friend.friends.remove(user)
+        
+        messages.success(request, f"{friend.get_full_name()} has been removed from your friends list.")
+        return redirect('/myapp/main/#friends')
+    return redirect('/myapp/main/#friends')
+
+def search_users(request):
+    search_query = request.GET.get('query', '')
+    if search_query:
+        # Search in users by name or interests
+        user_search_results = CustomUser.objects.filter(
+            Q(first_name__icontains=search_query) |
+            Q(last_name__icontains=search_query) |
+            Q(interests__icontains=search_query)
+        ).exclude(id=request.user.id)  # Exclude the current user
+    else:
+        user_search_results = []
+
+    context = {
+        'user_search_results': user_search_results,
+        'search_query': search_query,
+        'full_name': f"{request.user.first_name} {request.user.last_name}",
+        'email': request.user.email,
+        'student_number': request.user.student_number,
+        'username': request.user.username,
+        'is_superuser': request.user.is_superuser,
+        'friend_requests': FriendRequest.objects.filter(to_user=request.user, status='pending'),
+        'all_communities': Community.objects.all(),
+        'user_communities': Community.objects.filter(members=request.user),
+        'events': Event.objects.all().order_by('date'),
+        'user': request.user,
+    }
+    
+    return render(request, "accounts/main.html", context)
+
+@login_required
+def update_profile_image(request):
+    if request.method == 'POST' and request.FILES.get('profile_image'):
+        user = request.user
+        image = request.FILES['profile_image']
+        
+        # Create the profile_images directory if it doesn't exist
+        upload_path = os.path.join(settings.MEDIA_ROOT, 'profile_images')
+        os.makedirs(upload_path, exist_ok=True)
+        
+        # Save the file
+        filename = f'profile_{user.id}_{image.name}'
+        filepath = os.path.join(upload_path, filename)
+        
+        with open(filepath, 'wb+') as destination:
+            for chunk in image.chunks():
+                destination.write(chunk)
+        
+        # Update user's profile_image field
+        user.profile_image = f'profile_images/{filename}'
+        user.save()
+        
+        return JsonResponse({'success': True})
+    return JsonResponse({'success': False, 'error': 'Invalid request'})
