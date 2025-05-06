@@ -554,7 +554,8 @@
               <p class="community-name">Community: <a href="#" onclick="showCommunityDetails('{{ event.community.id }}')">{{ event.community.name }}</a></p>
               <span class="card-meta">
                 <strong>Date/Time:</strong> {{ event.date|date:"F j, Y, g:i A" }} <br>
-                <strong>Location:</strong> {{ event.location }}
+                <strong>Location:</strong> {{ event.location }} <br>
+                <strong>Required Materials:</strong> {{ event.required_materials }}
               </span>
               
               <!-- Countdown timer -->
@@ -567,18 +568,28 @@
                 <!-- Virtual event - show Join button -->
                 <a href="{{ event.location }}" target="_blank" class="action-button join-button">Join Virtual Event</a>
               {% else %}
-                <!-- Physical event - show Interest button -->
+
+              <!-- Capacity error message - now positioned under countdown -->
+              <div class="capacity-error" id="capacity-error-{{ event.id }}" style="display: none; color: #ff3b3b; margin-top: 5px; font-weight: bold; width: 100%; text-align: center;">
+                Sorry, maximum capacity of this event is reached
+              </div>
+
+                <!-- Physical event - show Register button -->
                 <div class="interest-container">
-                  <span class="interest-count">{{ event.interested_users.count }} interested</span>
+                  <span class="interest-count">{{ event.interested_users.count }} registered</span>
+                  {% if event.maximum_capacity is not None %}
+                    <span class="capacity-info">(Capacity: {{ event.maximum_capacity }})</span>
+                  {% endif %}
+                  
                   {% if user in event.interested_users.all %}
                     <form method="POST" action="{% url 'toggle_event_interest' event.id %}">
                       {% csrf_token %}
-                      <button type="submit" class="action-button interested-button">Not Interested</button>
+                      <button type="submit" class="action-button interested-button">Unregister</button>
                     </form>
                   {% else %}
-                    <form method="POST" action="{% url 'toggle_event_interest' event.id %}">
+                    <form method="POST" action="{% url 'toggle_event_interest' event.id %}" class="interest-form" data-event-id="{{ event.id }}">
                       {% csrf_token %}
-                      <button type="submit" class="action-button">Interested</button>
+                      <button type="submit" class="action-button">Register</button>
                     </form>
                   {% endif %}
                 </div>
@@ -696,8 +707,12 @@
             <h3>Personal Information</h3>
             <p><strong>Name:</strong> <span class="dynamic-text">{{ full_name }}</span></p>
             <p><strong>Email:</strong> <span class="dynamic-text">{{ email }}</span></p>
+            <p><strong>Date of Birth:</strong> <span class="dynamic-text">{{ user.date_of_birth|date:"F j, Y" }}</span></p>
             <p><strong>University:</strong> <span class="dynamic-text">UWE Bristol</span></p>
             <p><strong>Student Number:</strong> <span class="dynamic-text">{{ student_number }}</span></p>
+            {% if user.street_address %}
+            <p><strong>Address:</strong> <span class="dynamic-text">{{ user.street_address }}, {{ user.city }}, {{ user.postcode }}</span></p>
+            {% endif %}
           </div>
 
           <div class="profile-card">
@@ -748,6 +763,22 @@
               <button type="submit" class="submit-button" name="update-profile-form">Update Profile</button>
             </form>
           </div>
+
+          <div class="profile-card">
+            <h3>Address Information</h3>
+            <form method="POST" id="update-address-form">
+              {% csrf_token %}
+              <label for="street-address">Street Address</label>
+              <input type="text" id="street-address" name="street_address" placeholder="Enter your street address" value="{{ user.street_address|default:'' }}" required>
+              <label for="city">City</label>
+              <input type="text" id="city" name="city" placeholder="Enter your city" value="{{ user.city|default:'' }}" required>
+              <label for="postcode">Postcode</label>
+              <input type="text" id="postcode" name="postcode" placeholder="Enter your postcode" value="{{ user.postcode|default:'' }}" required>
+              <button type="submit" class="submit-button" name="update-address-form">Update Address</button>
+            </form>
+          </div>
+
+          
           <div class="profile-card">
             <h3>Security</h3>
             <form method="POST" id="change-password-form">
@@ -926,15 +957,16 @@
           createEventBtn.style.display = ''; // Show the button
           deleteCommunityForm.style.display = 'block';
           leaveCommunityForm.style.display = 'none';
+          
+          // Get the href attribute and update the community ID
+          const hrefPattern = "{% url 'create_event' 0 %}";
+          const updatedHref = hrefPattern.replace('0', commId);
+          createEventBtn.href = updatedHref;
         } else {
           createEventBtn.style.display = 'none'; // Hide the button
           deleteCommunityForm.style.display = 'none';
           leaveCommunityForm.style.display = 'block';
         }
-        // Get the full original URL from Django
-        const originalUrl = createEventBtn.getAttribute('href');
-        // Replace just the ID part (the last number before the last slash)
-        createEventBtn.href = originalUrl.replace(/\/(\d+)\/$/, `/${commId}/`);
       });
     });
 
@@ -1017,6 +1049,80 @@
     document.addEventListener('DOMContentLoaded', function() {
       updateEventCountdowns();
       setInterval(updateEventCountdowns, 60000); // Update every minute
+      
+      // Add event listeners to interest forms to check for capacity errors
+      document.querySelectorAll('.interest-form').forEach(form => {
+        form.addEventListener('submit', async function(e) {
+          e.preventDefault();
+          const eventId = this.getAttribute('data-event-id');
+          const errorDiv = document.getElementById(`capacity-error-${eventId}`);
+          
+          try {
+            // Clear any previous error message
+            errorDiv.style.display = 'none';
+            
+            // Submit form using fetch to check for capacity errors
+            const formData = new FormData(this);
+            const response = await fetch(this.action, {
+              method: 'POST',
+              body: formData,
+              headers: {
+                'X-Requested-With': 'XMLHttpRequest'
+              }
+            });
+            
+            const result = await response.json();
+            
+            if (result.at_capacity) {
+              // Show error message only if server indicates we're at capacity
+              errorDiv.style.display = 'block';
+              setTimeout(() => {
+                errorDiv.style.display = 'none';
+              }, 5000); // Hide after 5 seconds
+            } else if (result.is_interested) {
+              // Registration successful - update UI without showing any error
+              const button = this.querySelector('button');
+              button.className = 'action-button interested-button';
+              button.textContent = 'Unregister';
+              
+              // Update the count text
+              const countSpan = this.closest('.interest-container').querySelector('.interest-count');
+              countSpan.textContent = `${result.interest_count} registered`;
+            } else {
+              // If user was removed from registration list, reload the page
+              window.location.reload();
+            }
+          } catch (error) {
+            console.error("Error submitting registration form:", error);
+            // Fallback to page reload if something fails
+            window.location.reload();
+          }
+        });
+      });
+      
+      // Also add listeners to the unregister buttons for users already registered
+      document.querySelectorAll('.action-button.interested-button').forEach(button => {
+        button.closest('form').addEventListener('submit', async function(e) {
+          e.preventDefault();
+          
+          // Submit form using fetch
+          const formData = new FormData(this);
+          const response = await fetch(this.action, {
+            method: 'POST',
+            body: formData,
+            headers: {
+              'X-Requested-With': 'XMLHttpRequest'
+            }
+          });
+          
+          const result = await response.json();
+          
+          if (!result.is_interested) {
+            // User successfully unregistered, update UI
+            window.location.reload();
+          }
+        });
+      });
     });
 
     // Save Academic Profile

@@ -82,6 +82,20 @@ def main_view(request):
                     user.student_number = student_number
                 user.save()
                 messages.success(request, 'Profile updated successfully')
+                
+            elif 'update-address-form' in request.POST:
+                street_address = request.POST.get('street_address')
+                city = request.POST.get('city')
+                postcode = request.POST.get('postcode')
+                
+                if street_address and city and postcode:
+                    user.street_address = street_address
+                    user.city = city
+                    user.postcode = postcode
+                    user.save()
+                    messages.success(request, 'Address updated successfully')
+                else:
+                    messages.error(request, 'All address fields are required')
 
             elif 'change-password-form' in request.POST:
                 current_password = request.POST.get('current_password')
@@ -110,25 +124,32 @@ def main_view(request):
     user_communities = (joined_communities | owned_communities).distinct()
     form = PostForm() #SUMANTH
 
-
     # Get user's community IDs for filtering events
     user_community_ids = user_communities.values_list('id', flat=True)
     
-    # Filter events based on event_type and user's community membership
-    # 1. Get public events
-    public_events = Event.objects.filter(event_type='Public')
+    if user.is_superuser:
+        # For admins, show all events regardless of type or community
+        events = Event.objects.all()
+    else:
+        # Regular users see only public events and events from their communities
+        # 1. Get public events
+        public_events = Event.objects.filter(event_type='Public')
+        
+        # 2. Get community-only events for communities the user is a member of
+        community_events = Event.objects.filter(
+            event_type='Community', 
+            community__id__in=user_community_ids
+        )
+        
+        # Combine the two querysets
+        events = public_events | community_events
     
-    # 2. Get community-only events for communities the user is a member of
-    community_events = Event.objects.filter(
-        event_type='Community', 
-        community__id__in=user_community_ids
+    # Filter out events that have passed their end date
+    from django.utils import timezone
+    current_time = timezone.now()
+    events = events.filter(
+        models.Q(end_date__isnull=True) | models.Q(end_date__gt=current_time)
     )
-    
-    # Combine the two querysets
-    events = public_events | community_events
-
-    # Get pending friend requests
-    friend_requests = FriendRequest.objects.filter(to_user=user, status='pending')
 
     context = {
         'full_name': user.get_full_name(),
@@ -141,8 +162,7 @@ def main_view(request):
         'all_communities': all_communities,
         "is_superuser": user.is_superuser, 
         "events": events,
-        'form': form,
-        'friend_requests': friend_requests
+        'form': form, #Sumanth
     }
     return render(request, "accounts/main.html", context)
 
@@ -314,38 +334,63 @@ def search_events(request):
     
     # Get user's community IDs for filtering events
     joined_communities = user.joined_communities.all()
-    owned_communities = user.owned_communities.all()
+    owned_communities = user.joined_communities.all()
     user_communities = (joined_communities | owned_communities).distinct()
     user_community_ids = user_communities.values_list('id', flat=True)
     
-    if query:
-        search_query = query
-        # Get public events matching the query
-        public_events = Event.objects.filter(event_type='Public').filter(
-            Q(title__icontains=query) | 
-            Q(description__icontains=query) | 
-            Q(community__name__icontains=query)
-        )
-        
-        # Get community-only events for communities the user is a member of
-        community_events = Event.objects.filter(
-            event_type='Community',
-            community__id__in=user_community_ids
-        ).filter(
-            Q(title__icontains=query) | 
-            Q(description__icontains=query) | 
-            Q(community__name__icontains=query)
-        )
-        
-        search_results = public_events | community_events
+    if user.is_superuser:
+        # For admins, allow searching across all events
+        if query:
+            search_query = query
+            # Search all events matching the query
+            search_results = Event.objects.filter(
+                models.Q(title__icontains=query) | 
+                models.Q(description__icontains=query) | 
+                models.Q(community__name__icontains=query)
+            )
+        else:
+            # If no query, return all events
+            search_results = Event.objects.all()
     else:
-        # If no query, return all accessible events
-        public_events = Event.objects.filter(event_type='Public')
-        community_events = Event.objects.filter(
-            event_type='Community',
-            community__id__in=user_community_ids
-        )
-        search_results = public_events | community_events
+        # Regular users only see public events and events from their communities
+        if query:
+            search_query = query
+            # Get public events matching the query
+            public_events = Event.objects.filter(
+                event_type='Public'
+            ).filter(
+                models.Q(title__icontains=query) | 
+                models.Q(description__icontains=query) | 
+                models.Q(community__name__icontains=query)
+            )
+            
+            # Get community-only events for communities the user is a member of
+            community_events = Event.objects.filter(
+                event_type='Community',
+                community__id__in=user_community_ids
+            ).filter(
+                models.Q(title__icontains=query) | 
+                models.Q(description__icontains=query) | 
+                models.Q(community__name__icontains=query)
+            )
+            
+            # Combine the querysets
+            search_results = public_events | community_events
+        else:
+            # If no query, return all accessible events (public or from user's communities)
+            public_events = Event.objects.filter(event_type='Public')
+            community_events = Event.objects.filter(
+                event_type='Community',
+                community__id__in=user_community_ids
+            )
+            search_results = public_events | community_events
+    
+    # Filter out events that have passed their end date
+    from django.utils import timezone
+    current_time = timezone.now()
+    search_results = search_results.filter(
+        models.Q(end_date__isnull=True) | models.Q(end_date__gt=current_time)
+    )
     
     context = {
         'search_query': search_query,
@@ -369,22 +414,29 @@ def toggle_event_interest(request, event_id):
     event = get_object_or_404(Event, id=event_id)
     user = request.user
     is_interested = False
+    is_at_capacity = False
     
     if user in event.interested_users.all():
         # User is already interested, so remove interest
         event.interested_users.remove(user)
-        messages.info(request, f"You are no longer interested in the event: {event.title}")
+        messages.info(request, f"You are no longer registered for the event: {event.title}")
     else:
-        # User is not interested, so add interest
-        event.interested_users.add(user)
-        is_interested = True
-        messages.success(request, f"You are now interested in the event: {event.title}")
+        # Check if maximum capacity is set and would be exceeded if user is added
+        if event.maximum_capacity is not None and (event.interested_users.count() + 1) > event.maximum_capacity:
+            messages.error(request, f"Sorry, maximum capacity of this event is reached ({event.maximum_capacity} attendees)")
+            is_at_capacity = True
+        else:
+            # User is not interested and capacity is not reached, so add interest
+            event.interested_users.add(user)
+            is_interested = True
+            messages.success(request, f"You are now registered for the event: {event.title}")
     
     # If request is AJAX, return JSON response
     if request.headers.get('x-requested-with') == 'XMLHttpRequest':
         return JsonResponse({
             'is_interested': is_interested,
-            'interest_count': event.interested_users.count()
+            'interest_count': event.interested_users.count(),
+            'at_capacity': is_at_capacity  # This is now a separate flag set only when registration fails
         })
     
     # Otherwise redirect back to the events page

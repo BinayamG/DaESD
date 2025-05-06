@@ -3,13 +3,19 @@
     background: var(--app-content-secondary-color);
     border: 1px solid var(--table-border);
     border-radius: 6px;
-    padding: 20px;
+    padding: 25px;
     box-shadow: var(--filter-shadow);
-    max-width: 500px;
-    margin: 0 auto;
+    max-width: 600px;
+    margin: 20px auto;
     display: flex;
     flex-direction: column;
-    gap: 15px;
+    gap: 20px;
+}
+
+.form-group {
+    display: flex;
+    flex-direction: column;
+    gap: 5px;
 }
 
 .event-form label {
@@ -20,9 +26,10 @@
 }
 
 .event-form input,
-.event-form textarea {
+.event-form textarea,
+.event-form select {
     width: 100%;
-    padding: 10px;
+    padding: 10px 12px;
     border: 1px solid var(--table-border);
     border-radius: 4px;
     font-size: 1rem;
@@ -35,19 +42,54 @@
     resize: vertical;
 }
 
+.event-form select {
+    cursor: pointer;
+}
+
+.help-text {
+    font-size: 0.85rem;
+    color: #777;
+    margin-top: 2px;
+}
+
+.error {
+    color: #e74c3c;
+    font-size: 0.9rem;
+    margin-top: 5px;
+}
+
 .submit-button {
     background-color: var(--action-color);
     color: var(--sidebar-main-color);
-    padding: 10px 16px;
+    padding: 12px 16px;
     border: none;
     border-radius: 4px;
     cursor: pointer;
     font-size: 1rem;
     transition: background 0.3s;
+    margin-top: 10px;
 }
 
 .submit-button:hover {
     background-color: var(--action-color-hover);
+}
+
+.cancel-button {
+    background-color: #777;
+    color: white;
+    padding: 12px 16px;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 1rem;
+    text-decoration: none;
+    text-align: center;
+    transition: background 0.3s;
+    display: inline-block;
+}
+
+.cancel-button:hover {
+    background-color: #555;
 }
 
 /* Event Form Styles */
@@ -182,4 +224,12 @@ form textarea {
     font-size: 0.85rem;
     color: #777;
     margin-top: 5px;
+}
+
+/* Theme-specific adjustments */
+:root.light .event-form input,
+:root.light .event-form textarea,
+:root.light .event-form select {
+    background-color: #fff;
+    border-color: #ddd;
 }

@@ -176,6 +176,8 @@
       <input type="email" name="email" id= "email" placeholder="University email*" required>
       <div class="error" id="emailError"></div>
       <input type="text" name="username" id="username" placeholder="Username*" required>
+      <input type="date" name="date_of_birth" id="date_of_birth" placeholder="Date of Birth*" required>
+      <div class="error" id="dobError"></div>
       <div class="row">
         <input type="text" name="first_name" id="first_name" placeholder="First name*" required>
         <input type="text" name="last_name" id="last_name" placeholder="Last name*" required>
@@ -247,11 +249,31 @@
       const email = document.getElementById("email").value;
       const password1 = document.getElementById("loginPassword1").value;
       const password2 = document.getElementById("loginPassword2").value;
+      const dateOfBirth = document.getElementById("date_of_birth").value;
       const emailError = document.getElementById("emailError");
       const passwordError = document.getElementById("passwordError");
+      const dobError = document.getElementById("dobError");
 
       emailError.textContent = "";
       passwordError.textContent = "";
+      dobError.textContent = "";
+
+      // Age validation - must be at least 16 years old
+      if (dateOfBirth) {
+        const today = new Date();
+        const birthDate = new Date(dateOfBirth);
+        let age = today.getFullYear() - birthDate.getFullYear();
+        const monthDiff = today.getMonth() - birthDate.getMonth();
+        
+        if (monthDiff < 0 || (monthDiff === 0 && today.getDate() < birthDate.getDate())) {
+          age--;
+        }
+        
+        if (age < 16) {
+          dobError.textContent = "You must be at least 16 years old to register.";
+          return;
+        }
+      }
 
       const emailRegex = /^[a-zA-Z]+\.[a-zA-Z]+@live\.uwe\.ac\.uk$/;
       if (!emailRegex.test(email)) {
@@ -261,19 +283,16 @@
 
       if (password1 !== password2) {
         passwordError.textContent = "Passwords do not match.";
-        event.preventDefault(); 
         return;
       }
 
       if (password1.length < 8) {
         passwordError.textContent = "Password must be at least 8 characters.";
-        event.preventDefault(); 
         return;
       }
 
       if (/^\d+$/.test(password1)) {
         passwordError.textContent = "Password cannot be entirely numeric.";
-        event.preventDefault(); 
         return;
       }
 

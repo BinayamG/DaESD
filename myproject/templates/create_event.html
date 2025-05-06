@@ -8,7 +8,7 @@
     <link rel="stylesheet" href="/static/css/createevent.css">
 </head>
 <body>
-    <!-- <div class="app-container">
+    <div class="app-container">
         <div class="app-content">
             <div class="app-content-header">
                 <h2>Create an Event for {{ community.name }}</h2>
@@ -17,31 +17,24 @@
             <form method="post" class="event-form">
                 {% csrf_token %}
                 
-                <label for="event-title">Event Title</label>
-                <input type="text" id="event-title" name="title" placeholder="Enter event title" required>
-                
-                <label for="event-details">Event Details</label>
-                <textarea id="event-details" name="details" placeholder="Describe your event" required></textarea>
-                
-                <label for="event-datetime">Event Date & Time</label>
-                <input type="datetime-local" id="event-datetime" name="datetime" required>
-                
-                <label for="event-location">Event Location (Optional)</label>
-                <input type="text" id="event-location" name="location" placeholder="Enter physical location">
-                
-                <label for="event-link">Event Link (Optional)</label>
-                <input type="url" id="event-link" name="link" placeholder="Enter online meeting link">
+                {% for field in form %}
+                <div class="form-group">
+                    <label for="{{ field.id_for_label }}">{{ field.label }}</label>
+                    {{ field }}
+                    {% if field.help_text %}
+                    <small class="help-text">{{ field.help_text }}</small>
+                    {% endif %}
+                    {% if field.errors %}
+                    <div class="error">{{ field.errors }}</div>
+                    {% endif %}
+                </div>
+                {% endfor %}
                 
                 <button type="submit" class="submit-button">Create Event</button>
+                <a href="/myapp/main/#events" class="cancel-button">Cancel</a>
             </form>
         </div>
-    </div> -->
-    |<h2>Create an Event for {{ community.name }}</h2>
-    <form method="post">
-      {% csrf_token %}
-      {{ form.as_p }}
-      <button type="submit">Create Event</button>
-    </form>
+    </div>
 </body>
 </html>
 

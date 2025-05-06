@@ -7,6 +7,12 @@ class CustomUser(AbstractUser):
     
     # Custom fields from the signup form:
     student_number = models.CharField(max_length=20, unique=True)
+    date_of_birth = models.DateField(null=True)
+    
+    # Address fields
+    street_address = models.CharField(max_length=255, blank=True, null=True)
+    city = models.CharField(max_length=100, blank=True, null=True)
+    postcode = models.CharField(max_length=20, blank=True, null=True)
     
     DEGREE_CHOICES = [
         ('Bachelors', 'Bachelors Degree'),
@@ -84,9 +90,12 @@ class Event(models.Model):
 
     title = models.CharField(max_length=255)
     description = models.TextField()
-    date = models.DateTimeField()
-    location = models.CharField(max_length=255, blank=True)  # Physical or virtual link
+    date = models.DateTimeField(verbose_name="Start Date and Time", help_text="Start date and time of the event")
+    end_date = models.DateTimeField(verbose_name="End Date and Time", null=True, blank=True, help_text="End date and time of the event")
+    location = models.CharField(max_length=255, blank=True, help_text="Physical location or virtual meeting link")  # Physical or virtual link
     event_type = models.CharField(max_length=20, choices=EVENT_TYPE_CHOICES)
+    maximum_capacity = models.PositiveIntegerField(null=True, blank=True, help_text="Maximum number of attendees (leave blank for unlimited)")
+    required_materials = models.TextField(blank=True, help_text="List any materials participants should bring or prepare")
 
     community = models.ForeignKey(Community, on_delete=models.CASCADE, related_name="events")
     created_by = models.ForeignKey(CustomUser, on_delete=models.CASCADE)
@@ -98,6 +107,13 @@ class Event(models.Model):
     def is_virtual(self):
         """Check if the event location is a virtual link"""
         return self.location.startswith('http://') or self.location.startswith('https://')
+        
+    def is_active(self):
+        """Check if the event is still active (end date is in the future or not set)"""
+        if not self.end_date:
+            return True
+        from django.utils import timezone
+        return self.end_date > timezone.now()
 
 class Post(models.Model):
     CATEGORY_CHOICES = [
