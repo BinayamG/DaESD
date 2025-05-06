@@ -17,7 +17,11 @@ class CustomUser(AbstractUser):
     major = models.CharField(max_length=100)
     campus_involvement = models.TextField(blank=True)
     achievements = models.TextField(blank=True)
-    
+    interests = models.TextField(blank=True)  # New field for user interests
+    is_first_login = models.BooleanField(default=True)  # Track if it's first login
+    friends = models.ManyToManyField('self', through='Friendship', symmetrical=False)
+    profile_image = models.ImageField(upload_to='profile_images/', null=True, blank=True)
+
     def __str__(self):
         return self.username
     
@@ -121,18 +125,47 @@ class Notification(models.Model):
     def __str__(self):
         return f"Notification for {self.user.username}"
     
-# class FriendRequests(models.Model):
-#     sender = models.ForeignKey(CustomUser, on_delete=models.CASCADE, related_name='sent_requests')
-#     receiver = models.ForeignKey(CustomUser, on_delete=models.CASCADE, related_name='received_requests')
-#     created_at = models.DateTimeField(auto_now_add=True)
+class Friendship(models.Model):
+    from_user = models.ForeignKey(CustomUser, related_name='friendships', on_delete=models.CASCADE)
+    to_user = models.ForeignKey(CustomUser, related_name='friend_of', on_delete=models.CASCADE)
+    created_at = models.DateTimeField(auto_now_add=True)
 
-#     def __str__(self):
-#         return f"{self.sender.username} -> {self.receiver.username}"
+    class Meta:
+        unique_together = ('from_user', 'to_user')
 
-# class Friends(models.Model):
-#     user = models.ForeignKey(CustomUser, on_delete=models.CASCADE, related_name='friends')
-#     friend = models.ForeignKey(CustomUser, on_delete=models.CASCADE, related_name='friend_of')
-#     created_at = models.DateTimeField(auto_now_add=True)
+    def __str__(self):
+        return f"{self.from_user.username} is friends with {self.to_user.username}"
 
-#     def __str__(self):
-#         return f"{self.user.username} is friends with {self.friend.username}"
+class FriendRequest(models.Model):
+    STATUS_CHOICES = [
+        ('pending', 'Pending'),
+        ('accepted', 'Accepted'),
+        ('rejected', 'Rejected')
+    ]
+    
+    from_user = models.ForeignKey(CustomUser, related_name='sent_friend_requests', on_delete=models.CASCADE)
+    to_user = models.ForeignKey(CustomUser, related_name='received_friend_requests', on_delete=models.CASCADE)
+    status = models.CharField(max_length=10, choices=STATUS_CHOICES, default='pending')
+    created_at = models.DateTimeField(auto_now_add=True)
+    reviewed_at = models.DateTimeField(null=True, blank=True)
+
+    class Meta:
+        unique_together = ('from_user', 'to_user')
+
+    def __str__(self):
+        return f"Friend request from {self.from_user.username} to {self.to_user.username}"
+
+    def accept(self):
+        if self.status == 'pending':
+            # Create friendship entries for both users
+            Friendship.objects.create(from_user=self.from_user, to_user=self.to_user)
+            Friendship.objects.create(from_user=self.to_user, to_user=self.from_user)
+            self.status = 'accepted'
+            self.reviewed_at = timezone.now()
+            self.save()
+
+    def reject(self):
+        if self.status == 'pending':
+            self.status = 'rejected'
+            self.reviewed_at = timezone.now()
+            self.save()

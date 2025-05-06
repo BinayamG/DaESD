@@ -6,8 +6,66 @@
   <title>Uni Hub Dashboard - Campus Community Experience</title>
   <link rel="stylesheet" href="/static/css/dashboard.css">
   {% load static %}
+  <style>
+    /* Existing styles... */
+    
+    /* Onboarding Popup Styles */
+    .onboarding-overlay {
+      display: none;
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(0, 0, 0, 0.7);
+      z-index: 1000;
+      justify-content: center;
+      align-items: center;
+    }
+
+    .onboarding-popup {
+      background: var(--app-content-secondary-color);
+      padding: 2rem;
+      border-radius: 8px;
+      width: 90%;
+      max-width: 600px;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+    }
+
+    .onboarding-popup h2 {
+      color: var(--chart-container-heading);
+      margin-bottom: 1rem;
+    }
+
+    .onboarding-popup p {
+      margin-bottom: 1.5rem;
+      color: var(--app-content-main-color);
+    }
+
+    .onboarding-popup textarea {
+      width: 100%;
+      min-height: 120px;
+      padding: 12px;
+      margin-bottom: 1rem;
+      border: 1px solid var(--table-border);
+      border-radius: 4px;
+      background: var(--app-bg);
+      color: var(--app-content-main-color);
+      resize: vertical;
+    }
+  </style>
 </head>
 <body>
+  <!-- Add onboarding popup HTML right after body tag -->
+  <div class="onboarding-overlay" id="onboardingOverlay">
+    <div class="onboarding-popup">
+      <h2>Welcome to Uni Hub!</h2>
+      <p>To help you connect with like-minded people and find relevant communities, please tell us about your interests:</p>
+      <textarea id="onboardingInterests" placeholder="Share your interests, hobbies, and what you're passionate about... (e.g., photography, chess, machine learning, basketball)"></textarea>
+      <button class="submit-button" onclick="submitOnboarding()">Get Started</button>
+    </div>
+  </div>
+
   <div class="app-container">
     <!-- Sidebar Navigation -->
     <div class="sidebar">
@@ -69,8 +127,18 @@
             <span>Events</span>
           </a>
         </li>
-        <!-- Events -->
-        <li class="sidebar-list-item">
+        <!-- Friends -->
+        <li class="sidebar-list-item" data-tab="friends">
+          <a href="#">
+            <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path>
+              <circle cx="9" cy="7" r="4"></circle>
+            </svg>
+            <span>Friends</span>
+          </a>
+        </li>
+        <!-- Friend Requests -->
+        <li class="sidebar-list-item" data-tab="friend-requests">
           <a href="#">
             <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2">
               <path d="M3 3h18v18H3z"/>
@@ -97,7 +165,7 @@
       <!-- Profile -->
       <button class="account-info" data-tab="profile">
         <div class="account-info-picture">
-          <img src="{% static 'images/avatar.jpg' %}" alt="Profile Picture">
+          <img src="{% if user.profile_image %}{{ user.profile_image.url }}{% else %}{% static 'images/avatar.jpg' %}{% endif %}" alt="Profile Picture">
         </div>
         <div class="account-info-name">{{ username }}</div>
       </button>
@@ -125,14 +193,47 @@
 
       <!-- HOME TAB -->
       <div class="tab-content" id="home">
-        <h2>Welcome, {{ full_name }}!</h2>
-        <p>Stay updated with the latest campus news and activities.</p>
-        <div class="tab-header">
-          <form action="{% url 'search_communities' %}" method="GET" class="search-form">
-            <input type="text" class="search-bar" id="searchBar" name="query" placeholder="Search communities..." value="{{ search_query }}">
-            <button type="submit" id="searchButton" class="create-button">Search</button>
-          </form>
+        <div class="home-header">
+          <div class="welcome-section">
+            <h2>Welcome, {{ full_name }}!</h2>
+            <p>Stay updated with the latest campus news and activities.</p>
+          </div>
+          <div class="search-section">
+            <form action="{% url 'search_users' %}" method="GET" class="user-search-form">
+              <input type="text" class="search-bar" id="userSearchBar" name="query" 
+                     placeholder="Search users by name or interests..." value="{{ search_query }}">
+              <button type="submit" class="search-button">Search Users</button>
+            </form>
+          </div>
         </div>
+
+        <!-- User search results section -->
+        {% if user_search_results %}
+        <div class="search-results-section">
+          <h3>Search Results</h3>
+          <div class="user-results-grid">
+            {% for user_result in user_search_results %}
+              <div class="user-card">
+                <h4>{{ user_result.get_full_name }}</h4>
+                <p class="user-info">{{ user_result.degree_program }} - {{ user_result.major }}</p>
+                {% if user_result.interests %}
+                <p class="user-interests"><strong>Interests:</strong> {{ user_result.interests }}</p>
+                {% endif %}
+                {% if user_result != request.user %}
+                  {% if user_result not in request.user.friends.all %}
+                    <button class="friend-request-btn send" data-member-id="{{ user_result.id }}">
+                      Send Friend Request
+                    </button>
+                  {% else %}
+                    <button class="friend-request-btn friends" disabled>Already Friends</button>
+                  {% endif %}
+                {% endif %}
+              </div>
+            {% endfor %}
+          </div>
+        </div>
+        {% endif %}
+
         <div class="news-feed">
           <div class="post">
             <h3>New Community Launched: Academic Circle</h3>
@@ -146,6 +247,82 @@
           </div>
         </div>
       </div>
+
+      <style>
+        .home-header {
+          display: flex;
+          justify-content: space-between;
+          align-items: flex-start;
+          margin-bottom: 2rem;
+          padding: 1rem;
+        }
+
+        .welcome-section {
+          flex: 1;
+        }
+
+        .search-section {
+          flex: 0 0 auto;
+          margin-left: 2rem;
+        }
+
+        .user-search-form {
+          display: flex;
+          gap: 0.5rem;
+        }
+
+        .user-search-form .search-bar {
+          min-width: 300px;
+        }
+
+        .search-button {
+          padding: 0.5rem 1rem;
+          background-color: var(--action-color);
+          color: white;
+          border: none;
+          border-radius: 4px;
+          cursor: pointer;
+          transition: background-color 0.3s;
+        }
+
+        .search-button:hover {
+          background-color: var(--action-color-hover);
+        }
+
+        .search-results-section {
+          margin: 2rem 0;
+        }
+
+        .user-results-grid {
+          display: grid;
+          grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+          gap: 1rem;
+          margin-top: 1rem;
+        }
+
+        .user-card {
+          background: var(--app-content-secondary-color);
+          border-radius: 8px;
+          padding: 1rem;
+          box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        }
+
+        .user-card h4 {
+          margin: 0 0 0.5rem 0;
+          color: var(--app-content-main-color);
+        }
+
+        .user-info {
+          color: var(--app-content-main-color);
+          margin-bottom: 0.5rem;
+        }
+
+        .user-interests {
+          color: var(--app-content-main-color);
+          font-size: 0.9rem;
+          margin-bottom: 1rem;
+        }
+      </style>
 
       <!-- COMMUNITIES TAB -->
       <div class="tab-content" id="communities" style="display: none;">
@@ -219,8 +396,110 @@
 
           <!-- Community profile link -->
           <a id="createEventButton" href="{% url 'create_event' 0 %}" class="community-profile-btn" style="display: none;">Create New Event</a> 
-          <button class="community-profile-btn">View Community Profile</button>
+          <button class="community-profile-btn" onclick="viewCommunityMembers()">View Community Members</button>
           <p>Here you can participate in discussions and view community posts.</p>
+
+          <!-- Members List Modal -->
+          <div id="membersModal" class="modal">
+            <div class="modal-content">
+              <span class="close-modal">&times;</span>
+              <h2>Community Members</h2>
+              <div id="membersList" class="members-list">
+                <!-- Members will be loaded here -->
+              </div>
+            </div>
+          </div>
+
+          <!-- Add modal styles -->
+          <style>
+            .modal {
+              display: none;
+              position: fixed;
+              z-index: 1000;
+              left: 0;
+              top: 0;
+              width: 100%;
+              height: 100%;
+              background-color: rgba(0,0,0,0.4);
+            }
+
+            .modal-content {
+              background-color: var(--app-content-secondary-color);
+              margin: 15% auto;
+              padding: 20px;
+              border: 1px solid var(--table-border);
+              border-radius: 8px;
+              width: 80%;
+              max-width: 600px;
+              position: relative;
+            }
+
+            .close-modal {
+              color: var(--app-content-main-color);
+              float: right;
+              font-size: 28px;
+              font-weight: bold;
+              cursor: pointer;
+            }
+
+            .members-list {
+              margin-top: 20px;
+            }
+
+            .member-item {
+              padding: 10px;
+              border-bottom: 1px solid var(--table-border);
+              display: flex;
+              align-items: center;
+              justify-content: space-between;
+              gap: 10px;
+            }
+
+            .member-info {
+              display: flex;
+              flex-direction: column;
+            }
+
+            .member-name {
+              font-weight: bold;
+              color: var(--app-content-main-color);
+            }
+
+            .member-role {
+              color: var(--action-color);
+              font-size: 0.9em;
+            }
+
+            .friend-request-btn {
+              padding: 5px 10px;
+              border: none;
+              border-radius: 4px;
+              cursor: pointer;
+              font-size: 0.9em;
+              transition: all 0.3s ease;
+            }
+
+            .friend-request-btn.send {
+              background-color: var(--action-color);
+              color: white;
+            }
+
+            .friend-request-btn.send:hover {
+              background-color: var(--action-color-hover);
+            }
+
+            .friend-request-btn.pending {
+              background-color: #f0ad4e;
+              color: white;
+              cursor: not-allowed;
+            }
+
+            .friend-request-btn.friends {
+              background-color: #5cb85c;
+              color: white;
+              cursor: default;
+            }
+          </style>
 
           <!-- Scrollable posts container -->
           <div class="community-posts-container">
@@ -320,6 +599,86 @@
         </div>
       </div>
 
+      <!-- FRIENDS TAB -->
+      <div class="tab-content" id="friends" style="display: none;">
+        <div class="tab-header">
+          <h2>My Friends</h2>
+        </div>
+        <div class="card-grid">
+          {% for friend in request.user.friends.all %}
+            <div class="card friend-card">
+              <div class="friend-info">
+                <h3>{{ friend.get_full_name }}</h3>
+                <p>{{ friend.email }}</p>
+                <p class="friend-meta">Student Number: {{ friend.student_number }}</p>
+                <p class="friend-meta">{{ friend.degree_program }} - {{ friend.major }}</p>
+                {% if friend.campus_involvement %}
+                <div class="friend-details-section">
+                  <h4>Campus Involvement:</h4>
+                  <p>{{ friend.campus_involvement }}</p>
+                </div>
+                {% endif %}
+                {% if friend.achievements %}
+                <div class="friend-details-section">
+                  <h4>Achievements:</h4>
+                  <p>{{ friend.achievements }}</p>
+                </div>
+                {% endif %}
+                {% if friend.interests %}
+                <div class="friend-details-section">
+                  <h4>Interests:</h4>
+                  <p>{{ friend.interests }}</p>
+                </div>
+                {% endif %}
+                <form method="POST" action="{% url 'remove_friend' friend.id %}" style="margin-top: 15px;" onsubmit="return confirm('Are you sure you want to remove {{ friend.get_full_name }} from your friends list?');">
+                  {% csrf_token %}
+                  <button type="submit" class="action-button reject-btn">Remove Friend</button>
+                </form>
+              </div>
+            </div>
+          {% empty %}
+            <div class="card">
+              <h3>No friends yet</h3>
+              <p>Join communities and connect with other students to make friends!</p>
+            </div>
+          {% endfor %}
+        </div>
+      </div>
+
+      <!-- FRIEND REQUESTS TAB -->
+      <div class="tab-content" id="friend-requests" style="display: none;">
+        <div class="tab-header">
+          <h2>Friend Requests</h2>
+        </div>
+        <div class="card-grid">
+          {% for request in friend_requests %}
+            <div class="card friend-request-card">
+              <div class="friend-request-info">
+                <h3>{{ request.from_user.get_full_name }}</h3>
+                <p>{{ request.from_user.email }}</p>
+                <p class="friend-meta">{{ request.from_user.degree_program }} - {{ request.from_user.major }}</p>
+                <div class="friend-request-actions">
+                  <form method="POST" action="{% url 'handle_friend_request' request.id %}" style="display: inline;">
+                    {% csrf_token %}
+                    <input type="hidden" name="action" value="accept">
+                    <button type="submit" class="action-button accept-btn">Accept</button>
+                  </form>
+                  <form method="POST" action="{% url 'handle_friend_request' request.id %}" style="display: inline;">
+                    {% csrf_token %}
+                    <input type="hidden" name="action" value="reject">
+                    <button type="submit" class="action-button reject-btn">Reject</button>
+                  </form>
+                </div>
+              </div>
+            </div>
+          {% empty %}
+            <div class="card">
+              <h3>No pending friend requests</h3>
+            </div>
+          {% endfor %}
+        </div>
+      </div>
+
       <!-- PROFILE TAB -->
       <div class="tab-content" id="profile" style="display: none;">
         <div class="profile-section">
@@ -339,6 +698,30 @@
             <p><strong>Email:</strong> <span class="dynamic-text">{{ email }}</span></p>
             <p><strong>University:</strong> <span class="dynamic-text">UWE Bristol</span></p>
             <p><strong>Student Number:</strong> <span class="dynamic-text">{{ student_number }}</span></p>
+          </div>
+
+          <div class="profile-card">
+            <h3>Profile Picture</h3>
+            <div class="profile-picture-container">
+              <img id="profileImagePreview" src="{% if user.profile_image %}{{ user.profile_image.url }}{% else %}{% static 'images/avatar.jpg' %}{% endif %}" alt="Profile Picture">
+              <div class="profile-picture-upload">
+                <form method="POST" enctype="multipart/form-data" id="profileImageForm">
+                  {% csrf_token %}
+                  <input type="file" id="profileImageInput" name="profile_image" accept="image/*" style="display: none;">
+                  <button type="button" class="upload-button" onclick="document.getElementById('profileImageInput').click()">Choose Image</button>
+                  <button type="submit" class="submit-button" id="saveProfileImage">Save Image</button>
+                </form>
+              </div>
+            </div>
+          </div>
+
+          <div class="profile-card">
+            <h3>Interests</h3>
+            <div class="profile-text-area">
+              <label for="interests"><strong>My Interests:</strong></label>
+              <textarea id="interests" name="interests" rows="4" placeholder="Share your interests, hobbies, and what you're passionate about...">{{ user.interests }}</textarea>
+            </div>
+            <button type="submit" class="submit-button" onclick="saveInterests()">Save Interests</button>
           </div>
 
           <div class="profile-card">
@@ -612,7 +995,7 @@
           const hours = Math.floor((timeRemaining % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
           const minutes = Math.floor((timeRemaining % (1000 * 60 * 60)) / (1000 * 60));
           
-          countdownEl.textContent = `${days} days ${hours} hours ${minutes} minutes`;
+          countdownEl.textContent = `${days} days ${hours} hours ${minutes}`;
         }
       });
     }
@@ -667,6 +1050,174 @@
       });
     }
     window.saveAcademicProfile = saveAcademicProfile;
+
+    // Interests and Onboarding Functionality
+    document.addEventListener('DOMContentLoaded', function() {
+      if ({{ user.is_first_login|yesno:"true,false" }}) {
+        document.getElementById('onboardingOverlay').style.display = 'flex';
+      }
+    });
+
+    function submitOnboarding() {
+      const interests = document.getElementById('onboardingInterests').value;
+      saveInterests(interests, true);
+    }
+
+    function saveInterests(interestsValue = null, isOnboarding = false) {
+      const interests = interestsValue || document.getElementById('interests').value;
+      const csrfToken = document.querySelector('[name=csrfmiddlewaretoken]').value;
+
+      fetch('/myapp/save-interests/', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'X-CSRFToken': csrfToken
+        },
+        body: JSON.stringify({
+          interests: interests,
+          is_onboarding: isOnboarding
+        })
+      })
+      .then(response => response.json())
+      .then(data => {
+        if (data.success) {
+          if (isOnboarding) {
+            document.getElementById('onboardingOverlay').style.display = 'none';
+            document.getElementById('interests').value = interests;
+          }
+          alert('Interests saved successfully!');
+        } else {
+          alert('Error saving interests. Please try again.');
+        }
+      })
+      .catch(error => {
+        console.error('Error:', error);
+        alert('Error saving interests. Please try again.');
+      });
+    }
+    window.saveInterests = saveInterests;
+    window.submitOnboarding = submitOnboarding;
+
+    // View Community Members
+    function viewCommunityMembers() {
+      const membersModal = document.getElementById('membersModal');
+      const membersList = document.getElementById('membersList');
+      const communityId = document.getElementById('leaveCommunityId').value;
+
+      fetch(`/myapp/community/${communityId}/members/`)
+        .then(response => response.json())
+        .then(data => {
+          if (data.success) {
+            membersList.innerHTML = '';
+            data.members.forEach(member => {
+              const memberItem = document.createElement('div');
+              memberItem.classList.add('member-item');
+              memberItem.innerHTML = `
+                <div class="member-info">
+                  <span class="member-name">${member.name}</span>
+                  <span class="member-role">${member.role}</span>
+                </div>
+                <button class="friend-request-btn ${member.friend_status}" data-member-id="${member.id}">
+                  ${member.friend_status === 'send' ? 'Send Friend Request' : member.friend_status === 'pending' ? 'Pending' : 'Friends'}
+                </button>
+              `;
+              membersList.appendChild(memberItem);
+            });
+            membersModal.style.display = 'block';
+          } else {
+            alert('Error loading members. Please try again.');
+          }
+        })
+        .catch(error => {
+          console.error('Error:', error);
+          alert('Error loading members. Please try again.');
+        });
+    }
+    window.viewCommunityMembers = viewCommunityMembers;
+
+    // Close Members Modal
+    document.querySelector('.close-modal').addEventListener('click', function() {
+      document.getElementById('membersModal').style.display = 'none';
+    });
+
+    // Close modal when clicking outside of it
+    window.onclick = function(event) {
+      const membersModal = document.getElementById('membersModal');
+      if (event.target === membersModal) {
+        membersModal.style.display = 'none';
+      }
+    };
+
+    // Add click handler for friend request buttons
+    document.addEventListener('click', function(e) {
+      if (e.target && e.target.classList.contains('friend-request-btn') && e.target.classList.contains('send')) {
+        const memberId = e.target.dataset.memberId;
+        const button = e.target;
+        
+        fetch(`/myapp/send-friend-request/${memberId}/`)
+          .then(response => response.json())
+          .then(data => {
+            if (data.success) {
+              button.classList.remove('send');
+              button.classList.add('pending');
+              button.textContent = 'Pending';
+              button.disabled = true;
+            } else {
+              alert(data.error || 'Error sending friend request. Please try again.');
+            }
+          })
+          .catch(error => {
+            console.error('Error:', error);
+            alert('Error sending friend request. Please try again.');
+          });
+      }
+    });
+
+    window.addEventListener('DOMContentLoaded', (event) => {
+      // Profile Image Preview and Upload
+      const profileImageInput = document.getElementById('profileImageInput');
+      const profileImagePreview = document.getElementById('profileImagePreview');
+      const profileImageForm = document.getElementById('profileImageForm');
+
+      profileImageInput.addEventListener('change', function(e) {
+        const file = e.target.files[0];
+        if (file) {
+          const reader = new FileReader();
+          reader.onload = function(e) {
+            profileImagePreview.src = e.target.result;
+          }
+          reader.readAsDataURL(file);
+        }
+      });
+
+      profileImageForm.addEventListener('submit', function(e) {
+        e.preventDefault();
+        const formData = new FormData(this);
+        const csrfToken = document.querySelector('[name=csrfmiddlewaretoken]').value;
+
+        fetch('/myapp/update-profile-image/', {
+          method: 'POST',
+          headers: {
+            'X-CSRFToken': csrfToken
+          },
+          body: formData
+        })
+        .then(response => response.json())
+        .then(data => {
+          if (data.success) {
+            // Update sidebar profile picture as well
+            document.querySelector('.account-info-picture img').src = profileImagePreview.src;
+            alert('Profile picture updated successfully!');
+          } else {
+            alert('Error updating profile picture. Please try again.');
+          }
+        })
+        .catch(error => {
+          console.error('Error:', error);
+          alert('Error updating profile picture. Please try again.');
+        });
+      });
+    });
   </script>
 </body>
 </html>

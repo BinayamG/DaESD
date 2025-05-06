@@ -777,6 +777,143 @@ gap: 20px;
   background-color: #2980b9;
 }
 
+/* Friend Cards */
+.friend-card {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.friend-info {
+  flex: 1;
+}
+
+.friend-meta {
+  color: #777;
+  font-size: 0.9em;
+  margin: 2px 0;
+}
+
+.friend-request-card {
+  background: var(--app-content-secondary-color);
+  border: 1px solid var(--table-border);
+  border-radius: 6px;
+  padding: 15px;
+}
+
+.friend-request-actions {
+  display: flex;
+  gap: 10px;
+  margin-top: 10px;
+}
+
+.accept-btn {
+  background-color: #28a745;
+}
+
+.accept-btn:hover {
+  background-color: #218838;
+}
+
+.reject-btn {
+  background-color: #dc3545;
+}
+
+.reject-btn:hover {
+  background-color: #c82333;
+}
+
+/* Friend Request Buttons in Members List */
+.friend-request-btn {
+  padding: 5px 10px;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 0.9em;
+  transition: all 0.3s ease;
+}
+
+.friend-request-btn.send {
+  background-color: var(--action-color);
+  color: white;
+}
+
+.friend-request-btn.send:hover {
+  background-color: var(--action-color-hover);
+}
+
+.friend-request-btn.pending {
+  background-color: #f0ad4e;
+  color: white;
+  cursor: not-allowed;
+}
+
+.friend-request-btn.friends {
+  background-color: #5cb85c;
+  color: white;
+  cursor: default;
+}
+
+/* Friend Details Section */
+.friend-details-section {
+  margin: 15px 0;
+  padding: 10px;
+  background: var(--app-bg);
+  border-radius: 6px;
+  border: 1px solid var(--table-border);
+}
+
+.friend-details-section h4 {
+  color: var(--action-color);
+  margin-bottom: 5px;
+  font-size: 0.9rem;
+}
+
+.friend-details-section p {
+  margin: 0;
+  font-size: 0.9rem;
+  line-height: 1.4;
+  color: var(--app-content-main-color);
+}
+
+/* Profile Picture Section */
+.profile-picture-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 20px;
+  padding: 20px;
+}
+
+.profile-picture-container img {
+  width: 150px;
+  height: 150px;
+  border-radius: 50%;
+  object-fit: cover;
+  border: 3px solid var(--action-color);
+}
+
+.profile-picture-upload {
+  display: flex;
+  gap: 10px;
+}
+
+.upload-button {
+  background-color: var(--app-content-secondary-color);
+  color: var(--app-content-main-color);
+  border: 1px solid var(--action-color);
+  padding: 8px 16px;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 0.9rem;
+  transition: all 0.3s ease;
+}
+
+.upload-button:hover {
+  background-color: var(--action-color);
+  color: white;
+}
+
 /* Responsive Styles */
 @media (max-width: 768px) {
   .app-container {

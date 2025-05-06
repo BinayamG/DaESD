@@ -5,7 +5,9 @@ from .views import (
     join_community, leave_community, request_community_creation_view, 
     community_request_review_view, create_event_view, delete_community,
     search_communities, search_events, create_post, load_community_posts, toggle_event_interest,
-    update_event_view, delete_event, save_academic_profile
+    update_event_view, delete_event, save_academic_profile, save_interests, get_community_members,
+    send_friend_request, handle_friend_request, friend_requests_view, friends_view, remove_friend,
+    search_users, update_profile_image
 )
 
 urlpatterns = [
@@ -24,8 +26,17 @@ urlpatterns = [
     path('delete-event/<int:event_id>/', delete_event, name='delete_event'),
     path('search-communities/', search_communities, name='search_communities'),
     path('search-events/', search_events, name='search_events'),
-    path('community/<int:community_id>/post/', create_post, name='create_post'), #SUMANTH
-    path('community/<int:community_id>/posts/', load_community_posts, name='load_community_posts'), #SUMANTH
+    path('community/<int:community_id>/post/', create_post, name='create_post'),
+    path('community/<int:community_id>/posts/', load_community_posts, name='load_community_posts'),
     path('event/<int:event_id>/toggle-interest/', toggle_event_interest, name='toggle_event_interest'),
     path('save-academic-profile/', save_academic_profile, name='save_academic_profile'),
+    path('save-interests/', save_interests, name='save_interests'),
+    path('community/<int:community_id>/members/', get_community_members, name='get_community_members'),
+    path('send-friend-request/<int:user_id>/', send_friend_request, name='send_friend_request'),
+    path('handle-friend-request/<int:request_id>/', handle_friend_request, name='handle_friend_request'),
+    path('friend-requests/', friend_requests_view, name='friend_requests'),
+    path('friends/', friends_view, name='friends'),
+    path('remove-friend/<int:friend_id>/', remove_friend, name='remove_friend'),
+    path('search-users/', search_users, name='search_users'),
+    path('update-profile-image/', update_profile_image, name='update_profile_image'),
 ]
