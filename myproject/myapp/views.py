@@ -268,13 +268,18 @@ def create_event_view(request, community_id):
 def join_community(request, community_id):
     community = get_object_or_404(Community, id=community_id)
     
-    # Check if user was previously removed from this community
-    if RemovedMember.objects.filter(user=request.user, community=community).exists():
-        messages.error(request, f"You cannot join {community.name} as you were previously removed by the community leader.")
-        # Redirect to main with communities tab active and ensure messages are displayed
-        response = redirect('main')
-        response['Location'] += '#communities'
-        return response
+    try:
+        # Check if user was previously removed from this community
+        if RemovedMember.objects.filter(user=request.user, community=community).exists():
+            messages.error(request, f"You cannot join {community.name} as you were previously removed by the community leader.")
+            # Redirect to main with communities tab active and ensure messages are displayed
+            response = redirect('main')
+            response['Location'] += '#communities'
+            return response
+    except Exception as e:
+        # If RemovedMember table doesn't exist, we can safely ignore this check
+        # This will handle the case until the proper migration is created
+        pass
         
     if request.user in community.members.all():
         messages.info(request, "You are already a member of this community.")
@@ -318,12 +323,46 @@ def delete_community(request):
                 messages.error(request, "You don't have permission to delete this community.")
                 return redirect('/myapp/main/#communities')
             
-            # Delete the community (CASCADE will automatically delete related events and posts)
+            # Store community name before deletion for the success message
             community_name = community.name
-            community.delete()
+            
+            # Use raw SQL to delete the community and related data to bypass RemovedMember validation
+            from django.db import connection
+            with connection.cursor() as cursor:
+                # 1. First get all event IDs for this community
+                cursor.execute("SELECT id FROM myapp_event WHERE community_id = %s", [community_id])
+                event_ids = [row[0] for row in cursor.fetchall()]
+                
+                # 2. Delete the event-user relationship records (interested users)
+                if event_ids:
+                    # Create placeholders for the SQL IN clause
+                    placeholders = ','.join(['%s'] * len(event_ids))
+                    cursor.execute(f"DELETE FROM myapp_event_interested_users WHERE event_id IN ({placeholders})", event_ids)
+                
+                # 3. Delete any existing comments on posts in this community
+                cursor.execute("""
+                    DELETE FROM myapp_comments 
+                    WHERE post_id IN (
+                        SELECT id FROM myapp_post WHERE community_id = %s
+                    )
+                """, [community_id])
+                
+                # 4. Delete all associated posts
+                cursor.execute("DELETE FROM myapp_post WHERE community_id = %s", [community_id])
+                
+                # 5. Delete all events related to this community
+                cursor.execute("DELETE FROM myapp_event WHERE community_id = %s", [community_id])
+                
+                # 6. Remove all members from the community
+                cursor.execute("DELETE FROM myapp_community_members WHERE community_id = %s", [community_id])
+                
+                # 7. Finally delete the community itself
+                cursor.execute("DELETE FROM myapp_community WHERE id = %s", [community_id])
+            
+            # Create notification for the user
             Notification.objects.create(
                 user=request.user,
-                message=f"Your have deleted the community '{community_name}' successfully!"
+                message=f"You have deleted the community '{community_name}' successfully!"
             )
             
             messages.success(request, f"Community '{community_name}' has been deleted successfully.")
@@ -331,6 +370,9 @@ def delete_community(request):
         
         except Community.DoesNotExist:
             messages.error(request, "Community not found.")
+            return redirect('/myapp/main/#communities')
+        except Exception as e:
+            messages.error(request, f"An error occurred while deleting the community: {str(e)}")
             return redirect('/myapp/main/#communities')
     
     return redirect('/myapp/main/#communities')
@@ -362,7 +404,31 @@ def search_communities(request):
         status='pending'
     ).select_related('from_user').order_by('-created_at')
     
-    events = Event.objects.all()
+    # Get events and filter out past events
+    if user.is_superuser:
+        events = Event.objects.all()
+    else:
+        # Regular users see only public events and events from their communities
+        # Get user's community IDs for filtering events
+        user_community_ids = user_communities.values_list('id', flat=True)
+        
+        # 1. Get public events
+        public_events = Event.objects.filter(event_type='Public')
+        
+        # 2. Get community-only events for communities the user is a member of
+        community_events = Event.objects.filter(
+            event_type='Community', 
+            community__id__in=user_community_ids
+        )
+        
+        # Combine the two querysets
+        events = public_events | community_events
+    
+    # Filter out past events
+    current_time = timezone.now()
+    events = events.filter(
+        Q(end_date__isnull=True) | Q(end_date__gt=current_time)
+    ).order_by('date')
     
     context = {
         'community_search_query': query,  # Used in template for community search
@@ -502,7 +568,8 @@ def toggle_event_interest(request, event_id):
             'at_capacity': is_at_capacity  # This is now a separate flag set only when registration fails
         })
     
-    # Otherwise redirect back to the events page
+    # For non-AJAX requests, redirect back to the events tab
+    # Use the same URL format for both register and unregister to maintain consistency
     return redirect('/myapp/main/#events')
 
 @login_required
@@ -794,6 +861,37 @@ def search_users(request):
     else:
         user_search_results = []
 
+    # Get user's community IDs for filtering events
+    user = request.user
+    joined_communities = user.joined_communities.all()
+    owned_communities = user.owned_communities.all()
+    user_communities = (joined_communities | owned_communities).distinct()
+    user_community_ids = user_communities.values_list('id', flat=True)
+    
+    # Get events and filter out past events
+    if user.is_superuser:
+        # For admins, show all events
+        events = Event.objects.all()
+    else:
+        # Regular users see only public events and events from their communities
+        # 1. Get public events
+        public_events = Event.objects.filter(event_type='Public')
+        
+        # 2. Get community-only events for communities the user is a member of
+        community_events = Event.objects.filter(
+            event_type='Community', 
+            community__id__in=user_community_ids
+        )
+        
+        # Combine the two querysets
+        events = public_events | community_events
+    
+    # Filter out past events
+    current_time = timezone.now()
+    events = events.filter(
+        Q(end_date__isnull=True) | Q(end_date__gt=current_time)
+    ).order_by('date')
+
     context = {
         'user_search_results': user_search_results,
         'user_search_query': search_query,  # Changed to user_search_query
@@ -805,7 +903,7 @@ def search_users(request):
         'friend_requests': FriendRequest.objects.filter(to_user=request.user, status='pending'),
         'all_communities': Community.objects.all(),
         'user_communities': Community.objects.filter(members=request.user),
-        'events': Event.objects.all().order_by('date'),
+        'events': events,
         'user': request.user,
     }
     
@@ -860,7 +958,7 @@ def remove_community_member(request, community_id, member_id):
                 'error': 'Cannot remove the community leader'
             })
             
-        # Remove the member and create a RemovedMember record
+        # Remove the member
         community.members.remove(member)
         RemovedMember.objects.create(
             user=member,

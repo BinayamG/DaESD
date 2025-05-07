@@ -718,7 +718,7 @@
                   {% endif %}
                   
                   {% if user in event.interested_users.all %}
-                    <form method="POST" action="{% url 'toggle_event_interest' event.id %}">
+                    <form method="POST" action="{% url 'toggle_event_interest' event.id %}" class="unregister-form" data-event-id="{{ event.id }}">
                       {% csrf_token %}
                       <button type="submit" class="action-button interested-button">Unregister</button>
                     </form>
@@ -1220,17 +1220,20 @@
       setInterval(updateEventCountdowns, 60000); // Update every minute
       
       // Add event listeners to interest forms to check for capacity errors
-      document.querySelectorAll('.interest-form').forEach(form => {
+      document.querySelectorAll('.interest-form, .unregister-form').forEach(form => {
         form.addEventListener('submit', async function(e) {
           e.preventDefault();
           const eventId = this.getAttribute('data-event-id');
           const errorDiv = document.getElementById(`capacity-error-${eventId}`);
+          const isUnregisterForm = this.classList.contains('unregister-form');
           
           try {
             // Clear any previous error message
-            errorDiv.style.display = 'none';
+            if (errorDiv) {
+              errorDiv.style.display = 'none';
+            }
             
-            // Submit form using fetch to check for capacity errors
+            // Submit form using fetch 
             const formData = new FormData(this);
             const response = await fetch(this.action, {
               method: 'POST',
@@ -1248,26 +1251,73 @@
               setTimeout(() => {
                 errorDiv.style.display = 'none';
               }, 5000); // Hide after 5 seconds
-            } else if (result.is_interested) {
-              // Registration successful - update UI without showing any error
+            } else if (isUnregisterForm && !result.is_interested) {
+              // Show unregistered message
               const button = this.querySelector('button');
-              button.className = 'action-button interested-button';
-              button.textContent = 'Unregister';
+              button.className = 'action-button';
+              button.textContent = 'Register';
+              
+              // Create/show a flash message
+              showFlashMessage('info', `You are no longer registered for the event`);
               
               // Update the count text
               const countSpan = this.closest('.interest-container').querySelector('.interest-count');
               countSpan.textContent = `${result.interest_count} registered`;
-            } else {
-              // If user was removed from registration list, reload the page
-              window.location.reload();
+              
+              // Convert to a register form
+              this.classList.remove('unregister-form');
+              this.classList.add('interest-form');
+            } else if (!isUnregisterForm && result.is_interested) {
+              // Show registered message
+              const button = this.querySelector('button');
+              button.className = 'action-button interested-button';
+              button.textContent = 'Unregister';
+              
+              // Create/show a flash message
+              showFlashMessage('success', `You are now registered for the event`);
+              
+              // Update the count text
+              const countSpan = this.closest('.interest-container').querySelector('.interest-count');
+              countSpan.textContent = `${result.interest_count} registered`;
+              
+              // Convert to an unregister form
+              this.classList.remove('interest-form');
+              this.classList.add('unregister-form');
             }
           } catch (error) {
-            console.error("Error submitting registration form:", error);
-            // Fallback to page reload if something fails
-            window.location.reload();
+            console.error("Error handling form submission:", error);
+            // Stay on current tab and show error message
+            showFlashMessage('error', 'An error occurred. Please try again.');
           }
         });
       });
+      
+      // Function to show flash messages
+      function showFlashMessage(type, message) {
+        const messagesContainer = document.querySelector('.messages');
+        
+        // Create container if it doesn't exist
+        if (!messagesContainer) {
+          const newContainer = document.createElement('div');
+          newContainer.className = 'messages';
+          document.querySelector('.app-content').insertBefore(newContainer, document.querySelector('.app-content').firstChild);
+          messagesContainer = newContainer;
+        }
+        
+        // Create and add the message
+        const messageDiv = document.createElement('div');
+        messageDiv.className = `alert alert-${type}`;
+        messageDiv.textContent = message;
+        messagesContainer.appendChild(messageDiv);
+        
+        // Set fade out timer
+        setTimeout(() => {
+          messageDiv.classList.add('fade-out');
+          setTimeout(() => {
+            messageDiv.remove();
+          }, 500);
+        }, 3000);
+      }
       
       // Also add listeners to the unregister buttons for users already registered
       document.querySelectorAll('.action-button.interested-button').forEach(button => {
