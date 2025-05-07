@@ -53,6 +53,45 @@
       color: var(--app-content-main-color);
       resize: vertical;
     }
+
+    /* Add these styles to your existing styles */
+    .messages {
+      position: fixed;
+      top: 20px;
+      right: 20px;
+      z-index: 1000;
+      max-width: 400px;
+    }
+
+    .alert {
+      padding: 15px;
+      margin-bottom: 10px;
+      border-radius: 4px;
+      opacity: 1;
+      transition: opacity 0.5s ease-in-out;
+    }
+
+    .alert-error {
+      background-color: #f8d7da;
+      border-color: #f5c6cb;
+      color: #721c24;
+    }
+
+    .alert-success {
+      background-color: #d4edda;
+      border-color: #c3e6cb;
+      color: #155724;
+    }
+
+    .alert-info {
+      background-color: #cce5ff;
+      border-color: #b8daff;
+      color: #004085;
+    }
+
+    .alert.fade-out {
+      opacity: 0;
+    }
   </style>
 </head>
 <body>
@@ -191,17 +230,28 @@
         </button>
       </div>
 
+      {% if messages %}
+      <div class="messages">
+        {% for message in messages %}
+          <div class="alert {% if message.tags %}alert-{{ message.tags }}{% endif %}">
+            {{ message }}
+          </div>
+        {% endfor %}
+      </div>
+      {% endif %}
+
       <!-- HOME TAB -->
-      <div class="tab-content" id="home">
+      <div class="tab-content" id="home" style="display: block;">
         <div class="home-header">
           <div class="welcome-section">
             <h2>Welcome, {{ full_name }}!</h2>
             <p>Stay updated with the latest campus news and activities.</p>
           </div>
+          <!-- Search section in HOME tab -->
           <div class="search-section">
             <form action="{% url 'search_users' %}" method="GET" class="user-search-form">
-              <input type="text" class="search-bar" id="userSearchBar" name="query" 
-                     placeholder="Search users by name or interests..." value="{{ search_query }}">
+              <input type="text" class="search-bar" id="userSearchBar" name="user_query" 
+                     placeholder="Search users by name or interests..." value="{{ user_search_query|default:'' }}">
               <button type="submit" class="search-button">Search Users</button>
             </form>
           </div>
@@ -220,12 +270,12 @@
                 <p class="user-interests"><strong>Interests:</strong> {{ user_result.interests }}</p>
                 {% endif %}
                 {% if user_result != request.user %}
-                  {% if user_result not in request.user.friends.all %}
-                    <button class="friend-request-btn send" data-member-id="{{ user_result.id }}">
-                      Send Friend Request
-                    </button>
-                  {% else %}
+                  {% if user_result.friend_status == 'friends' %}
                     <button class="friend-request-btn friends" disabled>Already Friends</button>
+                  {% elif user_result.friend_status == 'pending' %}
+                    <button class="friend-request-btn pending" disabled>Pending</button>
+                  {% else %}
+                    <button class="friend-request-btn send" data-member-id="{{ user_result.id }}">Send Friend Request</button>
                   {% endif %}
                 {% endif %}
               </div>
@@ -326,20 +376,23 @@
 
       <!-- COMMUNITIES TAB -->
       <div class="tab-content" id="communities" style="display: none;">
+        
         <!-- All Communities Grid -->
         <div id="communitiesGrid">
           <div class="tab-header">
-            <h2>{% if search_query %}Search Communities: "{{ search_query }}"{% else %}All Communities{% endif %}</h2>
+            <h2>{% if community_search_query %}Search Communities: "{{ community_search_query }}"{% else %}All Communities{% endif %}</h2>
+            <!-- Search section in COMMUNITIES tab -->
             <div class="events-controls">
               <form action="{% url 'search_communities' %}" method="GET" class="search-form">
-                <input type="text" class="search-bar" id="searchBar" name="query" placeholder="Search communities..." value="{{ search_query }}">
+                <input type="text" class="search-bar" id="searchBar" name="community_query" 
+                       placeholder="Search communities..." value="{{ community_search_query|default:'' }}">
                 <button type="submit" id="searchButton" class="create-button">Search</button>
               </form>
               <a href="{% url 'request_community' %}" class="create-button">Create New Community</a>
             </div>
           </div>
           
-          {% if search_query %}
+          {% if community_search_query %}
           <div class="back-button-container">
             <a href="{% url 'main' %}#communities" class="back-button" id="backToAllCommunitiesBtn">Back to All Communities</a>
           </div>
@@ -366,7 +419,7 @@
               {% endfor %}
             {% else %}
               <div class="card">
-                <h3>No communities found{% if search_query %} for "{{ search_query }}"{% endif %}</h3>
+                <h3>No communities found{% if community_search_query %} for "{{ community_search_query }}"{% endif %}</h3>
               </div>
             {% endif %}
           </div>
@@ -499,6 +552,28 @@
               color: white;
               cursor: default;
             }
+
+            .remove-member-btn {
+              margin-left: 10px;
+              padding: 5px 10px;
+              background-color: #dc3545;
+              color: white;
+              border: none;
+              border-radius: 4px;
+              cursor: pointer;
+              font-size: 0.9em;
+              transition: background-color 0.3s;
+            }
+
+            .remove-member-btn:hover {
+              background-color: #c82333;
+            }
+
+            .member-actions {
+              display: flex;
+              align-items: center;
+              gap: 10px;
+            }
           </style>
 
           <!-- Scrollable posts container -->
@@ -531,16 +606,18 @@
       <!-- EVENTS TAB -->
       <div class="tab-content" id="events" style="display: none;">
         <div class="tab-header">
-          <h2>{% if search_query %}Search Events: "{{ search_query }}"{% else %}Campus Events{% endif %}</h2>
+          <h2>{% if event_search_query %}Search Events: "{{ event_search_query }}"{% else %}Campus Events{% endif %}</h2>
+          <!-- Search section in EVENTS tab -->
           <div class="events-controls">
             <form action="{% url 'search_events' %}" method="GET" class="search-form">
-              <input type="text" class="search-bar" id="eventSearchBar" name="query" placeholder="Search events..." value="{{ search_query }}">
+              <input type="text" class="search-bar" id="eventSearchBar" name="event_query" 
+                     placeholder="Search events..." value="{{ event_search_query|default:'' }}">
               <button type="submit" id="eventSearchButton" class="create-button">Search</button>
             </form>
           </div>
         </div>
         
-        {% if search_query %}
+        {% if event_search_query %}
         <div class="back-button-container">
           <a href="{% url 'main' %}#events" class="back-button" id="backToAllEventsBtn">← Back to All Events</a>
         </div>
@@ -604,7 +681,7 @@
             </div>
           {% empty %}
             <div class="card">
-              <h3>No events {% if search_query %}found for "{{ search_query }}"{% else %}available{% endif %}</h3>
+              <h3>No events {% if event_search_query %}found for "{{ event_search_query }}"{% else %}available{% endif %}</h3>
             </div>
           {% endfor %}
         </div>
@@ -710,6 +787,8 @@
             <p><strong>Date of Birth:</strong> <span class="dynamic-text">{{ user.date_of_birth|date:"F j, Y" }}</span></p>
             <p><strong>University:</strong> <span class="dynamic-text">UWE Bristol</span></p>
             <p><strong>Student Number:</strong> <span class="dynamic-text">{{ student_number }}</span></p>
+            <p><strong>Course:</strong> <span class="dynamic-text">{{ user.degree_program }}</span></p>
+            <p><strong>Major:</strong> <span class="dynamic-text">{{ user.major }}</span></p>
             {% if user.street_address %}
             <p><strong>Address:</strong> <span class="dynamic-text">{{ user.street_address }}, {{ user.city }}, {{ user.postcode }}</span></p>
             {% endif %}
@@ -826,6 +905,21 @@
   </div> <!-- End app-container -->
 
   <script>
+    // Add this at the start of your script section
+    document.addEventListener('DOMContentLoaded', function() {
+      const messages = document.querySelectorAll('.alert');
+      messages.forEach(message => {
+        // Add fade out after 3 seconds
+        setTimeout(() => {
+          message.classList.add('fade-out');
+          // Remove the message from DOM after fade animation
+          setTimeout(() => {
+            message.remove();
+          }, 500); // 500ms matches the CSS transition duration
+        }, 3000);
+      });
+    });
+
     // Tab Navigation
     const topLevelTabs = document.querySelectorAll('.sidebar-list-item[data-tab], .account-info[data-tab]');
     const tabContents = document.querySelectorAll('.tab-content');
@@ -1027,7 +1121,7 @@
           const hours = Math.floor((timeRemaining % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
           const minutes = Math.floor((timeRemaining % (1000 * 60 * 60)) / (1000 * 60));
           
-          countdownEl.textContent = `${days} days ${hours} hours ${minutes}`;
+          countdownEl.textContent = `${days} days ${hours} hours ${minutes} minutes`;
         }
       });
     }
@@ -1209,6 +1303,8 @@
       const membersModal = document.getElementById('membersModal');
       const membersList = document.getElementById('membersList');
       const communityId = document.getElementById('leaveCommunityId').value;
+      const currentUserId = "{{ request.user.id }}";  // Get current user's ID
+      const isLeader = document.getElementById('deleteCommunityForm').style.display === 'block';  // Check if user is community leader
 
       fetch(`/myapp/community/${communityId}/members/`)
         .then(response => response.json())
@@ -1218,17 +1314,46 @@
             data.members.forEach(member => {
               const memberItem = document.createElement('div');
               memberItem.classList.add('member-item');
+              
+              // Create the member info and interaction buttons
+              let interactionButtons = '';
+              if (member.id === currentUserId) {
+                interactionButtons = '<span class="current-user-label">(You)</span>';
+              } else {
+                // Show friend request button if not the leader
+                const friendButton = `<button class="friend-request-btn ${member.friend_status}" data-member-id="${member.id}">
+                  ${member.friend_status === 'send' ? 'Send Friend Request' : member.friend_status === 'pending' ? 'Pending' : 'Friends'}
+                </button>`;
+                
+                // Show remove button if user is leader and member is not the leader
+                const removeButton = isLeader && member.role !== 'Community Leader' ? 
+                  `<button class="remove-member-btn" data-member-id="${member.id}">Remove from Community</button>` : '';
+                
+                interactionButtons = friendButton + removeButton;
+              }
+
               memberItem.innerHTML = `
                 <div class="member-info">
                   <span class="member-name">${member.name}</span>
                   <span class="member-role">${member.role}</span>
                 </div>
-                <button class="friend-request-btn ${member.friend_status}" data-member-id="${member.id}">
-                  ${member.friend_status === 'send' ? 'Send Friend Request' : member.friend_status === 'pending' ? 'Pending' : 'Friends'}
-                </button>
+                <div class="member-actions">
+                  ${interactionButtons}
+                </div>
               `;
               membersList.appendChild(memberItem);
             });
+
+            // Add event listeners for remove buttons
+            document.querySelectorAll('.remove-member-btn').forEach(button => {
+              button.addEventListener('click', function() {
+                const memberId = this.dataset.memberId;
+                if (confirm('Are you sure you want to remove this member from the community?')) {
+                  removeMember(communityId, memberId, this);
+                }
+              });
+            });
+
             membersModal.style.display = 'block';
           } else {
             alert('Error loading members. Please try again.');
@@ -1239,7 +1364,35 @@
           alert('Error loading members. Please try again.');
         });
     }
-    window.viewCommunityMembers = viewCommunityMembers;
+
+    // Function to handle member removal
+    function removeMember(communityId, memberId, buttonElement) {
+      const csrfToken = document.querySelector('[name=csrfmiddlewaretoken]').value;
+      
+      fetch(`/myapp/community/${communityId}/remove-member/${memberId}/`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'X-CSRFToken': csrfToken,
+          'Accept': 'application/json'
+        },
+        body: JSON.stringify({})
+      })
+      .then(response => response.json())
+      .then(data => {
+        if (data.success) {
+          // Remove the entire member item from the list
+          buttonElement.closest('.member-item').remove();
+          alert(data.message);
+        } else {
+          alert(data.error || 'Error removing member');
+        }
+      })
+      .catch(error => {
+        console.error('Error:', error);
+        alert('Error removing member. Please try again.');
+      });
+    }
 
     // Close Members Modal
     document.querySelector('.close-modal').addEventListener('click', function() {
@@ -1268,6 +1421,11 @@
               button.classList.add('pending');
               button.textContent = 'Pending';
               button.disabled = true;
+              
+              // Handle redirect
+              if (data.redirect) {
+                window.location.href = data.redirect;
+              }
             } else {
               alert(data.error || 'Error sending friend request. Please try again.');
             }

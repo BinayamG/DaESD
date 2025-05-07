@@ -173,9 +173,10 @@ class FriendRequest(models.Model):
 
     def accept(self):
         if self.status == 'pending':
-            # Create friendship entries for both users
-            Friendship.objects.create(from_user=self.from_user, to_user=self.to_user)
-            Friendship.objects.create(from_user=self.to_user, to_user=self.from_user)
+            # Add users to each other's friends list
+            self.from_user.friends.add(self.to_user)
+            self.to_user.friends.add(self.from_user)
+            
             self.status = 'accepted'
             self.reviewed_at = timezone.now()
             self.save()
@@ -185,3 +186,15 @@ class FriendRequest(models.Model):
             self.status = 'rejected'
             self.reviewed_at = timezone.now()
             self.save()
+
+class RemovedMember(models.Model):
+    user = models.ForeignKey(CustomUser, on_delete=models.CASCADE, related_name='removed_from_communities')
+    community = models.ForeignKey(Community, on_delete=models.CASCADE, related_name='removed_members')
+    removed_at = models.DateTimeField(auto_now_add=True)
+    removed_by = models.ForeignKey(CustomUser, on_delete=models.SET_NULL, null=True, related_name='member_removals')
+
+    class Meta:
+        unique_together = ('user', 'community')
+
+    def __str__(self):
+        return f"{self.user.username} removed from {self.community.name}"

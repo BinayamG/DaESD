@@ -5,41 +5,248 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Review Community Requests</title>
     <link rel="stylesheet" href="/static/css/dashboard.css">
+    <style>
+        .friend-request-card {
+            background: var(--app-content-secondary-color);
+            border: 1px solid var(--table-border);
+            border-radius: 6px;
+            padding: 15px;
+            margin-bottom: 15px;
+            transition: opacity 0.3s ease;
+        }
+
+        .friend-request-info {
+            margin-bottom: 10px;
+        }
+
+        .friend-request-info h3 {
+            color: var(--chart-container-heading);
+            margin-bottom: 5px;
+            font-size: 1.2rem;
+        }
+
+        .request-meta {
+            color: #777;
+            font-size: 0.9em;
+            margin: 5px 0;
+        }
+
+        .request-details-section {
+            margin: 15px 0;
+            padding: 10px;
+            background: var(--app-bg);
+            border-radius: 6px;
+            border: 1px solid var(--table-border);
+        }
+
+        .request-details-section h4 {
+            color: var(--action-color);
+            margin-bottom: 5px;
+            font-size: 0.9rem;
+        }
+
+        .request-details-section p {
+            margin: 0;
+            font-size: 0.9rem;
+            line-height: 1.4;
+            color: var(--app-content-main-color);
+        }
+
+        .friend-request-actions {
+            display: flex;
+            gap: 10px;
+            margin-top: 15px;
+        }
+
+        .accept-btn {
+            background-color: #28a745;
+        }
+
+        .accept-btn:hover {
+            background-color: #218838;
+        }
+
+        .reject-btn {
+            background-color: #dc3545;
+        }
+
+        .reject-btn:hover {
+            background-color: #c82333;
+        }
+
+        .action-button {
+            padding: 8px 16px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 0.9rem;
+            color: white;
+            transition: background-color 0.3s;
+        }
+
+        .rejection-reason {
+            width: 100%;
+            padding: 10px;
+            margin: 10px 0;
+            border: 1px solid var(--table-border);
+            border-radius: 4px;
+            background: var(--app-bg);
+            color: var(--app-content-main-color);
+            display: none;
+            resize: vertical;
+            font-size: 0.9rem;
+        }
+
+        .card-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 20px;
+            padding: 20px;
+        }
+
+        .back-button {
+            display: inline-flex;
+            align-items: center;
+            background-color: var(--action-color);
+            color: var(--sidebar-main-color);
+            padding: 8px 16px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 0.9rem;
+            text-decoration: none;
+            margin: 20px;
+        }
+
+        .back-button:hover {
+            background-color: var(--action-color-hover);
+        }
+
+        .tab-header {
+            padding: 20px 20px 0 20px;
+        }
+
+        .tab-header h2 {
+            color: var(--chart-container-heading);
+            font-size: 1.6rem;
+            margin: 0;
+        }
+    </style>
 </head>
 <body>
-    <div class="community-form-container">
-        <h2 class="form-heading">Pending Community Requests</h2>
+    {% if messages %}
+    <div class="messages">
+        {% for message in messages %}
+            <div class="alert {% if message.tags %}alert-{{ message.tags }}{% endif %}">
+                {{ message }}
+            </div>
+        {% endfor %}
+    </div>
+    {% endif %}
 
-        {% if pending_requests %}
-            {% for req in pending_requests %}
-                <div class="form-group" style="border: 1px solid #ccc; padding: 20px; margin-bottom: 20px; border-radius: 8px;">
-                    <h3>{{ req.name }}</h3>
-                    <p><strong>Description:</strong> {{ req.description }}</p>
-                    <p><strong>Tags:</strong> {{ req.tags }}</p>
+    <div class="app-container">
+        <div class="app-content">
+            <div class="tab-header">
+                <h2>Pending Community Requests</h2>
+            </div>
+            
+            <div class="card-grid">
+                {% if pending_requests %}
+                    {% for req in pending_requests %}
+                        <div class="card friend-request-card" data-request-id="{{ req.id }}">
+                            <div class="friend-request-info">
+                                <h3>{{ req.name }}</h3>
+                                <p class="request-meta">Requested by: {{ req.requested_by.get_full_name }}</p>
+                                <p class="request-meta">Email: {{ req.requested_by.email }}</p>
+                                <p class="request-meta">{{ req.requested_by.degree_program }} - {{ req.requested_by.major }}</p>
+                                <div class="request-details-section">
+                                    <h4>Description:</h4>
+                                    <p>{{ req.description }}</p>
+                                </div>
+                                {% if req.tags %}
+                                <div class="request-details-section">
+                                    <h4>Tags:</h4>
+                                    <p>{{ req.tags }}</p>
+                                </div>
+                                {% endif %}
+                                
+                                <textarea 
+                                    id="rejection_reason_{{ req.id }}" 
+                                    name="rejection_reason"
+                                    class="rejection-reason" 
+                                    placeholder="Please provide a reason for rejection..."
+                                    rows="3"
+                                ></textarea>
 
-                    <form method="POST" class="community-form">
-                        {% csrf_token %}
-                        <input type="hidden" name="request_id" value="{{ req.id }}">
-
-                        <div class="form-group">
-                            <label for="rejection_reason_{{ req.id }}" class="form-label">Rejection Reason (if applicable)</label>
-                            <textarea name="rejection_reason" id="rejection_reason_{{ req.id }}" class="form-control" placeholder="Optional reason for rejection..." rows="2"></textarea>
+                                <div class="friend-request-actions">
+                                    <form method="POST" style="display: inline;">
+                                        {% csrf_token %}
+                                        <input type="hidden" name="request_id" value="{{ req.id }}">
+                                        <button type="submit" name="action" value="approve" class="action-button accept-btn">Approve</button>
+                                    </form>
+                                    <form method="POST" style="display: inline;">
+                                        {% csrf_token %}
+                                        <input type="hidden" name="request_id" value="{{ req.id }}">
+                                        <button type="button" class="action-button reject-btn" onclick="showRejectionReason('{{ req.id }}')">Reject</button>
+                                    </form>
+                                </div>
+                            </div>
                         </div>
+                    {% endfor %}
+                {% else %}
+                    <div class="card">
+                        <h3>No pending community requests</h3>
+                    </div>
+                {% endif %}
+            </div>
 
-                        <div class="form-group" style="margin-top: 10px;">
-                            <button type="submit" name="action" value="approve" class="btn btn-submit">✅ Approve</button>
-                            <button type="submit" name="action" value="reject" class="btn btn-danger">❌ Reject</button>
-                        </div>
-                    </form>
-                </div>
-            {% endfor %}
-        {% else %}
-            <p>No pending requests.</p>
-        {% endif %}
-
-        <div style="margin-top: 20px;">
-            <a href="{% url 'main' %}" class="btn btn-secondary">← Back to Dashboard</a>
+            <a href="{% url 'main' %}" class="back-button">← Back to Dashboard</a>
         </div>
     </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // Handle auto-hiding messages
+            const messages = document.querySelectorAll('.alert');
+            messages.forEach(message => {
+                setTimeout(() => {
+                    message.classList.add('fade-out');
+                    setTimeout(() => message.remove(), 300);
+                }, 3000);
+            });
+        });
+
+        function showRejectionReason(requestId) {
+            const textarea = document.getElementById(`rejection_reason_${requestId}`);
+            textarea.style.display = 'block';
+            
+            // Replace the reject button with a confirm button
+            const rejectButton = textarea.parentElement.querySelector('.reject-btn');
+            rejectButton.textContent = 'Confirm Rejection';
+            rejectButton.onclick = function() {
+                const reason = textarea.value.trim();
+                if (!reason) {
+                    alert('Please provide a reason for rejection');
+                    return;
+                }
+                
+                // Submit the form with rejection reason
+                const form = this.closest('form');
+                const input = document.createElement('input');
+                input.type = 'hidden';
+                input.name = 'rejection_reason';
+                input.value = reason;
+                form.appendChild(input);
+                
+                const actionInput = document.createElement('input');
+                actionInput.type = 'hidden';
+                actionInput.name = 'action';
+                actionInput.value = 'reject';
+                form.appendChild(actionInput);
+                
+                form.submit();
+            };
+        }
+    </script>
 </body>
 </html>

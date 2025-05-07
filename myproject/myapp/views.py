@@ -6,7 +6,7 @@ from .forms import CustomUserCreationForm, CommunityRequestForm, EventForm, Post
 from django.contrib import messages
 from django.db import models, IntegrityError
 from django.db.models import Q
-from .models import CommunityRequest, Community, Event, CustomUser, FriendRequest
+from .models import CommunityRequest, Community, Event, CustomUser, FriendRequest, RemovedMember
 from django.http import JsonResponse
 import json
 from django.utils import timezone
@@ -127,6 +127,12 @@ def main_view(request):
     # Get user's community IDs for filtering events
     user_community_ids = user_communities.values_list('id', flat=True)
     
+    # Get pending friend requests
+    pending_requests = FriendRequest.objects.filter(
+        to_user=user,
+        status='pending'
+    ).select_related('from_user').order_by('-created_at')
+    
     if user.is_superuser:
         # For admins, show all events regardless of type or community
         events = Event.objects.all()
@@ -144,11 +150,10 @@ def main_view(request):
         # Combine the two querysets
         events = public_events | community_events
     
-    # Filter out events that have passed their end date
-    from django.utils import timezone
+    # Filter out past events
     current_time = timezone.now()
     events = events.filter(
-        models.Q(end_date__isnull=True) | models.Q(end_date__gt=current_time)
+        Q(end_date__isnull=True) | Q(end_date__gt=current_time)
     )
 
     context = {
@@ -163,6 +168,7 @@ def main_view(request):
         "is_superuser": user.is_superuser, 
         "events": events,
         'form': form, #Sumanth
+        'friend_requests': pending_requests,  # Add friend requests to context
     }
     return render(request, "accounts/main.html", context)
 
@@ -185,10 +191,17 @@ def request_community_creation_view(request):
             request_obj.requested_by = request.user
             request_obj.save()
             messages.success(request, "Your community creation request was sent to an admin for review")
-
             return redirect("main")
     else:
         form = CommunityRequestForm()
+        # Check for rejected requests for this user
+        rejected_request = CommunityRequest.objects.filter(
+            requested_by=request.user,
+            is_rejected=True
+        ).order_by('-reviewed_at').first()
+        
+        if rejected_request and rejected_request.rejection_reason:
+            messages.error(request, f"Your previous community creation request was rejected. Reason: {rejected_request.rejection_reason}")
 
     return render(request, "communityForm.html", {"form": form})
 
@@ -207,7 +220,7 @@ def community_request_review_view(request):
         elif action == "reject":
             reason = request.POST.get("rejection_reason", "")
             request_obj.reject(request.user, reason)
-            messages.error(request, f"Rejected community: {request_obj.name}")
+            messages.error(request, f"Rejected community: {request_obj.name}. Reason: {reason}")
 
     return render(request, "review_admin_dashboard.html", {"pending_requests": pending_requests})
 
@@ -238,13 +251,25 @@ def create_event_view(request, community_id):
 @login_required
 def join_community(request, community_id):
     community = get_object_or_404(Community, id=community_id)
+    
+    # Check if user was previously removed from this community
+    if RemovedMember.objects.filter(user=request.user, community=community).exists():
+        messages.error(request, f"You cannot join {community.name} as you were previously removed by the community leader.")
+        # Redirect to main with communities tab active and ensure messages are displayed
+        response = redirect('main')
+        response['Location'] += '#communities'
+        return response
+        
     if request.user in community.members.all():
         messages.info(request, "You are already a member of this community.")
     else:
         community.members.add(request.user)
         messages.success(request, f"You have successfully joined the community: {community.name}")
+    
     # Redirect to main with communities tab active
-    return redirect('/myapp/main/#communities')
+    response = redirect('main')
+    response['Location'] += '#communities'
+    return response
 
 @login_required
 def leave_community(request):
@@ -285,32 +310,34 @@ def delete_community(request):
 @login_required
 def search_communities(request):
     user = request.user
-    query = request.GET.get('query', '').strip()
+    query = request.GET.get('community_query', '').strip()
     search_results = []
     search_query = ''
     
     if query:
         search_query = query
-        # Search for communities that match query in name, description, or tags
         search_results = Community.objects.filter(
             Q(name__icontains=query) | 
             Q(description__icontains=query) | 
             Q(tags__icontains=query)
         ).distinct()
     else:
-        # If no query, return all communities
         search_results = Community.objects.all()
-    
-    # Get user communities for the sidebar
+
     joined_communities = user.joined_communities.all()
     owned_communities = user.owned_communities.all()
     user_communities = (joined_communities | owned_communities).distinct()
     
-    # Get events for the events tab
+    # Get pending friend requests
+    pending_requests = FriendRequest.objects.filter(
+        to_user=user,
+        status='pending'
+    ).select_related('from_user').order_by('-created_at')
+    
     events = Event.objects.all()
     
     context = {
-        'search_query': search_query,
+        'community_search_query': query,  # Used in template for community search
         'all_communities': search_results,
         'user_communities': user_communities,
         'full_name': user.get_full_name(),
@@ -321,7 +348,8 @@ def search_communities(request):
         'student_number': user.student_number,
         'is_superuser': user.is_superuser,
         'events': events,
-        'active_tab': 'communities',  # Set the active tab to communities
+        'active_tab': 'communities',
+        'friend_requests': pending_requests
     }
     
     return render(request, 'accounts/main.html', context)
@@ -329,39 +357,40 @@ def search_communities(request):
 @login_required
 def search_events(request):
     user = request.user
-    query = request.GET.get('query', '').strip()
+    query = request.GET.get('event_query', '').strip()
     search_query = ''
     
     # Get user's community IDs for filtering events
     joined_communities = user.joined_communities.all()
-    owned_communities = user.joined_communities.all()
+    owned_communities = user.owned_communities.all()
     user_communities = (joined_communities | owned_communities).distinct()
     user_community_ids = user_communities.values_list('id', flat=True)
+    
+    # Get pending friend requests
+    pending_requests = FriendRequest.objects.filter(
+        to_user=user,
+        status='pending'
+    ).select_related('from_user').order_by('-created_at')
     
     if user.is_superuser:
         # For admins, allow searching across all events
         if query:
             search_query = query
-            # Search all events matching the query
             search_results = Event.objects.filter(
-                models.Q(title__icontains=query) | 
-                models.Q(description__icontains=query) | 
-                models.Q(community__name__icontains=query)
+                Q(title__icontains=query) | 
+                Q(description__icontains=query) | 
+                Q(community__name__icontains=query)
             )
         else:
-            # If no query, return all events
             search_results = Event.objects.all()
     else:
-        # Regular users only see public events and events from their communities
         if query:
             search_query = query
             # Get public events matching the query
-            public_events = Event.objects.filter(
-                event_type='Public'
-            ).filter(
-                models.Q(title__icontains=query) | 
-                models.Q(description__icontains=query) | 
-                models.Q(community__name__icontains=query)
+            public_events = Event.objects.filter(event_type='Public').filter(
+                Q(title__icontains=query) | 
+                Q(description__icontains=query) | 
+                Q(community__name__icontains=query)
             )
             
             # Get community-only events for communities the user is a member of
@@ -369,15 +398,14 @@ def search_events(request):
                 event_type='Community',
                 community__id__in=user_community_ids
             ).filter(
-                models.Q(title__icontains=query) | 
-                models.Q(description__icontains=query) | 
-                models.Q(community__name__icontains=query)
+                Q(title__icontains=query) | 
+                Q(description__icontains=query) | 
+                Q(community__name__icontains=query)
             )
             
-            # Combine the querysets
             search_results = public_events | community_events
         else:
-            # If no query, return all accessible events (public or from user's communities)
+            # No query - show all accessible events
             public_events = Event.objects.filter(event_type='Public')
             community_events = Event.objects.filter(
                 event_type='Community',
@@ -385,15 +413,16 @@ def search_events(request):
             )
             search_results = public_events | community_events
     
-    # Filter out events that have passed their end date
-    from django.utils import timezone
+    # Filter out past events
     current_time = timezone.now()
     search_results = search_results.filter(
-        models.Q(end_date__isnull=True) | models.Q(end_date__gt=current_time)
-    )
+        Q(end_date__isnull=True) | Q(end_date__gt=current_time)
+    ).order_by('date')
+
+    all_communities = Community.objects.all()
     
     context = {
-        'search_query': search_query,
+        'event_search_query': query,  # Used in template for event search
         'events': search_results,
         'user_communities': user_communities,
         'full_name': user.get_full_name(),
@@ -404,6 +433,8 @@ def search_events(request):
         'student_number': user.student_number,
         'is_superuser': user.is_superuser,
         'active_tab': 'events',
+        'friend_requests': pending_requests,
+        'all_communities': all_communities
     }
     
     return render(request, 'accounts/main.html', context)
@@ -551,27 +582,28 @@ def get_community_members(request, community_id):
         current_user = request.user
         members_data = []
         
-        # Add creator first
+        # Add creator
         creator = community.created_by
-        if creator != current_user:  # Don't show friend options for self
-            friend_status = get_friend_status(current_user, creator)
-            members_data.append({
-                'id': creator.id,
-                'name': f"{creator.get_full_name()} ({creator.username})",
-                'role': 'Community Leader',
-                'friend_status': friend_status
-            })
+        creator_data = {
+            'id': str(creator.id),  # Convert to string to match JavaScript comparison
+            'name': f"{creator.get_full_name()} ({creator.username})",
+            'role': 'Community Leader',
+        }
+        if creator != current_user:
+            creator_data['friend_status'] = get_friend_status(current_user, creator)
+        members_data.append(creator_data)
         
         # Add other members
         for member in community.members.all():
-            if member != current_user and member != creator:  # Skip self and creator
-                friend_status = get_friend_status(current_user, member)
-                members_data.append({
-                    'id': member.id,
+            if member != creator:  # Skip creator as they're already added
+                member_data = {
+                    'id': str(member.id),  # Convert to string to match JavaScript comparison
                     'name': f"{member.get_full_name()} ({member.username})",
                     'role': 'Member',
-                    'friend_status': friend_status
-                })
+                }
+                if member != current_user:
+                    member_data['friend_status'] = get_friend_status(current_user, member)
+                members_data.append(member_data)
         
         return JsonResponse({
             'success': True,
@@ -615,12 +647,14 @@ def send_friend_request(request, user_id):
         messages.error(request, "You cannot send a friend request to yourself.")
         return JsonResponse({'success': False, 'error': 'Cannot friend yourself'})
 
-    # Check if a friend request already exists
-    if FriendRequest.objects.filter(
-        (models.Q(from_user=from_user) & models.Q(to_user=to_user)) |
-        (models.Q(from_user=to_user) & models.Q(to_user=from_user)),
+    # Check if a friend request already exists in either direction
+    existing_request = FriendRequest.objects.filter(
+        (models.Q(from_user=from_user, to_user=to_user) |
+         models.Q(from_user=to_user, to_user=from_user)),
         status='pending'
-    ).exists():
+    ).first()
+
+    if existing_request:
         messages.error(request, "A friend request already exists between you and this user.")
         return JsonResponse({'success': False, 'error': 'Request already exists'})
 
@@ -629,9 +663,10 @@ def send_friend_request(request, user_id):
         messages.error(request, "You are already friends with this user.")
         return JsonResponse({'success': False, 'error': 'Already friends'})
 
+    # Create the friend request
     FriendRequest.objects.create(from_user=from_user, to_user=to_user)
     messages.success(request, f"Friend request sent to {to_user.get_full_name()}")
-    return JsonResponse({'success': True})
+    return JsonResponse({'success': True, 'redirect': '/myapp/main/#home'})
 
 @login_required
 def handle_friend_request(request, request_id):
@@ -649,8 +684,17 @@ def handle_friend_request(request, request_id):
 
 @login_required
 def friend_requests_view(request):
-    pending_requests = FriendRequest.objects.filter(to_user=request.user, status='pending')
-    return render(request, 'accounts/main.html', {'friend_requests': pending_requests, 'active_tab': 'friend-requests'})
+    # Get all pending friend requests for the current user
+    pending_requests = FriendRequest.objects.filter(
+        to_user=request.user,
+        status='pending'
+    ).select_related('from_user').order_by('-created_at')
+    
+    context = {
+        'friend_requests': pending_requests,
+        'active_tab': 'friend-requests',
+    }
+    return render(request, 'accounts/main.html', context)
 
 @login_required
 def friends_view(request):
@@ -671,8 +715,9 @@ def remove_friend(request, friend_id):
         return redirect('/myapp/main/#friends')
     return redirect('/myapp/main/#friends')
 
+@login_required
 def search_users(request):
-    search_query = request.GET.get('query', '')
+    search_query = request.GET.get('user_query', '')
     if search_query:
         # Search in users by name or interests
         user_search_results = CustomUser.objects.filter(
@@ -680,12 +725,23 @@ def search_users(request):
             Q(last_name__icontains=search_query) |
             Q(interests__icontains=search_query)
         ).exclude(id=request.user.id)  # Exclude the current user
+
+        # Annotate each user with their friend request status
+        for user_result in user_search_results:
+            pending_request = FriendRequest.objects.filter(
+                (Q(from_user=request.user) & Q(to_user=user_result)) |
+                (Q(from_user=user_result) & Q(to_user=request.user)),
+                status='pending'
+            ).exists()
+            is_friend = request.user.friends.filter(id=user_result.id).exists()
+            
+            user_result.friend_status = 'friends' if is_friend else 'pending' if pending_request else 'send'
     else:
         user_search_results = []
 
     context = {
         'user_search_results': user_search_results,
-        'search_query': search_query,
+        'user_search_query': search_query,  # Changed to user_search_query
         'full_name': f"{request.user.first_name} {request.user.last_name}",
         'email': request.user.email,
         'student_number': request.user.student_number,
@@ -724,3 +780,41 @@ def update_profile_image(request):
         
         return JsonResponse({'success': True})
     return JsonResponse({'success': False, 'error': 'Invalid request'})
+
+@login_required
+def remove_community_member(request, community_id, member_id):
+    if request.method == "POST":
+        community = get_object_or_404(Community, id=community_id)
+        member = get_object_or_404(CustomUser, id=member_id)
+        
+        # Check if the current user is the community leader
+        if request.user != community.created_by:
+            return JsonResponse({
+                'success': False,
+                'error': 'Only community leaders can remove members'
+            })
+            
+        # Can't remove the community leader
+        if member == community.created_by:
+            return JsonResponse({
+                'success': False,
+                'error': 'Cannot remove the community leader'
+            })
+            
+        # Remove the member and create a RemovedMember record
+        community.members.remove(member)
+        RemovedMember.objects.create(
+            user=member,
+            community=community,
+            removed_by=request.user
+        )
+        
+        return JsonResponse({
+            'success': True,
+            'message': f'Successfully removed {member.get_full_name()} from the community'
+        })
+        
+    return JsonResponse({
+        'success': False,
+        'error': 'Invalid request method'
+    })
