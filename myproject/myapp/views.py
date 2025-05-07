@@ -6,7 +6,7 @@ from .forms import CustomUserCreationForm, CommunityRequestForm, EventForm, Post
 from django.contrib import messages
 from django.db import models, IntegrityError
 from django.db.models import Q
-from .models import CommunityRequest, Community, Event, CustomUser, FriendRequest, RemovedMember, Post, Notification
+from .models import CommunityRequest, Community, Event, CustomUser, FriendRequest, RemovedMember, Post, Notification, Comments
 from django.http import JsonResponse
 import json
 from django.utils import timezone
@@ -193,6 +193,10 @@ def request_community_creation_view(request):
             request_obj = form.save(commit=False)
             request_obj.requested_by = request.user
             request_obj.save()
+            Notification.objects.create(
+                user=request.user,
+                message=f"Your community creation request was sent successfully!"
+            )
             messages.success(request, "Your community creation request was sent to an admin for review")
             return redirect("main")
     else:
@@ -223,6 +227,11 @@ def community_request_review_view(request):
         elif action == "reject":
             reason = request.POST.get("rejection_reason", "")
             request_obj.reject(request.user, reason)
+
+            Notification.objects.create(
+                user=request_obj.requested_by,
+                message=f"Your community creation request for '{request_obj.name}' was denied because: {reason}"
+            )
             messages.error(request, f"Rejected community: {request_obj.name}. Reason: {reason}")
 
     return render(request, "review_admin_dashboard.html", {"pending_requests": pending_requests})
@@ -243,6 +252,10 @@ def create_event_view(request, community_id):
             event.community = community
             event.created_by = request.user
             event.save()
+            Notification.objects.create(
+                user=request.user,
+                message=f"Your event '{event.title}' was created successfully!"
+            )
             messages.success(request, 'Event created successfully!')
             return redirect('main')  # Redirect to the main page or another appropriate page
         
@@ -267,6 +280,10 @@ def join_community(request, community_id):
         messages.info(request, "You are already a member of this community.")
     else:
         community.members.add(request.user)
+        Notification.objects.create(
+                user=request.user,
+                message=f"You have joined the community '{community.name}' successfully!"
+            )
         messages.success(request, f"You have successfully joined the community: {community.name}")
     
     # Redirect to main with communities tab active
@@ -281,6 +298,10 @@ def leave_community(request):
         community = get_object_or_404(Community, id=community_id)
         # Remove the user from the community's members
         community.members.remove(request.user)
+        Notification.objects.create(
+                user=request.user,
+                message=f"You have left the community '{community.name}' successfully!"
+            )
         messages.success(request, f"You have left the community: {community.name}")
         # Redirect back to the communities page
         return redirect('/myapp/main/#communities')
@@ -300,6 +321,10 @@ def delete_community(request):
             # Delete the community (CASCADE will automatically delete related events and posts)
             community_name = community.name
             community.delete()
+            Notification.objects.create(
+                user=request.user,
+                message=f"Your have deleted the community '{community_name}' successfully!"
+            )
             
             messages.success(request, f"Community '{community_name}' has been deleted successfully.")
             return redirect('/myapp/main/#communities')
@@ -463,6 +488,10 @@ def toggle_event_interest(request, event_id):
             # User is not interested and capacity is not reached, so add interest
             event.interested_users.add(user)
             is_interested = True
+            Notification.objects.create(
+                user=request.user,
+                message=f"You have registered interest in the event: {event.title}!"
+            )
             messages.success(request, f"You are now registered for the event: {event.title}")
     
     # If request is AJAX, return JSON response
@@ -493,6 +522,10 @@ def update_event_view(request, event_id):
             updated_event.community = community  # Ensure community stays the same
             updated_event.created_by = request.user  # Keep original creator
             updated_event.save()
+            Notification.objects.create(
+                user=request.user,
+                message=f"Event '{updated_event.title}' updated successfully!"
+            )
             messages.success(request, 'Event updated successfully!')
             return redirect('/myapp/main/#events')
     else:
@@ -549,14 +582,6 @@ def load_community_posts(request, community_id):
     comment_form = CommentForm()
     return render(request, 'postList.html', {'posts': posts, 'comment_form': comment_form})
 
-# @login_required #Sumanth
-# def delete_post(request, post_id):
-#     post = get_object_or_404(post_id)
-#     if request.method == 'POST':
-#         post.delete()
-#         messages.success(request, "Post deleted succesfully)")
-#         return redirect("main")
-
 @login_required
 def save_academic_profile(request):
     if request.method == 'POST':
@@ -566,6 +591,10 @@ def save_academic_profile(request):
             user.campus_involvement = data.get('campus_involvement', '')
             user.achievements = data.get('achievements', '')
             user.save()
+            Notification.objects.create(
+                user=request.user,
+                message=f"Your new academic profile has been saved successfully!"
+            )
             return JsonResponse({'success': True})
         except Exception as e:
             return JsonResponse({'success': False, 'error': str(e)})
@@ -581,6 +610,10 @@ def save_interests(request):
             if data.get('is_onboarding'):
                 user.is_first_login = False
             user.save()
+            Notification.objects.create(
+                user=request.user,
+                message=f"Your interests have been saved successfully!"
+            )
             return JsonResponse({'success': True})
         except Exception as e:
             return JsonResponse({'success': False, 'error': str(e)})
@@ -676,6 +709,10 @@ def send_friend_request(request, user_id):
 
     # Create the friend request
     FriendRequest.objects.create(from_user=from_user, to_user=to_user)
+    Notification.objects.create(
+        user=request.user,
+        message=f"You have sent a friend request to {to_user.get_full_name()}!"
+    )
     messages.success(request, f"Friend request sent to {to_user.get_full_name()}")
     return JsonResponse({'success': True, 'redirect': '/myapp/main/#home'})
 
@@ -686,6 +723,10 @@ def handle_friend_request(request, request_id):
 
     if action == 'accept':
         friend_request.accept()
+        Notification.objects.create(
+            user=request.user,
+            message=f"You are now friends with {friend_request.from_user.get_full_name()}!"
+        )
         messages.success(request, f"You are now friends with {friend_request.from_user.get_full_name()}")
     elif action == 'reject':
         friend_request.reject()
@@ -721,7 +762,10 @@ def remove_friend(request, friend_id):
         # Remove both users from each other's friends list
         user.friends.remove(friend)
         friend.friends.remove(user)
-        
+        Notification.objects.create(
+            user=request.user,
+            message=f"You have succesfully removed {friend.get_full_name()} from your friends list!"
+        )
         messages.success(request, f"{friend.get_full_name()} has been removed from your friends list.")
         return redirect('/myapp/main/#friends')
     return redirect('/myapp/main/#friends')
@@ -788,6 +832,10 @@ def update_profile_image(request):
         # Update user's profile_image field
         user.profile_image = f'profile_images/{filename}'
         user.save()
+        Notification.objects.create(
+            user=request.user,
+            message=f"You have successfully updated your profile image!"
+        )
         
         return JsonResponse({'success': True})
     return JsonResponse({'success': False, 'error': 'Invalid request'})
@@ -819,6 +867,10 @@ def remove_community_member(request, community_id, member_id):
             community=community,
             removed_by=request.user
         )
+        Notification.objects.create(
+            user=request.user,
+            message=f"You have succesfully removed {member.get_full_name()} from the community '{community.name}'!"
+        )
         
         return JsonResponse({
             'success': True,
@@ -841,6 +893,10 @@ def add_comment(request, post_id):
             comment.post = post
             comment.user = request.user
             comment.save()
+            Notification.objects.create(
+                user=request.user,
+                message=f"Your have succesfully commented on the post '{post.title}'!"
+            )
             messages.success(request, "Comment added.")
         else:
             messages.error(request, "Error adding comment.")
@@ -851,3 +907,40 @@ def add_comment(request, post_id):
 def notification_view(request):
     notifications = Notification.objects.filter(user=request.user).order_by('-created_at')
     return render(request, 'notifications.html', {'notifications': notifications})
+
+@login_required  #SUMANTH
+def delete_comment(request, comment_id):
+    comment = get_object_or_404(Comments, id=comment_id)
+    post = comment.post
+    # Allow deletion only if the current user created the comment or is the community leader
+    if request.user != comment.user and request.user != post.community.created_by:
+        messages.error(request, "You do not have permission to delete this comment.")
+        return redirect('main')
+    
+    if request.method == 'POST':
+        comment.delete()
+        Notification.objects.create(
+            user=request.user,
+            message=f"You have successfully deleted your comment on the post '{post.title}'!"
+        )
+        messages.success(request, "Comment deleted.")
+    
+    return redirect('main')
+
+@login_required
+def delete_post(request, post_id):
+    post = get_object_or_404(Post, id=post_id)
+    # Allow deletion only if the current user created the post or is the community leader for that community
+    if request.user != post.user and request.user != post.community.created_by:
+        messages.error(request, "You do not have permission to delete this post.")
+        return redirect('main')
+    
+    if request.method == 'POST':
+        post.delete()
+        Notification.objects.create(
+            user=request.user,
+            message=f"You have successfully deleted the post '{post.title}'!"
+        )
+        messages.success(request, "Post deleted.")
+    
+    return redirect('main')

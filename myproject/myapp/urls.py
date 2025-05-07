@@ -7,7 +7,8 @@ from .views import (
     search_communities, search_events, create_post, load_community_posts, toggle_event_interest,
     update_event_view, delete_event, save_academic_profile, save_interests, get_community_members,
     send_friend_request, handle_friend_request, friend_requests_view, friends_view, remove_friend,
-    search_users, update_profile_image, remove_community_member, add_comment, notification_view
+    search_users, update_profile_image, remove_community_member, add_comment, notification_view,
+    delete_comment, delete_post
 )
 
 urlpatterns = [
@@ -42,4 +43,6 @@ urlpatterns = [
     path('update-profile-image/', update_profile_image, name='update_profile_image'),
     path('post/<int:post_id>/comment/', add_comment, name='add_comment'), #SUMANTH
     path('notifications/', notification_view, name='notifications'),
+    path('delete-comment/<int:comment_id>/', delete_comment, name='delete_comment'), #SUMANTH
+    path('delete-post/<int:post_id>/', delete_post, name='delete_post'), #SUMANTH
 ]

@@ -1,5 +1,526 @@
 {% for post in posts %}
     {% include 'post.html' %}
 {% empty %}
-  <p>No posts yet for this community.</p>
+  <div class="no-posts-container">
+    <svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" fill="currentColor" viewBox="0 0 16 16">
+      <path d="M14 1a1 1 0 0 1 1 1v12a1 1 0 0 1-1 1H2a1 1 0 0 1-1-1V2a1 1 0 0 1 1-1h12zM2 0a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V2a2 2 0 0 0-2-2H2z"/>
+      <path d="M8 4a.5.5 0 0 1 .5.5v3h3a.5.5 0 0 1 0 1h-3v3a.5.5 0 0 1-1 0v-3h-3a.5.5 0 0 1 0-1h3v-3A.5.5 0 0 1 8 4z"/>
+    </svg>
+    <p>No posts yet in this community.</p>
+    <p>Be the first to share something!</p>
+  </div>
 {% endfor %}
+
+<style>
+  /* Post Cards */
+  .post-card {
+    background-color: var(--app-content-secondary-color, #fff);
+    border-radius: 4px;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+    margin-bottom: 16px;
+    position: relative;
+    overflow: hidden;
+    transition: box-shadow 0.15s ease;
+  }
+  
+  .post-card:hover {
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+  }
+  
+  /* Post Header */
+  .post-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 12px 16px;
+    border-bottom: 1px solid rgba(0, 0, 0, 0.07);
+  }
+  
+  .post-user-info {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  
+  .post-author-details, .comment-author-details {
+    display: flex;
+    flex-direction: column;
+  }
+  
+  .post-user-avatar, .comment-user-avatar {
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    object-fit: cover;
+  }
+  
+  .post-user-avatar-placeholder, .comment-user-avatar-placeholder {
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    background-color: #ff4500;  /* Reddit Orange */
+    color: white;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: bold;
+    font-size: 14px;
+  }
+  
+  .post-author, .comment-author {
+    font-weight: 600;
+    font-size: 12px;
+    color: var(--app-content-main-color, #1c1c1c);
+  }
+  
+  .post-date, .comment-date {
+    font-size: 11px;
+    color: #7c7c7c;
+  }
+  
+  /* Post Actions Dropdown */
+  .post-actions, .comment-actions {
+    position: relative;
+  }
+  
+  .post-action-btn, .comment-action-btn {
+    background: none;
+    border: none;
+    padding: 5px;
+    border-radius: 50%;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #878a8c;
+    transition: background-color 0.15s, color 0.15s;
+  }
+  
+  .post-action-btn:hover, .comment-action-btn:hover {
+    background-color: rgba(0, 0, 0, 0.05);
+    color: #1c1c1c;
+  }
+  
+  .post-action-dropdown, .comment-action-dropdown {
+    position: absolute;
+    right: 0;
+    top: 100%;
+    z-index: 100;
+    display: none;
+    min-width: 160px;
+    background-color: var(--app-content-secondary-color, #fff);
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.2);
+    border-radius: 4px;
+    padding: 8px 0;
+    margin-top: 2px;
+  }
+  
+  .post-action-link, .comment-action-link {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 8px 16px;
+    text-decoration: none;
+    color: var(--app-content-main-color, #1c1c1c);
+    font-size: 14px;
+    transition: background-color 0.15s;
+  }
+  
+  .post-action-link:hover, .comment-action-link:hover {
+    background-color: rgba(0, 0, 0, 0.05);
+  }
+  
+  .delete-action {
+    color: #ff4500;
+  }
+  
+  /* Delete button */
+  .delete-btn {
+    background: none;
+    border: none;
+    padding: 5px;
+    border-radius: 50%;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #ff4500;  /* Reddit Orange/Red */
+    transition: background-color 0.15s, color 0.15s;
+  }
+  
+  .delete-btn:hover {
+    background-color: rgba(255, 69, 0, 0.1);
+    color: #e03d00;
+  }
+
+  /* Post Content */
+  .post-content {
+    padding: 12px 16px;
+  }
+  
+  .post-title {
+    font-size: 18px;
+    font-weight: 600;
+    margin-top: 0;
+    margin-bottom: 8px;
+    color: var(--app-content-main-color, #1c1c1c);
+    line-height: 1.3;
+  }
+  
+  .post-text {
+    font-size: 14px;
+    line-height: 1.5;
+    margin-bottom: 16px;
+    color: var(--app-content-main-color, #1c1c1c);
+    white-space: pre-line;
+  }
+  
+  /* Post Attachment */
+  .post-attachment {
+    margin: 8px 0 16px;
+  }
+  
+  .post-image {
+    max-width: 100%;
+    max-height: 600px;
+    border-radius: 4px;
+    display: block;
+  }
+  
+  .attachment-link {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 8px 16px;
+    background-color: rgba(0, 0, 0, 0.05);
+    border-radius: 4px;
+    text-decoration: none;
+    color: var(--app-content-main-color, #1c1c1c);
+    font-size: 14px;
+    transition: background-color 0.15s;
+  }
+  
+  .attachment-link:hover {
+    background-color: rgba(0, 0, 0, 0.08);
+  }
+  
+  /* Post Metadata */
+  .post-metadata {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    font-size: 12px;
+    margin-top: 8px;
+  }
+  
+  .post-tags {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+  }
+  
+  .post-tag {
+    background-color: #f2f8fc;
+    color: #0079d3;
+    padding: 2px 8px;
+    border-radius: 100px;
+    font-size: 12px;
+    font-weight: 500;
+  }
+  
+  .post-category {
+    padding: 2px 8px;
+    border-radius: 100px;
+    background-color: #ff4500;
+    color: white;
+    font-size: 12px;
+    font-weight: 500;
+  }
+  
+  /* Post Interactions */
+  .post-interactions {
+    display: flex;
+    padding: 6px 16px;
+    border-top: 1px solid rgba(0, 0, 0, 0.07);
+    border-bottom: 1px solid rgba(0, 0, 0, 0.07);
+  }
+  
+  .post-interaction-btn, .post-share-btn, .comment-reply-btn {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    background: none;
+    border: none;
+    padding: 8px 12px;
+    color: #878a8c;
+    font-size: 12px;
+    font-weight: 600;
+    border-radius: 4px;
+    cursor: pointer;
+    transition: background-color 0.15s, color 0.15s;
+  }
+  
+  .post-interaction-btn:hover, .post-share-btn:hover, .comment-reply-btn:hover {
+    background-color: rgba(0, 0, 0, 0.05);
+    color: #1c1c1c;
+  }
+  
+  .post-comment-count {
+    margin-left: 2px;
+  }
+  
+  /* Comments Section */
+  .post-comments-section {
+    padding: 16px;
+    background-color: var(--app-bg, #f8f9fa);
+  }
+  
+  .add-comment-form {
+    margin-bottom: 16px;
+  }
+  
+  .comment-form-group {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+  }
+  
+  .comment-form-group textarea {
+    border: 1px solid var(--table-border, #edeff1);
+    border-radius: 4px;
+    padding: 10px;
+    font-family: inherit;
+    font-size: 14px;
+    resize: vertical;
+    min-height: 80px;
+    background-color: var(--app-content-secondary-color, white);
+    color: var(--app-content-main-color, #1c1c1c);
+  }
+  
+  .comment-form-group textarea:focus {
+    outline: none;
+    border-color: #0079d3;
+    box-shadow: 0 0 0 1px #0079d3;
+  }
+  
+  .comment-submit-btn {
+    align-self: flex-end;
+    background-color: #0057a3;
+    color: white;
+    border: none;
+    border-radius: 100px;
+    padding: 6px 16px;
+    font-size: 12px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: background-color 0.15s;
+  }
+  
+  .comment-submit-btn:hover {
+    background-color: #016bc7;
+  }
+  
+  /* Reply Form */
+  .comment-reply-form {
+    margin-top: 8px;
+    margin-left: 24px;
+    background-color: rgba(0, 0, 0, 0.05);
+    padding: 10px;
+    border-radius: 4px;
+    border-left: 2px solid #0079d3;
+  }
+  
+  .reply-form-actions {
+    display: flex;
+    justify-content: flex-end;
+    gap: 8px;
+    margin-top: 8px;
+  }
+  
+  .reply-cancel-btn {
+    background: none;
+    border: none;
+    padding: 6px 12px;
+    font-size: 12px;
+    font-weight: 600;
+    color: #878a8c;
+    cursor: pointer;
+    border-radius: 100px;
+    transition: background-color 0.15s, color 0.15s;
+  }
+  
+  .reply-cancel-btn:hover {
+    background-color: rgba(0, 0, 0, 0.05);
+    color: #1c1c1c;
+  }
+  
+  .comments-list {
+    margin-top: 12px;
+  }
+  
+  .comment-item {
+    background-color: var(--app-content-secondary-color, white);
+    padding: 12px;
+    border-radius: 4px;
+    margin-bottom: 12px;
+    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
+  }
+  
+  .comment-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    margin-bottom: 8px;
+  }
+  
+  .comment-user-info {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  
+  .comment-text {
+    margin: 0;
+    font-size: 14px;
+    line-height: 1.4;
+    color: var(--app-content-main-color, #1c1c1c);
+    white-space: pre-line;
+    margin-bottom: 6px;
+  }
+  
+  .comment-interactions {
+    display: flex;
+    margin-top: 8px;
+  }
+  
+  .comment-reply-btn {
+    font-size: 12px;
+    padding: 4px 8px;
+  }
+  
+  .no-comments {
+    color: var(--app-content-main-color, #878a8c);
+    font-style: italic;
+    text-align: center;
+    padding: 16px;
+    background-color: var(--app-content-secondary-color, white);
+    border-radius: 4px;
+    font-size: 14px;
+  }
+  
+  /* No Posts */
+  .no-posts-container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 48px 16px;
+    text-align: center;
+    color: #878a8c;
+    background-color: var(--app-content-secondary-color, #fff);
+    border-radius: 4px;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+  }
+  
+  .no-posts-container svg {
+    margin-bottom: 16px;
+    color: #ccc;
+  }
+  
+  .no-posts-container p {
+    margin: 4px 0;
+    font-size: 14px;
+  }
+</style>
+
+<script>
+  // Toggle the dropdown menus for posts and comments
+  function togglePostActions(event, button) {
+    event.stopPropagation(); // Prevent event from bubbling up
+    const dropdown = button.nextElementSibling;
+    
+    // Close all dropdowns first
+    document.querySelectorAll('.post-action-dropdown, .comment-action-dropdown').forEach(el => {
+      if (el !== dropdown) {
+        el.style.display = 'none';
+      }
+    });
+    
+    // Toggle the current dropdown
+    dropdown.style.display = dropdown.style.display === 'block' ? 'none' : 'block';
+  }
+  
+  function toggleCommentActions(event, button) {
+    event.stopPropagation(); // Prevent event from bubbling up
+    const dropdown = button.nextElementSibling;
+    
+    // Close all dropdowns first
+    document.querySelectorAll('.post-action-dropdown, .comment-action-dropdown').forEach(el => {
+      if (el !== dropdown) {
+        el.style.display = 'none';
+      }
+    });
+    
+    // Toggle the current dropdown
+    dropdown.style.display = dropdown.style.display === 'block' ? 'none' : 'block';
+  }
+  
+  // Function to focus on the comment box when "Add comment" is clicked
+  function focusCommentBox(postId) {
+    const commentBox = document.getElementById(`comment-box-${postId}`);
+    if (commentBox) {
+      commentBox.focus();
+      // Scroll to the comment box
+      commentBox.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    }
+  }
+  
+  // Show reply form when "Reply" button is clicked
+  function showReplyForm(postId, commentId) {
+    // Hide all other reply forms first
+    document.querySelectorAll('.comment-reply-form').forEach(el => {
+      el.style.display = 'none';
+    });
+    
+    // Show the specific reply form
+    const replyForm = document.getElementById(`reply-form-${commentId}`);
+    if (replyForm) {
+      replyForm.style.display = 'block';
+      // Focus on the textarea
+      const textarea = replyForm.querySelector('textarea');
+      if (textarea) {
+        textarea.focus();
+      }
+      // Scroll to the reply form
+      replyForm.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    }
+  }
+  
+  // Hide reply form when "Cancel" button is clicked
+  function hideReplyForm(commentId) {
+    const replyForm = document.getElementById(`reply-form-${commentId}`);
+    if (replyForm) {
+      replyForm.style.display = 'none';
+    }
+  }
+  
+  // Close dropdowns when clicking outside
+  document.addEventListener('click', function(event) {
+    if (!event.target.closest('.post-action-btn') && 
+        !event.target.closest('.comment-action-btn') && 
+        !event.target.closest('.post-action-dropdown') && 
+        !event.target.closest('.comment-action-dropdown')) {
+      document.querySelectorAll('.post-action-dropdown, .comment-action-dropdown').forEach(el => {
+        el.style.display = 'none';
+      });
+    }
+  });
+  
+  // Initialize dropdowns to be hidden on page load
+  document.addEventListener('DOMContentLoaded', function() {
+    document.querySelectorAll('.post-action-dropdown, .comment-action-dropdown').forEach(el => {
+      el.style.display = 'none';
+    });
+  });
+</script>

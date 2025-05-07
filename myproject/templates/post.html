@@ -1,36 +1,134 @@
-<div class="post">
-  <h3>{{ post.title }}</h3>
-  <p><strong>{{ post.user.username }}</strong>: {{ post.content }}</p>
-
-  {% if post.tags %}
-    <p><strong>Tags:</strong> {{ post.tags }}</p>
-  {% endif %}
-
-  {% if post.attachment %}
-  <div class="post-image">
-    <img src="{{ post.attachment.url }}" alt="Attachment" style="max-width: 100%; height: auto;">
-  </div>
-  {% endif %}
-
-  <p><strong>Category:</strong> {{ post.category }}</p>
-  <span class="post-meta">Posted {{ post.created_at|timesince }} ago</span>
-</div>
-
-<div class="post-comments">
-  <h4>Comments:</h4>
-  {% for comment in post.comments.all %}
-    <div class="comment">
-      <strong>{{ comment.user.username }}</strong> ({{ comment.created_at|timesince }} ago): 
-      {{ comment.content }}
+<div class="post-card">
+  <div class="post-header">
+    <div class="post-user-info">
+      {% if post.user.profile_image %}
+        <img src="{{ post.user.profile_image.url }}" alt="{{ post.user.username }}" class="post-user-avatar">
+      {% else %}
+        <div class="post-user-avatar-placeholder">{{ post.user.username|first|upper }}</div>
+      {% endif %}
+      <div class="post-author-details">
+        <span class="post-author">u/{{ post.user.username }}</span>
+        <span class="post-date">{{ post.created_at|timesince }} ago</span>
+      </div>
     </div>
-  {% empty %}
-    <p>No comments yet.</p>
-  {% endfor %}
+    <div class="post-actions">
+      <form method="post" action="{% url 'delete_post' post.id %}" style="display:inline;">
+        {% csrf_token %}
+        <button type="submit" class="delete-btn" title="Delete post" onclick="return confirm('Are you sure you want to delete this post?');">
+          <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" viewBox="0 0 16 16">
+            <path d="M5.5 5.5A.5.5 0 0 1 6 6v6a.5.5 0 0 1-1 0V6a.5.5 0 0 1 .5-.5Zm2.5 0a.5.5 0 0 1 .5.5v6a.5.5 0 0 1-1 0V6a.5.5 0 0 1 .5-.5Zm3 .5a.5.5 0 0 0-1 0v6a.5.5 0 0 0 1 0V6Z"/>
+            <path d="M14.5 3a1 1 0 0 1-1 1H13v9a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V4h-.5a1 1 0 0 1-1-1V2a1 1 0 0 1 1-1H6a1 1 0 0 1 1-1h2a1 1 0 0 1 1 1h3.5a1 1 0 0 1 1 1v1Z"/>
+          </svg>
+        </button>
+      </form>
+    </div>
+  </div>
 
-  <form method="post" action="{% url 'add_comment' post.id %}">
-    {% csrf_token %}
-    {{ comment_form.as_p }}
-    <input type="hidden" name="community_id" value="{{ post.community.id }}">
-    <button type="submit">Add Comment</button>
-  </form>
+  <div class="post-content">
+    <h3 class="post-title">{{ post.title }}</h3>
+    <p class="post-text">{{ post.content }}</p>
+
+    {% if post.attachment %}
+      <div class="post-attachment">
+        {% if post.attachment.url|lower|slice:"-4:" == ".jpg" or post.attachment.url|lower|slice:"-5:" == ".jpeg" or post.attachment.url|lower|slice:"-4:" == ".png" or post.attachment.url|lower|slice:"-4:" == ".gif" %}
+          <img src="{{ post.attachment.url }}" alt="Post attachment" class="post-image">
+        {% else %}
+          <a href="{{ post.attachment.url }}" class="attachment-link" target="_blank">
+            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" viewBox="0 0 16 16">
+              <path d="M6.002 5.5a1.5 1.5 0 1 1-3 0 1.5 1.5 0 0 1 3 0z"/>
+              <path d="M1.5 2A1.5 1.5 0 0 0 0 3.5v9A1.5 1.5 0 0 0 1.5 14h13a1.5 1.5 0 0 0 1.5-1.5v-9A1.5 1.5 0 0 0 14.5 2h-13zm13 1a.5.5 0 0 1 .5.5v6l-3.775-1.947a.5.5 0 0 0-.577.093l-3.71 3.71-2.66-1.772a.5.5 0 0 0-.63.062L1.002 12v.54A.5.5 0 0 1 1 12.5v-9a.5.5 0 0 1 .5-.5h13z"/>
+            </svg>
+            View attachment
+          </a>
+        {% endif %}
+      </div>
+    {% endif %}
+    
+    <div class="post-metadata">
+      {% if post.tags %}
+        <div class="post-tags">
+          {% for tag in post.tags.split %}
+            <span class="post-tag">{{ tag }}</span>
+          {% endfor %}
+        </div>
+      {% endif %}
+      <span class="post-category">{{ post.category }}</span>
+    </div>
+  </div>
+
+  <div class="post-interactions">
+    <div class="post-interaction-btn">
+      <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" viewBox="0 0 16 16">
+        <path d="M14 1a1 1 0 0 1 1 1v8a1 1 0 0 1-1 1h-2.5a2 2 0 0 0-1.6.8L8 14.333 6.1 11.8a2 2 0 0 0-1.6-.8H2a1 1 0 0 1-1-1V2a1 1 0 0 1 1-1h12zM2 0a2 2 0 0 0-2 2v8a2 2 0 0 0 2 2h2.5a1 1 0 0 1 .8.4l1.9 2.533a1 1 0 0 0 1.6 0l1.9-2.533a1 1 0 0 1 .8-.4H14a2 2 0 0 0 2-2V2a2 2 0 0 0-2-2H2z"/>
+      </svg>
+      <span class="post-comment-count">{{ post.comments.all|length }} comments</span>
+    </div>
+    <button class="post-share-btn">
+      <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" viewBox="0 0 16 16">
+        <path d="M11 2.5a2.5 2.5 0 1 1 .603 1.628l-6.718 3.12a2.499 2.499 0 0 1 0 1.504l6.718 3.12a2.5 2.5 0 1 1-.488.876l-6.718-3.12a2.5 2.5 0 1 1 0-3.256l6.718-3.12A2.5 2.5 0 0 1 11 2.5z"/>
+      </svg>
+      Share
+    </button>
+  </div>
+
+  <div class="post-comments-section" id="comments-{{ post.id }}">
+    <div class="comments-list">
+      {% for comment in post.comments.all %}
+        <div class="comment-item" id="comment-{{ comment.id }}">
+          <div class="comment-header">
+            <div class="comment-user-info">
+              {% if comment.user.profile_image %}
+                <img src="{{ comment.user.profile_image.url }}" alt="{{ comment.user.username }}" class="comment-user-avatar">
+              {% else %}
+                <div class="comment-user-avatar-placeholder">{{ comment.user.username|first|upper }}</div>
+              {% endif %}
+              <div class="comment-author-details">
+                <span class="comment-author">u/{{ comment.user.username }}</span>
+                <span class="comment-date">{{ comment.created_at|timesince }} ago</span>
+              </div>
+            </div>
+            <div class="comment-actions">
+              <form method="post" action="{% url 'delete_comment' comment.id %}" style="display:inline;">
+                {% csrf_token %}
+                <button type="submit" class="delete-btn" title="Delete comment" onclick="return confirm('Are you sure you want to delete this comment?');">
+                  <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" fill="currentColor" viewBox="0 0 16 16">
+                    <path d="M5.5 5.5A.5.5 0 0 1 6 6v6a.5.5 0 0 1-1 0V6a.5.5 0 0 1 .5-.5Zm2.5 0a.5.5 0 0 1 .5.5v6a.5.5 0 0 1-1 0V6a.5.5 0 0 1 .5-.5Zm3 .5a.5.5 0 0 0-1 0v6a.5.5 0 0 0 1 0V6Z"/>
+                    <path d="M14.5 3a1 1 0 0 1-1 1H13v9a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V4h-.5a1 1 0 0 1-1-1V2a1 1 0 0 1 1-1H6a1 1 0 0 1 1-1h2a1 1 0 0 1 1 1h3.5a1 1 0 0 1 1 1v1Z"/>
+                  </svg>
+                </button>
+              </form>            </div>
+          </div>
+          <p class="comment-text">{{ comment.content }}</p>
+          <div class="comment-interactions">
+            <!-- <button class="comment-reply-btn" onclick="showReplyForm('{{ post.id }}', '{{ comment.id }}')">Reply</button> -->
+          </div>
+          <div class="comment-reply-form" id="reply-form-{{ comment.id }}" style="display: none;">
+            <form method="post" action="{% url 'add_comment' post.id %}" class="reply-form">
+              {% csrf_token %}
+              <input type="hidden" name="parent_id" value="{{ comment.id }}">
+              <div class="comment-form-group">
+                <textarea name="content" placeholder="Write a reply..." required></textarea>
+                <div class="reply-form-actions">
+                  <button type="button" class="reply-cancel-btn" onclick="hideReplyForm('{{ comment.id }}')">Cancel</button>
+                  <button type="submit" class="comment-submit-btn">Reply</button>
+                </div>
+              </div>
+            </form>
+          </div>
+        </div>
+      {% empty %}
+        <p class="no-comments">No comments yet. Be the first to comment!</p>
+      {% endfor %}
+    </div>
+    
+    <div class="add-comment-form">
+      <form method="post" action="{% url 'add_comment' post.id %}" id="comment-form-{{ post.id }}">
+        {% csrf_token %}
+        <div class="comment-form-group">
+          <textarea name="content" id="comment-box-{{ post.id }}" placeholder="Add a comment..." required></textarea>
+          <button type="submit" class="comment-submit-btn">Post</button>
+        </div>
+      </form>
+    </div>
+  </div>
 </div>
