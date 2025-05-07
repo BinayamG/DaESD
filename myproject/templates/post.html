@@ -1,12 +1,36 @@
 <div class="post">
-    <h3>{{ post.title }}</h3>
-    <p>
-      {% if post.user.username %}
-        <strong>{{ post.user.username }}:</strong>
-      {% else %}
-        <strong>Unknown:</strong>
-      {% endif %}
-      {{ post.content }}
-    </p>
-      <span class="post-meta">Posted {{ post.created_at|timesince }} ago</span>
+  <h3>{{ post.title }}</h3>
+  <p><strong>{{ post.user.username }}</strong>: {{ post.content }}</p>
+
+  {% if post.tags %}
+    <p><strong>Tags:</strong> {{ post.tags }}</p>
+  {% endif %}
+
+  {% if post.attachment %}
+  <div class="post-image">
+    <img src="{{ post.attachment.url }}" alt="Attachment" style="max-width: 100%; height: auto;">
   </div>
+  {% endif %}
+
+  <p><strong>Category:</strong> {{ post.category }}</p>
+  <span class="post-meta">Posted {{ post.created_at|timesince }} ago</span>
+</div>
+
+<div class="post-comments">
+  <h4>Comments:</h4>
+  {% for comment in post.comments.all %}
+    <div class="comment">
+      <strong>{{ comment.user.username }}</strong> ({{ comment.created_at|timesince }} ago): 
+      {{ comment.content }}
+    </div>
+  {% empty %}
+    <p>No comments yet.</p>
+  {% endfor %}
+
+  <form method="post" action="{% url 'add_comment' post.id %}">
+    {% csrf_token %}
+    {{ comment_form.as_p }}
+    <input type="hidden" name="community_id" value="{{ post.community.id }}">
+    <button type="submit">Add Comment</button>
+  </form>
+</div>

@@ -940,3 +940,43 @@ gap: 20px;
     padding: 10px;
   }
 }
+/* Notification Styles */
+.notification-wrapper { /* Sumanth */
+  position: relative;
+  display: inline-block;
+}
+
+.notification-panel {
+  display: none;
+  position: absolute;
+  right: 0;
+  top: 30px;
+  background-color: #1e293b;
+  color: white;
+  border: 1px solid #3b3b3b;
+  padding: 10px;
+  width: 300px;
+  max-height: 300px;
+  overflow-y: auto;
+  z-index: 999;
+  border-radius: 8px;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.5);
+}
+
+.notification-list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.notification-item {
+  padding: 8px 0;
+  border-bottom: 1px solid #333;
+  font-size: 14px;
+}
+
+.timestamp {
+  display: block;
+  font-size: 12px;
+  color: #aaa;
+}
