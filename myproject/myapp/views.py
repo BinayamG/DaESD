@@ -2,11 +2,11 @@ from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth import authenticate, login, update_session_auth_hash
 from django.contrib.auth.forms import AuthenticationForm
 from django.contrib.auth.decorators import login_required, user_passes_test
-from .forms import CustomUserCreationForm, CommunityRequestForm, EventForm, PostForm
+from .forms import CustomUserCreationForm, CommunityRequestForm, EventForm, PostForm, CommentForm
 from django.contrib import messages
 from django.db import models, IntegrityError
 from django.db.models import Q
-from .models import CommunityRequest, Community, Event, CustomUser, FriendRequest, RemovedMember
+from .models import CommunityRequest, Community, Event, CustomUser, FriendRequest, RemovedMember, Post, Notification
 from django.http import JsonResponse
 import json
 from django.utils import timezone
@@ -65,6 +65,8 @@ def signup_view(request):
 @login_required
 def main_view(request):
     user = request.user
+    notifications = Notification.objects.filter(user=request.user).order_by('-created_at')[:10]
+
     if request.method == 'POST':
             if 'update-profile-form' in request.POST:
                 first_name = request.POST.get('first_name')
@@ -168,7 +170,8 @@ def main_view(request):
         "is_superuser": user.is_superuser, 
         "events": events,
         'form': form, #Sumanth
-        'friend_requests': pending_requests,  # Add friend requests to context
+        'friend_requests': pending_requests,
+        'notifications': notifications, # SUMANTH
     }
     return render(request, "accounts/main.html", context)
 
@@ -515,28 +518,36 @@ def delete_event(request, event_id):
     return redirect('/myapp/main/#events')
 
 
-@login_required #Sumanth
+@login_required #SUMANTH
 def create_post(request, community_id):
     community = get_object_or_404(Community, id=community_id)
 
     if request.method == 'POST':
-        form = PostForm(request.POST)
+        form = PostForm(request.POST, request.FILES)
         if form.is_valid():
             post = form.save(commit=False)
             post.user = request.user
             post.community = community
             post.save()
+
+            Notification.objects.create(
+                user=request.user,
+                message=f"Your post '{post.title}' was created successfully!"
+            )
             messages.success(request, "Post created successfully!")
+            return redirect("main")
         else:
             messages.error(request, "There was an error in your form.")
-        html = render(request, 'post.html', {'post': post}).content.decode('utf-8')
-        return redirect("main")
+    else:
+        form = PostForm()
+    return render(request, 'create_post.html', {'form': form, 'community': community})
 
 @login_required #SUMANTH
 def load_community_posts(request, community_id):
     community = get_object_or_404(Community, id=community_id)
     posts = community.posts.order_by('-created_at')
-    return render(request, 'postList.html', {'posts': posts})
+    comment_form = CommentForm()
+    return render(request, 'postList.html', {'posts': posts, 'comment_form': comment_form})
 
 # @login_required #Sumanth
 # def delete_post(request, post_id):
@@ -818,3 +829,25 @@ def remove_community_member(request, community_id, member_id):
         'success': False,
         'error': 'Invalid request method'
     })
+
+@login_required #SUMAMNTH
+def add_comment(request, post_id):
+    post = get_object_or_404(Post, id=post_id)
+
+    if request.method == 'POST':
+        form = CommentForm(request.POST)
+        if form.is_valid():
+            comment = form.save(commit=False)
+            comment.post = post
+            comment.user = request.user
+            comment.save()
+            messages.success(request, "Comment added.")
+        else:
+            messages.error(request, "Error adding comment.")
+    
+    return redirect('main') 
+
+@login_required #SUMANTH
+def notification_view(request):
+    notifications = Notification.objects.filter(user=request.user).order_by('-created_at')
+    return render(request, 'notifications.html', {'notifications': notifications})

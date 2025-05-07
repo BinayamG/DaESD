@@ -1,6 +1,7 @@
 from django import forms
 from django.contrib.auth.forms import UserCreationForm
-from .models import CustomUser, CommunityRequest, Event, Post #FriendRequest
+from .models import CustomUser, CommunityRequest, Event, Post, Comments
+from django.core.exceptions import ValidationError
 
 class CustomUserCreationForm(UserCreationForm):
     email = forms.EmailField(required=True)
@@ -60,17 +61,23 @@ class EventForm(forms.ModelForm):
             'required_materials': forms.Textarea(attrs={'rows': 3, 'placeholder': 'List any materials participants should bring'})
         }
         
-class PostForm(forms.ModelForm): #Sumanth
+class PostForm(forms.ModelForm): #SUMANTH
     class Meta:
         model = Post
-        fields = ['title', 'content', 'category']
+        fields = ['title', 'content', 'category', 'tags', 'attachment']
         widgets = {
             'title': forms.TextInput(attrs={'placeholder': 'Post title'}),
             'content': forms.Textarea(attrs={'rows': 3, 'placeholder': 'What’s on your mind?'}),
-            'category': forms.Select()
+            'category': forms.Select(),
         }
+    def clean_attachment(self):
+        attachment = self.cleaned_data.get('attachment')
+        if attachment:
+            if not attachment.name.lower().endswith(('.png', '.jpg', '.jpeg')):
+                raise ValidationError("Only PNG and JPEG images are allowed.")
+        return attachment
 
-# class FriendRequestForm(forms.ModelForm):
-#     class Meta:
-#         model = FriendRequest
-#            fields = ['sender', 'receiver']
+class CommentForm(forms.ModelForm): #SUMANTH
+    class Meta:
+        model = Comments
+        fields = ['content']
