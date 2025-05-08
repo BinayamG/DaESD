@@ -224,6 +224,11 @@ def community_request_review_view(request):
         if action == "approve":
             request_obj.approve(request.user)
             messages.success(request, f"Approved community: {request_obj.name}")
+
+            Notification.objects.create(
+                user=request_obj.requested_by,
+                message=f"Your community creation request for '{request_obj.name}' has been approved!"
+            )
         elif action == "reject":
             reason = request.POST.get("rejection_reason", "")
             request_obj.reject(request.user, reason)

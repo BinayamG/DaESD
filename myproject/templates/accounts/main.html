@@ -1214,7 +1214,7 @@
         if (!eventDateStr) return;
         
         const eventDate = new Date(eventDateStr);
-        const timeRemaining = eventDate - now;
+        const timeRemaining = eventDate - now - 3600000;
         
         const countdownEl = card.querySelector('.countdown-value');
         if (!countdownEl) return;
