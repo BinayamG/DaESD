@@ -647,7 +647,11 @@ def load_community_posts(request, community_id):
     community = get_object_or_404(Community, id=community_id)
     posts = community.posts.order_by('-created_at')
     comment_form = CommentForm()
-    return render(request, 'postList.html', {'posts': posts, 'comment_form': comment_form})
+    return render(request, 'postList.html', {
+        'posts': posts, 
+        'comment_form': comment_form,
+        'community_id': community_id
+    })
 
 @login_required
 def save_academic_profile(request):
@@ -1042,3 +1046,38 @@ def delete_post(request, post_id):
         messages.success(request, "Post deleted.")
     
     return redirect('main')
+
+@login_required
+def search_community_posts(request, community_id):
+    community = get_object_or_404(Community, id=community_id)
+    query = request.GET.get('post_query', '').strip()
+    comment_form = CommentForm()
+    
+    if query:
+        # Search for posts by title, content, category, or tags
+        posts = Post.objects.filter(
+            community=community
+        ).filter(
+            Q(title__icontains=query) | 
+            Q(content__icontains=query) | 
+            Q(category__icontains=query) |
+            Q(tags__icontains=query)
+        ).order_by('-created_at')
+    else:
+        # If no query, return all posts
+        posts = community.posts.order_by('-created_at')
+    
+    # Check if it's an AJAX request
+    is_ajax = request.headers.get('X-Requested-With') == 'XMLHttpRequest'
+    
+    if is_ajax:
+        # For AJAX requests, render the post list template without layout
+        return render(request, 'postList.html', {
+            'posts': posts, 
+            'comment_form': comment_form,
+            'search_query': query,
+            'community_id': community_id
+        })
+    else:
+        # For direct URL access, redirect to communities tab
+        return redirect(f'/myapp/main/#communities')

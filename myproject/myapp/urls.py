@@ -8,7 +8,7 @@ from .views import (
     update_event_view, delete_event, save_academic_profile, save_interests, get_community_members,
     send_friend_request, handle_friend_request, friend_requests_view, friends_view, remove_friend,
     search_users, update_profile_image, remove_community_member, add_comment, notification_view,
-    delete_comment, delete_post
+    delete_comment, delete_post, search_community_posts
 )
 
 urlpatterns = [
@@ -29,6 +29,7 @@ urlpatterns = [
     path('search-events/', search_events, name='search_events'),
     path('community/<int:community_id>/post/', create_post, name='create_post'),
     path('community/<int:community_id>/posts/', load_community_posts, name='load_community_posts'),
+    path('community/<int:community_id>/search-posts/', search_community_posts, name='search_community_posts'),
     path('event/<int:event_id>/toggle-interest/', toggle_event_interest, name='toggle_event_interest'),
     path('save-academic-profile/', save_academic_profile, name='save_academic_profile'),
     path('save-interests/', save_interests, name='save_interests'),
