@@ -96,11 +96,14 @@
                     <path d="M14.5 3a1 1 0 0 1-1 1H13v9a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V4h-.5a1 1 0 0 1-1-1V2a1 1 0 0 1 1-1H6a1 1 0 0 1 1-1h2a1 1 0 0 1 1 1h3.5a1 1 0 0 1 1 1v1Z"/>
                   </svg>
                 </button>
-              </form>            </div>
+              </form>
+            </div>
           </div>
           <p class="comment-text">{{ comment.content }}</p>
+          <!-- Removed out reply functionality as it doesn't fit in with the desired pipeline -->
+          <!--
           <div class="comment-interactions">
-            <!-- <button class="comment-reply-btn" onclick="showReplyForm('{{ post.id }}', '{{ comment.id }}')">Reply</button> -->
+            <button class="comment-reply-btn" onclick="showReplyForm('{{ post.id }}', '{{ comment.id }}')">Reply</button>
           </div>
           <div class="comment-reply-form" id="reply-form-{{ comment.id }}" style="display: none;">
             <form method="post" action="{% url 'add_comment' post.id %}" class="reply-form">
@@ -115,6 +118,7 @@
               </div>
             </form>
           </div>
+          -->
         </div>
       {% empty %}
         <p class="no-comments">No comments yet. Be the first to comment!</p>

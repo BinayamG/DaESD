@@ -1,4 +1,6 @@
-<!DOCTYPE html>
+<!--HTML for signup page-->
+
+<!DOCTYPE html> 
 <html lang="en">
 <head>
   <meta charset="UTF-8">
@@ -7,59 +9,59 @@
   {% load static %}
   <style>
     * {
-    box-sizing: border-box;
-    margin: 0;
-    padding: 0;
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
     }
 
     body {
-    font-family: 'Helvetica Neue', Arial, sans-serif;
-    background-color: #f5f5f5;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    height: 100vh;
+      font-family: 'Helvetica Neue', Arial, sans-serif;
+      background-color: #f5f5f5;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
     }
 
     .messages {
-        margin-bottom: 20px;
-        padding: 10px;
+      margin-bottom: 20px;
+      padding: 10px;
     }
 
     .alert {
-        padding: 12px;
-        margin-bottom: 10px;
-        border-radius: 4px;
-        font-size: 14px;
+      padding: 12px;
+      margin-bottom: 10px;
+      border-radius: 4px;
+      font-size: 14px;
     }
 
     .alert-error {
-        background-color: #fee2e2;
-        color: #dc2626;
-        border: 1px solid #fecaca;
+      background-color: #fee2e2;
+      color: #dc2626;
+      border: 1px solid #fecaca;
     }
 
     .alert-success {
-        background-color: #dcfce7;
-        color: #16a34a;
-        border: 1px solid #bbf7d0;
+      background-color: #dcfce7;
+      color: #16a34a;
+      border: 1px solid #bbf7d0;
     }
 
     .error {
-        color: #dc2626;
-        font-size: 14px;
-        margin-top: -12px;
-        margin-bottom: 12px;
+      color: #dc2626;
+      font-size: 14px;
+      margin-top: -12px;
+      margin-bottom: 12px;
     }
 
     .container {
-    background-color: #fff;
-    padding: 40px;
-    border-radius: 8px;
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
-    text-align: center;
-    max-width: 600px;
-    width: 100%;
+      background-color: #fff;
+      padding: 40px;
+      border-radius: 8px;
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+      text-align: center;
+      max-width: 600px;
+      width: 100%;
     }
 
     .logo {
@@ -69,52 +71,53 @@
       color: #002147;
       text-decoration: none;
     }
-    
+
     h1 {
-    font-size: 24px;
-    font-weight: bold;
-    margin-bottom: 30px;
+      font-size: 24px;
+      font-weight: bold;
+      margin-bottom: 30px;
     }
 
     form {
-    text-align: left;
+      text-align: left;
     }
 
     form input, form select {
-    width: 100%;
-    padding: 12px 16px;
-    border: 1px solid #ccc;
-    border-radius: 4px;
-    font-size: 16px;
-    margin-bottom: 16px;
+      width: 100%;
+      padding: 12px 16px;
+      border: 1px solid #ccc;
+      border-radius: 4px;
+      font-size: 16px;
+      margin-bottom: 16px;
     }
 
     .row {
-    display: flex;
-    justify-content: space-between;
-    margin-bottom: 16px;
+      display: flex;
+      justify-content: space-between;
+      margin-bottom: 16px;
     }
 
     .row input {
-    width: 48%;
+      width: 48%;
     }
 
     form p {
-    font-size: 14px;
-    color: #666;
-    margin-bottom: 16px;
+      font-size: 14px;
+      color: #666;
+      margin-bottom: 16px;
     }
 
     form button {
-    background-color: #002147;
-    color: #fff;
-    border: none;
-    padding: 12px 24px;
-    border-radius: 4px;
-    font-size: 16px;
-    cursor: pointer;
-    width: 100%;
+      background-color: #002147;
+      color: #fff;
+      border: none;
+      padding: 12px 24px;
+      border-radius: 4px;
+      font-size: 16px;
+      cursor: pointer;
+      width: 100%;
     }
+
     .password-container {
       position: relative;
     }
@@ -139,6 +142,7 @@
       width: 20px;
       height: 20px;
     }
+
     .no-account {
       margin-top: 20px;
       font-size: 14px;
@@ -152,7 +156,7 @@
     .no-account a:hover {
       text-decoration: underline;
     }
-    
+
     /* iPad specific styles */
     @media only screen and (min-width: 768px) and (max-width: 1024px) {
       body {
@@ -161,7 +165,7 @@
         background-size: cover;
         background-position: center;
       }
-      
+
       .container {
         width: 90%;
         max-width: 750px;
@@ -169,65 +173,65 @@
         margin: 30px auto;
         border-radius: 12px;
       }
-      
+
       .logo {
         font-size: 32px;
         margin-bottom: 30px;
       }
-      
+
       h1 {
         font-size: 28px;
         margin-bottom: 35px;
       }
-      
+
       form input, form select {
         padding: 16px 20px;
         font-size: 18px;
         margin-bottom: 22px;
         border-radius: 6px;
       }
-      
+
       .row {
         margin-bottom: 22px;
       }
-      
+
       .row input {
         padding: 16px 20px;
         font-size: 18px;
       }
-      
+
       form p {
         font-size: 16px;
         margin-bottom: 25px;
       }
-      
+
       form button {
         padding: 16px 28px;
         font-size: 20px;
         border-radius: 6px;
         margin-top: 10px;
       }
-      
+
       .toggle-password {
         right: 15px;
         top: 50%;
       }
-      
+
       .password-container {
         position: relative;
       }
-      
+
       .password-container input {
         width: 100%;
         padding-right: 50px;
       }
-      
+
       .no-account {
         margin-top: 30px;
         font-size: 18px;
       }
     }
-    
+
     /* iPad in landscape orientation */
     @media only screen and (min-width: 1024px) and (max-width: 1366px) and (orientation: landscape) {
       .container {
@@ -235,7 +239,7 @@
         width: 80%;
         padding: 50px 70px;
       }
-      
+
       .toggle-password {
         right: 15px;
       }
@@ -245,23 +249,23 @@
 <body>
   <div class="container">
     <div class="logo">
-        <a href="{% url 'home' %}" class="logo">UniHub</a>
+      <a href="{% url 'home' %}" class="logo">UniHub</a>
     </div>
     <h1>UWE's Student Engagment Platform</h1>
-    
+
     {% if messages %}
     <div class="messages">
-        {% for message in messages %}
-            <div class="alert {% if message.tags %}alert-{{ message.tags }}{% endif %}">
-                {{ message }}
-            </div>
-        {% endfor %}
+      {% for message in messages %}
+      <div class="alert {% if message.tags %}alert-{{ message.tags }}{% endif %}">
+        {{ message }}
+      </div>
+      {% endfor %}
     </div>
     {% endif %}
 
     <form method="POST" id="signupform">
-      {% csrf_token %}  
-      <input type="email" name="email" id= "email" placeholder="University email*" required>
+      {% csrf_token %}
+      <input type="email" name="email" id="email" placeholder="University email*" required>
       <div class="error" id="emailError"></div>
       <input type="text" name="username" id="username" placeholder="Username*" required>
       <input type="date" name="date_of_birth" id="date_of_birth" placeholder="Date of Birth*" required>
@@ -284,20 +288,15 @@
       </div>
       <div class="error" id="passwordError"></div>
       <input type="text" name="student_number" id="student_number" placeholder="Student Number*" required>
-      <!-- Degree Program dropdown -->
       <select name="degree_program" id="degreeProgram" required>
         <option value="">Degree Program*</option>
         <option value="Bachelors">Bachelors Degree</option>
         <option value="Masters">Masters Degree</option>
         <option value="PhD">Phd Degree</option>
       </select>
-
-      <!-- Major dropdown -->
       <select name="major" id="major" required>
         <option value="">Major *</option>
-        <!-- Options will be populated dynamically -->
-      </select>      
-      
+      </select>
       <p>
         Subject to UniHub's Privacy Policy, you agree to allow UniHub to contact you via the email provided for scheduling and marketing purposes.
       </p>
@@ -310,7 +309,6 @@
   </div>
   <script>
     document.addEventListener('DOMContentLoaded', function() {
-  // Function to toggle password visibility
       function setupPasswordToggle(passwordFieldId, toggleButtonId, passwordIconId) {
         const togglePassword = document.getElementById(toggleButtonId);
         const loginPassword = document.getElementById(passwordFieldId);
@@ -319,19 +317,19 @@
         togglePassword.addEventListener('click', function() {
           if (loginPassword.type === 'password') {
             loginPassword.type = 'text';
-            passwordIcon.src = "{% static 'images/view.png' %}"; // Change to "view" when visible
+            passwordIcon.src = "{% static 'images/view.png' %}";
           } else {
             loginPassword.type = 'password';
-            passwordIcon.src = "{% static 'images/hide.png' %}"; // Change to "hide" when hidden
+            passwordIcon.src = "{% static 'images/hide.png' %}";
           }
         });
       }
 
-      // Set up toggles for both password fields
       setupPasswordToggle('loginPassword1', 'togglePassword1', 'passwordIcon1');
       setupPasswordToggle('loginPassword2', 'togglePassword2', 'passwordIcon2');
     });
-    document.getElementById("signupform").addEventListener("submit", function (event) {
+
+    document.getElementById("signupform").addEventListener("submit", function(event) {
       event.preventDefault();
 
       const email = document.getElementById("email").value;
@@ -346,17 +344,16 @@
       passwordError.textContent = "";
       dobError.textContent = "";
 
-      // Age validation - must be at least 16 years old
       if (dateOfBirth) {
         const today = new Date();
         const birthDate = new Date(dateOfBirth);
         let age = today.getFullYear() - birthDate.getFullYear();
         const monthDiff = today.getMonth() - birthDate.getMonth();
-        
+
         if (monthDiff < 0 || (monthDiff === 0 && today.getDate() < birthDate.getDate())) {
           age--;
         }
-        
+
         if (age < 16) {
           dobError.textContent = "You must be at least 16 years old to register.";
           return;
@@ -384,66 +381,56 @@
         return;
       }
 
-      // const passwordRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[!@#$£%^&*(),.?":{}|<>]).{8,}$/;
-      // if (!passwordRegex.test(password)) {
-      //   passwordError.textContent = "Password must be at least 8 characters, include an uppercase letter, a number, and a special character.";
-      //   return;
-      // }
-
       this.submit();
     });
+
     document.addEventListener('DOMContentLoaded', function() {
-    const degreeProgramSelect = document.getElementById('degreeProgram');
-    const majorSelect = document.getElementById('major');
+      const degreeProgramSelect = document.getElementById('degreeProgram');
+      const majorSelect = document.getElementById('major');
 
-    // Object mapping degree programs to their respective courses
-    const degreeMajors = {
-      'Bachelors': [
-        'Accounting and Business Management', 'Aerospace Engineering', 'Animation', 'Architecture', 'Automotive Engineering',
-        'Banking and Finance', 'Biological Sciences', 'Biomedical Science', 'Building Surveying', 'Business and Events Management',
-        'Business and Human Resource Management', 'Business Computing', 'Business Management', 'Civil Engineering', 'Computer Science',
-        'Construction Project Management', 'Criminology', 'Cyber Security and Digital Forensics', 'Data Science', 'Economics',
-        'Electrical and Electronic Engineering', 'Environmental Science', 'Fashion Communication', 'Filmmaking', 'Finance',
-        'Fine Art', 'Games Technology', 'Geography', 'Graphic Design', 'Illustration', 'Interior Design',
-        'International Business', 'Law', 'Marketing', 'Mathematics', 'Mechanical Engineering', 'Midwifery',
-        'Music Technology', 'Nursing', 'Optometry', 'Paramedic Science', 'Philosophy', 'Photography',
-        'Physics', 'Politics and International Relations', 'Primary Education', 'Product Design', 'Psychology', 'Quantity Surveying',
-        'Real Estate', 'Robotics', 'Sociology', 'Software Engineering', 'Sport Rehabilitation', 'Urban Planning'
-      ],
-      'Masters': [
-        'MSc Accounting and Finance', 'MSc Artificial Intelligence', 'MSc Biomedical Science', 'MSc Business Management',
-        'MSc Civil Engineering', 'MSc Computer Science', 'MSc Construction Project Management', 'MSc Cyber Security', 'MSc Data Science',
-        'MSc Digital Marketing', 'MSc Economics', 'MSc Engineering Management', 'MSc Environmental Management', 'MSc Finance',
-        'MSc Forensic Science', 'MSc Health Psychology', 'MSc Human Resource Management', 'MSc Information Technology',
-        'MSc International Management', 'MSc Marketing', 'MSc Mechanical Engineering', 'MSc Project Management',
-        'MSc Public Health', 'MSc Real Estate Management', 'MSc Robotics', 'MSc Sport and Exercise Psychology',
-        'MSc Strategic Leadership', 'MSc Sustainable Development', 'MSc Transport Planning'
-      ],
-      'PhD': [
-        'PhD in Business and Management', 'PhD in Computer Science', 'PhD in Engineering', 'PhD in Environmental Science',
-        'PhD in Health Sciences', 'PhD in Law', 'PhD in Psychology', 'PhD in Sociology', 'PhD in Urban Planning'
-      ]
-    };
+      const degreeMajors = {
+        'Bachelors': [
+          'Accounting and Business Management', 'Aerospace Engineering', 'Animation', 'Architecture', 'Automotive Engineering',
+          'Banking and Finance', 'Biological Sciences', 'Biomedical Science', 'Building Surveying', 'Business and Events Management',
+          'Business and Human Resource Management', 'Business Computing', 'Business Management', 'Civil Engineering', 'Computer Science',
+          'Construction Project Management', 'Criminology', 'Cyber Security and Digital Forensics', 'Data Science', 'Economics',
+          'Electrical and Electronic Engineering', 'Environmental Science', 'Fashion Communication', 'Filmmaking', 'Finance',
+          'Fine Art', 'Games Technology', 'Geography', 'Graphic Design', 'Illustration', 'Interior Design',
+          'International Business', 'Law', 'Marketing', 'Mathematics', 'Mechanical Engineering', 'Midwifery',
+          'Music Technology', 'Nursing', 'Optometry', 'Paramedic Science', 'Philosophy', 'Photography',
+          'Physics', 'Politics and International Relations', 'Primary Education', 'Product Design', 'Psychology', 'Quantity Surveying',
+          'Real Estate', 'Robotics', 'Sociology', 'Software Engineering', 'Sport Rehabilitation', 'Urban Planning'
+        ],
+        'Masters': [
+          'MSc Accounting and Finance', 'MSc Artificial Intelligence', 'MSc Biomedical Science', 'MSc Business Management',
+          'MSc Civil Engineering', 'MSc Computer Science', 'MSc Construction Project Management', 'MSc Cyber Security', 'MSc Data Science',
+          'MSc Digital Marketing', 'MSc Economics', 'MSc Engineering Management', 'MSc Environmental Management', 'MSc Finance',
+          'MSc Forensic Science', 'MSc Health Psychology', 'MSc Human Resource Management', 'MSc Information Technology',
+          'MSc International Management', 'MSc Marketing', 'MSc Mechanical Engineering', 'MSc Project Management',
+          'MSc Public Health', 'MSc Real Estate Management', 'MSc Robotics', 'MSc Sport and Exercise Psychology',
+          'MSc Strategic Leadership', 'MSc Sustainable Development', 'MSc Transport Planning'
+        ],
+        'PhD': [
+          'PhD in Business and Management', 'PhD in Computer Science', 'PhD in Engineering', 'PhD in Environmental Science',
+          'PhD in Health Sciences', 'PhD in Law', 'PhD in Psychology', 'PhD in Sociology', 'PhD in Urban Planning'
+        ]
+      };
 
-    // Function to populate majors based on selected degree program
-    function populateMajors() {
-      majorSelect.innerHTML = '<option value="">Select Major*</option>';
-      const selectedDegree = degreeProgramSelect.value;
-      if (selectedDegree && degreeMajors[selectedDegree]) {
-        degreeMajors[selectedDegree].forEach(major => {
-          const option = document.createElement('option');
-          option.value = major;
-          option.textContent = major;
-          majorSelect.appendChild(option);
-        });
+      function populateMajors() {
+        majorSelect.innerHTML = '<option value="">Select Major*</option>';
+        const selectedDegree = degreeProgramSelect.value;
+        if (selectedDegree && degreeMajors[selectedDegree]) {
+          degreeMajors[selectedDegree].forEach(major => {
+            const option = document.createElement('option');
+            option.value = major;
+            option.textContent = major;
+            majorSelect.appendChild(option);
+          });
+        }
       }
-    }
 
-    // Event listener for degree program selection change
-    degreeProgramSelect.addEventListener('change', populateMajors);
-  });   
-
-</script>
+      degreeProgramSelect.addEventListener('change', populateMajors);
+    });
+  </script>
 </body>
-
 </html>

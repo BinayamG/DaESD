@@ -13,10 +13,10 @@
             <div class="app-content-header">
                 <h2>Create an Event for {{ community.name }}</h2>
             </div>
-            
+
             <form method="post" class="event-form">
                 {% csrf_token %}
-                
+
                 {% for field in form %}
                 <div class="form-group">
                     <label for="{{ field.id_for_label }}">{{ field.label }}</label>
@@ -29,7 +29,7 @@
                     {% endif %}
                 </div>
                 {% endfor %}
-                
+
                 <button type="submit" class="submit-button">Create Event</button>
                 <a href="/myapp/main/#events" class="cancel-button">Cancel</a>
             </form>
@@ -37,5 +37,3 @@
     </div>
 </body>
 </html>
-
-
