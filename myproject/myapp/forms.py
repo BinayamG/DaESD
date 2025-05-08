@@ -62,7 +62,7 @@ class EventForm(forms.ModelForm):
         }
 
 # Post creation form      \  
-class PostForm(forms.ModelForm): #SUMANTH
+class PostForm(forms.ModelForm):
     class Meta:
         model = Post
         fields = ['title', 'content', 'category', 'tags', 'attachment']
@@ -79,7 +79,7 @@ class PostForm(forms.ModelForm): #SUMANTH
         return attachment
 
 # Comment creation form for posts
-class CommentForm(forms.ModelForm): #SUMANTH
+class CommentForm(forms.ModelForm):
     class Meta:
         model = Comments
         fields = ['content']
