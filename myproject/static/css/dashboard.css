@@ -150,6 +150,9 @@ body, html {
   justify-content: space-between;
   align-items: center;
   margin-bottom: 20px;
+  padding: 0 4px;
+  /* Removing the border-bottom that's causing the line */
+  position: relative;
 }
 
 .app-content-header h1 {
@@ -161,6 +164,88 @@ body, html {
   background: none;
   border: none;
   cursor: pointer;
+}
+
+/* Header Icons Styling */
+.header-icons {
+  display: flex;
+  align-items: center;
+  gap: 15px;
+  margin-left: auto; /* Push to the right */
+}
+
+.mode-switch, .notification-button {
+  background: transparent !important; /* Force transparent background */
+  border: none;
+  color: var(--app-content-main-color);
+  width: 24px;
+  height: 24px;
+  cursor: pointer;
+  padding: 0;
+  border-radius: 0;
+  box-shadow: none;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+}
+
+.mode-switch svg, .notification-button svg {
+  width: 24px;
+  height: 24px;
+  stroke-width: 2px;
+}
+
+/* Notification Panel Styling */
+.notification-wrapper {
+  position: relative;
+  z-index: 100;
+}
+
+.notification-panel {
+  display: none;
+  background-color: var(--app-bg);
+  border-radius: 8px;
+  border: 1px solid var(--table-border);
+  width: 280px;
+  max-height: 320px;
+  overflow-y: auto;
+  box-shadow: 0 5px 15px rgba(0, 0, 0, 0.15);
+  position: absolute;
+  top: 100%; /* Position below the button */
+  right: 0;
+  margin-top: 8px; /* Gap between button and dropdown */
+}
+
+.notification-list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.notification-item {
+  padding: 12px 15px;
+  border-bottom: 1px solid var(--table-border);
+  font-size: 14px;
+  color: var(--app-content-main-color);
+}
+
+.notification-item:last-child {
+  border-bottom: none;
+}
+
+.no-notifications {
+  padding: 15px;
+  color: var(--app-content-main-color);
+  text-align: center;
+  font-style: italic;
+}
+
+.timestamp {
+  display: block;
+  font-size: 12px;
+  color: #777; /* Medium gray visible in both light and dark modes */
+  margin-top: 5px;
 }
 
 /* Tab Content */
@@ -939,9 +1024,48 @@ gap: 20px;
   .app-content {
     padding: 10px;
   }
+  
+  /* Communities container adjustments */
+  .communities-container {
+    flex-direction: column;
+  }
+  
+  /* Adjust sidebar sub-list for mobile */
+  .sidebar-sub-list {
+    margin-left: 0;
+    display: flex;
+    overflow-x: auto;
+    padding: 5px 0;
+    -webkit-overflow-scrolling: touch;
+  }
+  
+  .sidebar-sub-list-item {
+    margin: 0 5px;
+    white-space: nowrap;
+  }
+
+  /* Fix notification panel positioning for mobile */
+  .notification-wrapper {
+    position: relative;
+  }
+  
+  .notification-panel {
+    width: 280px;
+    right: -70px; /* Center better on mobile */
+    top: calc(100% + 5px);
+  }
+
+  /* Fix create button for mobile */
+  .create-button {
+    padding: 6px 12px;
+    font-size: 0.85rem;
+    white-space: nowrap;
+    min-height: 36px;
+  }
 }
+
 /* Notification Styles */
-.notification-wrapper { /* Sumanth */
+.notification-wrapper {
   position: relative;
   display: inline-block;
 }
@@ -950,35 +1074,16 @@ gap: 20px;
   display: none;
   position: absolute;
   right: 0;
-  top: 30px;
-  background-color: #1e293b;
-  color: white;
-  border: 1px solid #3b3b3b;
-  padding: 10px;
-  width: 300px;
-  max-height: 300px;
+  top: 40px;
+  background-color: var(--app-bg);
+  color: var(--app-content-main-color);
+  border: 1px solid var(--table-border);
+  width: 280px;
+  max-height: 320px;
   overflow-y: auto;
   z-index: 999;
   border-radius: 8px;
-  box-shadow: 0 4px 12px rgba(0,0,0,0.5);
-}
-
-.notification-list {
-  list-style: none;
-  padding: 0;
-  margin: 0;
-}
-
-.notification-item {
-  padding: 8px 0;
-  border-bottom: 1px solid #333;
-  font-size: 14px;
-}
-
-.timestamp {
-  display: block;
-  font-size: 12px;
-  color: #aaa;
+  box-shadow: 0 5px 15px rgba(0, 0, 0, 0.15);
 }
 
 /* Post Creation Form - Professional Styling */
@@ -1195,3 +1300,1097 @@ gap: 20px;
   width: 14px; /* Smaller icon */
   height: 14px;
 }
+/* Onboarding Popup Styles */
+.onboarding-overlay {
+  display: none;
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0, 0, 0, 0.7);
+  z-index: 1000;
+  justify-content: center;
+  align-items: center;
+}
+
+.onboarding-popup {
+  background: var(--app-content-secondary-color);
+  padding: 2rem;
+  border-radius: 8px;
+  width: 90%;
+  max-width: 600px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+}
+
+.onboarding-popup h2 {
+  color: var(--chart-container-heading);
+  margin-bottom: 1rem;
+}
+
+.onboarding-popup p {
+  margin-bottom: 1.5rem;
+  color: var(--app-content-main-color);
+}
+
+.onboarding-popup textarea {
+  width: 100%;
+  min-height: 120px;
+  padding: 12px;
+  margin-bottom: 1rem;
+  border: 1px solid var(--table-border);
+  border-radius: 4px;
+  background: var(--app-bg);
+  color: var (--app-content-main-color);
+  resize: vertical;
+}
+
+/* Add these styles to your existing styles */
+.messages {
+  position: fixed;
+  top: 20px;
+  right: 20px;
+  z-index: 1000;
+  max-width: 400px;
+}
+
+.alert {
+  padding: 15px;
+  margin-bottom: 10px;
+  border-radius: 4px;
+  opacity: 1;
+  transition: opacity 0.5s ease-in-out;
+}
+
+.alert-error {
+  background-color: #f8d7da;
+  border-color: #f5c6cb;
+  color: #721c24;
+}
+
+.alert-success {
+  background-color: #d4edda;
+  border-color: #c3e6cb;
+  color: #155724;
+}
+
+.alert-info {
+  background-color: #cce5ff;
+  border-color: #b8daff;
+  color: #004085;
+}
+
+.alert.fade-out {
+  opacity: 0;
+}
+
+.home-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: 2rem;
+  padding: 1rem;
+}
+
+.welcome-section {
+  flex: 1;
+}
+
+.search-section {
+  flex: 0 0 auto;
+  margin-left: 2rem;
+}
+
+.user-search-form {
+  display: flex;
+  gap: 0.5rem;
+}
+
+.user-search-form .search-bar {
+  min-width: 300px;
+}
+
+.search-button {
+  padding: 0.5rem 1rem;
+  background-color: var(--action-color);
+  color: white;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: background-color 0.3s;
+}
+
+.search-button:hover {
+  background-color: var(--action-color-hover);
+}
+
+.search-results-section {
+  margin: 2rem 0;
+}
+
+.user-results-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+  gap: 1rem;
+  margin-top: 1rem;
+}
+
+.user-card {
+  background: var(--app-content-secondary-color);
+  border-radius: 8px;
+  padding: 1rem;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.user-card h4 {
+  margin: 0 0 0.5rem 0;
+  color: var(--app-content-main-color);
+}
+
+.user-info {
+  color: var(--app-content-main-color);
+  margin-bottom: 0.5rem;
+}
+
+.user-interests {
+  color: var(--app-content-main-color);
+  font-size: 0.9rem;
+  margin-bottom: 1rem;
+}
+
+/* New Home Tab Styles */
+.profile-completion-card,
+.home-shortcuts,
+.date-highlights-card,
+.tips-resources-card {
+  background: var(--app-content-secondary-color);
+  border-radius: 8px;
+  padding: 1.5rem;
+  margin-bottom: 1.5rem;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  transition: transform 0.2s, box-shadow 0.2s;
+}
+
+.profile-completion-card:hover,
+.home-shortcuts:hover,
+.date-highlights-card:hover,
+.tips-resources-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+}
+
+/* Profile Completion Card */
+.profile-completion-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 1rem;
+  padding-bottom: 0.75rem;
+  border-bottom: 1px solid var(--table-border);
+}
+
+.profile-completion-header h3 {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin: 0;
+  color: var(--chart-container-heading);
+}
+
+.profile-completion-progress {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.progress-bar {
+  background-color: rgba(0, 0, 0, 0.1);
+  height: 8px;
+  width: 120px;
+  border-radius: 4px;
+  overflow: hidden;
+}
+
+.progress-fill {
+  background-color: var(--action-color);
+  height: 100%;
+  border-radius: 4px;
+  width: 0%; /* Will be set by JS */
+  transition: width 0.5s ease;
+}
+
+.progress-text {
+  font-size: 0.9rem;
+  color: var(--app-content-main-color);
+  font-weight: 500;
+}
+
+.profile-completion-items {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+  gap: 1rem;
+}
+
+.completion-item {
+  display: flex;
+  align-items: center;
+  padding: 1rem;
+  background-color: rgba(0, 0, 0, 0.03);
+  border-radius: 6px;
+  transition: background-color 0.2s;
+}
+
+.completion-item:hover {
+  background-color: rgba(0, 0, 0, 0.06);
+}
+
+.completion-item-icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  background-color: var(--app-bg);
+  margin-right: 12px;
+  color: var(--app-content-main-color);
+}
+
+.completion-item-content {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+}
+
+.completion-item-title {
+  font-weight: 500;
+  color: var(--app-content-main-color);
+}
+
+.completion-item-status {
+  font-size: 0.8rem;
+  color: var(--app-content-main-color);
+  opacity: 0.7;
+}
+
+.completion-item-action {
+  padding: 5px 12px;
+  background-color: var(--action-color);
+  color: white;
+  border-radius: 4px;
+  font-size: 0.8rem;
+  text-decoration: none;
+  transition: background-color 0.2s;
+}
+
+.completion-item-action:hover {
+  background-color: var(--action-color-hover);
+}
+
+/* Quick Shortcuts Styles */
+.home-shortcuts h3 {
+  margin-top: 0;
+  margin-bottom: 1rem;
+  color: var(--chart-container-heading);
+}
+
+.shortcuts-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+  gap: 1rem;
+}
+
+.shortcut-card {
+  padding: 1.25rem;
+  background-color: rgba(0, 0, 0, 0.03);
+  border-radius: 8px;
+  text-decoration: none;
+  transition: background-color 0.2s, transform 0.2s;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+}
+
+.shortcut-card:hover {
+  background-color: rgba(var(--action-color-rgb), 0.05);
+  transform: translateY(-2px);
+}
+
+.shortcut-icon {
+  width: 48px;
+  height: 48px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background-color: rgba(var(--action-color-rgb), 0.1);
+  border-radius: 12px;
+  margin-bottom: 0.75rem;
+  color: var(--action-color);
+}
+
+.shortcut-card h4 {
+  margin: 0 0 0.5rem 0;
+  color: var(--app-content-main-color);
+}
+
+.shortcut-card p {
+  margin: 0;
+  font-size: 0.9rem;
+  color: var(--app-content-main-color);
+  opacity: 0.8;
+}
+
+/* Date Highlights Card */
+.date-highlights-card {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 2rem;
+}
+
+.today-date {
+  flex: 1;
+  min-width: 200px;
+}
+
+.today-date h3,
+.semester-progress h4 {
+  margin-top: 0;
+  margin-bottom: 1rem;
+  color: var (--chart-container-heading);
+}
+
+.date-display {
+  background-color: rgba(0, 0, 0, 0.04);
+  border-radius: 8px;
+  padding: 1.5rem;
+  text-align: center;
+}
+
+.date-weekday {
+  font-size: 1.2rem;
+  color: var(--app-content-main-color);
+  margin-bottom: 0.5rem;
+}
+
+.date-main {
+  font-size: 1.8rem;
+  font-weight: bold;
+  color: var(--app-content-main-color);
+}
+
+.semester-progress {
+  flex: 1;
+  min-width: 300px;
+}
+
+.semester-progress-bar {
+  width: 100%;
+  margin-bottom: 0.5rem;
+}
+
+.semester-progress-fill {
+  background-color: var(--action-color);
+  height: 100%;
+  border-radius: 4px;
+  width: 65%; /* Will be set by JS */
+}
+
+.semester-dates {
+  display: flex;
+  justify-content: space-between;
+  font-size: 0.9rem;
+  color: var(--app-content-main-color);
+}
+
+/* Tips and Resources Card */
+.tips-resources-card h3 {
+  margin-top: 0;
+  margin-bottom: 1.25rem;
+  color: var(--chart-container-heading);
+}
+
+.tip-card {
+  display: flex;
+  align-items: flex-start;
+  gap: 1rem;
+  padding: 1rem;
+  background-color: rgba(0, 0, 0, 0.03);
+  border-radius: 8px;
+  margin-bottom: 1rem;
+  transition: background-color 0.2s;
+}
+
+.tip-card:hover {
+  background-color: rgba(0, 0, 0, 0.06);
+}
+
+.tip-icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 40px;
+  height: 40px;
+  background-color: rgba(var(--action-color-rgb), 0.1);
+  border-radius: 50%;
+  color: var(--action-color);
+  flex-shrink: 0;
+}
+
+.tip-content {
+  flex: 1;
+}
+
+.tip-content h4 {
+  margin: 0 0 0.5rem 0;
+  color: var(--app-content-main-color);
+}
+
+.tip-content p {
+  margin: 0;
+  font-size: 0.9rem;
+  color: var(--app-content-main-color);
+  line-height: 1.5;
+}
+.modal {
+  display: none;
+  position: fixed;
+  z-index: 1000;
+  left: 0;
+  top: 0;
+  width: 100%;
+  height: 100%;
+  background-color: rgba(0,0,0,0.4);
+}
+
+.modal-content {
+  background-color: var(--app-content-secondary-color);
+  margin: 15% auto;
+  padding: 20px;
+  border: 1px solid var(--table-border);
+  border-radius: 8px;
+  width: 80%;
+  max-width: 600px;
+  position: relative;
+}
+
+.close-modal {
+  color: var(--app-content-main-color);
+  float: right;
+  font-size: 28px;
+  font-weight: bold;
+  cursor: pointer;
+}
+
+.members-list {
+  margin-top: 20px;
+}
+
+.member-item {
+  padding: 10px;
+  border-bottom: 1px solid var(--table-border);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+}
+
+.member-info {
+  display: flex;
+  flex-direction: column;
+}
+
+.member-name {
+  font-weight: bold;
+  color: var(--app-content-main-color);
+}
+
+.member-role {
+  color: var(--action-color);
+  font-size: 0.9em;
+}
+
+.friend-request-btn {
+  padding: 5px 10px;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 0.9em;
+  transition: all 0.3s ease;
+}
+
+.friend-request-btn.send {
+  background-color: var(--action-color);
+  color: white;
+}
+
+.friend-request-btn.send:hover {
+  background-color: var(--action-color-hover);
+}
+
+.friend-request-btn.pending {
+  background-color: #f0ad4e;
+  color: white;
+  cursor: not-allowed;
+}
+
+.friend-request-btn.friends {
+  background-color: #5cb85c;
+  color: white;
+  cursor: default;
+}
+
+.remove-member-btn {
+  margin-left: 10px;
+  padding: 5px 10px;
+  background-color: #dc3545;
+  color: white;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 0.9em;
+  transition: background-color 0.3s;
+}
+
+.remove-member-btn:hover {
+  background-color: #c82333;
+}
+
+.member-actions {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+/* Post Search Styles */
+.post-search-container {
+  margin-bottom: 20px;
+  padding: 15px;
+  background-color: var(--app-content-secondary-color, #fff);
+  border-radius: 4px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+}
+
+.post-search-form {
+  display: flex;
+  gap: 10px;
+}
+
+.post-search-input {
+  flex: 1;
+  padding: 10px 15px;
+  border: 1px solid var(--table-border, #edeff1);
+  border-radius: 4px;
+  font-size: 14px;
+  background-color: var(--app-bg, #f8f9fa);
+  color: var(--app-content-main-color, #1c1c1c);
+}
+
+.post-search-input:focus {
+  outline: none;
+  border-color: #0079d3;
+  box-shadow: 0 0 0 1px #0079d3;
+}
+
+.post-search-button {
+  background-color: var(--action-color, #0079d3);
+  color: white;
+  border: none;
+  border-radius: 4px;
+  padding: 10px 15px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background-color 0.2s;
+}
+
+.post-search-button:hover {
+  background-color: var(--action-color-hover, #016bc7);
+}
+
+.search-results-info {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-top: 10px;
+  font-size: 14px;
+  color: var(--app-content-main-color, #1c1c1c);
+}
+
+.clear-search {
+  color: var(--action-color, #0079d3);
+  text-decoration: none;
+  font-weight: 500;
+  transition: color 0.2s;
+}
+
+.clear-search:hover {
+  color: var(--action-color-hover, #016bc7);
+  text-decoration: underline;
+}
+
+/* Responsive Styles */
+@media (max-width: 768px) {
+  .app-container {
+    flex-direction: column;
+  }
+  
+  .sidebar {
+    width: 100%;
+    height: auto;
+    flex-direction: row;
+    align-items: center;
+    justify-content: space-between;
+    padding: 10px;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+  }
+  
+  .sidebar-header {
+    margin-bottom: 0;
+    margin-right: 10px;
+  }
+  
+  .sidebar-header .logo a {
+    font-size: 1.4rem;
+  }
+  
+  .sidebar-list {
+    display: flex;
+    flex-direction: row;
+    margin: 0;
+    padding: 0;
+    white-space: nowrap;
+  }
+  
+  .sidebar-list-item {
+    margin: 0 5px;
+  }
+  
+  .sidebar-list-item a {
+    padding: 8px 12px;
+    font-size: 0.9rem;
+  }
+  
+  .sidebar-list-item svg {
+    margin-right: 5px;
+    width: 18px;
+    height: 18px;
+  }
+  
+  .account-info {
+    display: none;
+  }
+  
+  .app-content {
+    padding: 15px 10px;
+    height: calc(100vh - 60px); /* Adjust based on sidebar height */
+  }
+  
+  .app-content-header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 10px;
+  }
+  
+  .app-content-header h1 {
+    font-size: 1.5rem;
+  }
+  
+  .header-icons {
+    width: 100%;
+    justify-content: flex-end;
+  }
+  
+  /* Community and Events layout adjustments */
+  .card-grid {
+    grid-template-columns: 1fr;
+  }
+  
+  /* Communities container adjustments */
+  .communities-container {
+    flex-direction: column;
+  }
+  
+  /* Adjust sidebar sub-list for mobile */
+  .sidebar-sub-list {
+    margin-left: 0;
+    display: flex;
+    overflow-x: auto;
+    padding: 5px 0;
+    -webkit-overflow-scrolling: touch;
+  }
+  
+  .sidebar-sub-list-item {
+    margin: 0 5px;
+    white-space: nowrap;
+  }
+
+  /* Fix notification panel positioning for mobile */
+  .notification-wrapper {
+    position: fixed;
+    right: 10px;
+    top: 60px; /* Adjusted to account for the mobile header height */
+  }
+  
+  .notification-panel {
+    width: 90%;
+    max-width: 350px;
+    right: 0;
+    position: absolute;
+  }
+
+  /* Fix create button for mobile */
+  .create-button {
+    padding: 6px 12px;
+    font-size: 0.85rem;
+    white-space: nowrap;
+    min-height: 36px;
+  }
+}
+
+/* iPhone-specific adjustments - for iPhone 14 Pro and similar devices */
+@media (max-width: 430px) {
+  .sidebar {
+    padding: 8px 5px;
+  }
+  
+  .sidebar-header .logo a {
+    font-size: 1.2rem;
+  }
+  
+  .sidebar-list-item a {
+    padding: 6px 8px;
+    font-size: 0.8rem;
+  }
+  
+  .sidebar-list-item svg {
+    margin-right: 3px;
+    width: 16px;
+    height: 16px;
+  }
+  
+  /* Improve tap targets */
+  .mode-switch, 
+  .notification-button, 
+  .action-button, 
+  .create-button {
+    min-width: 36px;
+    min-height: 36px;
+  }
+  
+  /* Form elements adjustments */
+  .profile-card input,
+  .profile-card textarea,
+  .post-form-group input,
+  .post-form-group textarea,
+  .post-form-group select,
+  .search-bar,
+  .post-search-input {
+    font-size: 16px; /* Prevent auto-zoom on iOS */
+    padding: 10px 8px;
+  }
+  
+  /* Post creation form for mobile */
+  .post-form-flex {
+    flex-direction: column;
+    gap: 8px;
+  }
+  
+  /* Search and filtering */
+  .search-section {
+    margin-left: 0;
+  }
+  
+  .user-search-form {
+    flex-direction: column;
+    gap: 8px;
+  }
+  
+  .user-search-form .search-bar {
+    min-width: unset;
+    width: 100%;
+  }
+  
+  /* Profile completion items */
+  .profile-completion-items {
+    grid-template-columns: 1fr;
+  }
+  
+  /* Shortcut cards */
+  .shortcuts-grid {
+    grid-template-columns: 1fr;
+  }
+
+  /* Improve community tab for iPhone */
+  .communities-container {
+    padding: 0 5px;
+  }
+  
+  .sidebar-sub-list {
+    margin: 0;
+    padding: 5px 0;
+    -webkit-overflow-scrolling: touch;
+    scrollbar-width: none; /* Hide scrollbar for Firefox */
+    -ms-overflow-style: none; /* Hide scrollbar for IE and Edge */
+  }
+  
+  .sidebar-sub-list::-webkit-scrollbar {
+    display: none; /* Hide scrollbar for Chrome/Safari/Opera */
+  }
+  
+  .sidebar-sub-list-item {
+    padding: 8px 12px;
+    margin: 0 3px;
+    flex-shrink: 0;
+  }
+  
+  /* Fix notifications for iPhone */
+  .notification-button {
+    position: relative;
+    min-width: 44px;
+    min-height: 44px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+  
+  .notification-wrapper {
+    position: static; /* Reset position to prevent overflow issues */
+  }
+  
+  .notification-panel {
+    position: absolute;
+    top: 50px; /* Position below the header area */
+    right: 10px;
+    width: 280px;
+    max-width: 85vw;
+  }
+  
+  /* Fix community buttons display for iPhone */
+  .community-header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 12px;
+  }
+  
+  .community-title-desc {
+    width: 100%;
+    max-width: 100%;
+  }
+  
+  .community-profile-btn,
+  .leave-button {
+    width: auto;
+    min-height: 44px; /* iOS recommended touch target size */
+    padding: 10px 16px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+  }
+
+  /* Show hamburger menu on iPhone */
+  .mobile-menu-toggle {
+    display: block;
+    position: fixed;
+    top: 10px;
+    left: 10px;
+    z-index: 1000;
+  }
+  
+  /* Hide sidebar by default on iPhone */
+  .sidebar {
+    position: fixed;
+    top: 0;
+    left: -100%;
+    width: 80%;
+    max-width: 300px;
+    height: 100vh;
+    background-color: var(--sidebar);
+    z-index: 999;
+    transition: left 0.3s ease;
+    flex-direction: column;
+    align-items: flex-start;
+    padding: 60px 15px 20px;
+    overflow-y: auto;
+  }
+  
+  /* Show sidebar when active */
+  .sidebar.active {
+    left: 0;
+  }
+  
+  /* Restore vertical layout for sidebar items */
+  .sidebar-list {
+    flex-direction: column;
+    width: 100%;
+  }
+  
+  .sidebar-list-item {
+    margin: 5px 0;
+    width: 100%;
+  }
+  
+  .sidebar-list-item a {
+    width: 100%;
+    padding: 10px 15px;
+    font-size: 1rem;
+  }
+  
+  /* Always show text for sidebar items when hamburger menu is open */
+  .sidebar.active .sidebar-list-item span {
+    display: inline-block !important;
+    margin-left: 10px;
+  }
+  
+  /* Overlay when menu is open */
+  .mobile-menu-overlay {
+    display: none;
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.5);
+    z-index: 998;
+  }
+  
+  .mobile-menu-overlay.active {
+    display: block;
+  }
+  
+  /* Adjust content padding when using hamburger menu */
+  .app-content {
+    padding-top: 50px;
+  }
+  
+  /* Fix create new community button */
+  .create-button {
+    padding: 10px 12px;
+    font-size: 0.85rem;
+    white-space: nowrap;
+    min-height: 44px;
+    width: auto;
+    max-width: 100%;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+  
+  /* Fix tab header for mobile */
+  .tab-header {
+    flex-wrap: wrap;
+    gap: 10px;
+  }
+
+  /* Create hamburger menu with pseudo-element for guaranteed display */
+  .app-container::before {
+    content: '';
+    position: fixed;
+    top: 15px;
+    left: 15px;
+    width: 30px;
+    height: 25px;
+    background: linear-gradient(
+      to bottom,
+      var(--app-content-main-color) 0%,
+      var(--app-content-main-color) 20%,
+      transparent 20%,
+      transparent 40%,
+      var(--app-content-main-color) 40%,
+      var(--app-content-main-color) 60%,
+      transparent 60%,
+      transparent 80%,
+      var(--app-content-main-color) 80%,
+      var(--app-content-main-color) 100%
+    );
+    z-index: 1000;
+    cursor: pointer;
+  }
+  
+  .app-content {
+    padding-top: 60px; /* Increased top padding to prevent content overlapping with hamburger */
+  }
+}
+
+/* Additional adjustments for very small screens */
+@media (max-width: 360px) {
+  .sidebar-list-item a {
+    padding: 5px;
+  }
+  
+  .sidebar-list-item span {
+    display: none;
+  }
+  
+  .sidebar-list-item svg {
+    margin-right: 0;
+  }
+  
+  .sidebar-header .logo a {
+    font-size: 1rem;
+  }
+
+  /* Further optimize community tab for smaller iPhones */
+  .sidebar-sub-list-item {
+    padding: 6px 8px;
+    margin: 0 2px;
+  }
+  
+  /* Further optimize notification panel */
+  .notification-panel {
+    right: 5px;
+    max-width: 90vw;
+  }
+}
+
+/* Add hamburger menu icon and mobile menu styles */
+.mobile-menu-toggle {
+  display: none;
+  cursor: pointer;
+  font-size: 24px;
+  padding: 5px;
+  z-index: 1000;
+}
+
+.mobile-menu-toggle span {
+  display: block;
+  width: 25px;
+  height: 3px;
+  margin: 5px 0;
+  background-color: var(--app-content-main-color);
+  border-radius: 3px;
+  transition: all 0.3s ease;
+}
+
+.mobile-menu-overlay {
+  display: none;
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-color: rgba(0, 0, 0, 0.5);
+  z-index: 998;
+}
+
+/* Make profile button (account-info) visible in hamburger menu on iPhone */
+.sidebar.active .account-info {
+  display: flex;
+  width: 100%;
+  margin: 5px 0;
+  padding: 10px 15px;
+  border-top: none;
+  justify-content: flex-start;
+  border-radius: 4px;
+}
+
+.sidebar.active .account-info:hover {
+  background-color: var(--sidebar-hover-link);
+}
+
+.sidebar.active .account-info-name {
+  font-size: 1rem;
+}
+
+/* Always show text for sidebar items when hamburger menu is open */

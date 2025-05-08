@@ -152,6 +152,94 @@
     .no-account a:hover {
       text-decoration: underline;
     }
+    
+    /* iPad specific styles */
+    @media only screen and (min-width: 768px) and (max-width: 1024px) {
+      body {
+        padding: 0;
+        background-image: url("{% static 'images/gradient-connection-background_23-2150516350.png' %}");
+        background-size: cover;
+        background-position: center;
+      }
+      
+      .container {
+        width: 90%;
+        max-width: 750px;
+        padding: 45px 60px;
+        margin: 30px auto;
+        border-radius: 12px;
+      }
+      
+      .logo {
+        font-size: 32px;
+        margin-bottom: 30px;
+      }
+      
+      h1 {
+        font-size: 28px;
+        margin-bottom: 35px;
+      }
+      
+      form input, form select {
+        padding: 16px 20px;
+        font-size: 18px;
+        margin-bottom: 22px;
+        border-radius: 6px;
+      }
+      
+      .row {
+        margin-bottom: 22px;
+      }
+      
+      .row input {
+        padding: 16px 20px;
+        font-size: 18px;
+      }
+      
+      form p {
+        font-size: 16px;
+        margin-bottom: 25px;
+      }
+      
+      form button {
+        padding: 16px 28px;
+        font-size: 20px;
+        border-radius: 6px;
+        margin-top: 10px;
+      }
+      
+      .toggle-password {
+        right: 15px;
+        top: 50%;
+      }
+      
+      .password-container {
+        position: relative;
+      }
+      
+      .password-container input {
+        width: 100%;
+        padding-right: 50px;
+      }
+      
+      .no-account {
+        margin-top: 30px;
+        font-size: 18px;
+      }
+    }
+    
+    /* iPad in landscape orientation */
+    @media only screen and (min-width: 1024px) and (max-width: 1366px) and (orientation: landscape) {
+      .container {
+        max-width: 900px;
+        width: 80%;
+        padding: 50px 70px;
+      }
+      
+      .toggle-password {
+        right: 15px;
+      }
+    }
   </style>
 </head>
 <body>

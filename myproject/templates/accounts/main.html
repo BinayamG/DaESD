@@ -6,93 +6,6 @@
   <title>Uni Hub Dashboard - Campus Community Experience</title>
   <link rel="stylesheet" href="/static/css/dashboard.css">
   {% load static %}
-  <style>
-    /* Existing styles... */
-    
-    /* Onboarding Popup Styles */
-    .onboarding-overlay {
-      display: none;
-      position: fixed;
-      top: 0;
-      left: 0;
-      width: 100%;
-      height: 100%;
-      background: rgba(0, 0, 0, 0.7);
-      z-index: 1000;
-      justify-content: center;
-      align-items: center;
-    }
-
-    .onboarding-popup {
-      background: var(--app-content-secondary-color);
-      padding: 2rem;
-      border-radius: 8px;
-      width: 90%;
-      max-width: 600px;
-      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
-    }
-
-    .onboarding-popup h2 {
-      color: var(--chart-container-heading);
-      margin-bottom: 1rem;
-    }
-
-    .onboarding-popup p {
-      margin-bottom: 1.5rem;
-      color: var(--app-content-main-color);
-    }
-
-    .onboarding-popup textarea {
-      width: 100%;
-      min-height: 120px;
-      padding: 12px;
-      margin-bottom: 1rem;
-      border: 1px solid var(--table-border);
-      border-radius: 4px;
-      background: var(--app-bg);
-      color: var(--app-content-main-color);
-      resize: vertical;
-    }
-
-    /* Add these styles to your existing styles */
-    .messages {
-      position: fixed;
-      top: 20px;
-      right: 20px;
-      z-index: 1000;
-      max-width: 400px;
-    }
-
-    .alert {
-      padding: 15px;
-      margin-bottom: 10px;
-      border-radius: 4px;
-      opacity: 1;
-      transition: opacity 0.5s ease-in-out;
-    }
-
-    .alert-error {
-      background-color: #f8d7da;
-      border-color: #f5c6cb;
-      color: #721c24;
-    }
-
-    .alert-success {
-      background-color: #d4edda;
-      border-color: #c3e6cb;
-      color: #155724;
-    }
-
-    .alert-info {
-      background-color: #cce5ff;
-      border-color: #b8daff;
-      color: #004085;
-    }
-
-    .alert.fade-out {
-      opacity: 0;
-    }
-  </style>
 </head>
 <body>
   <!-- Add onboarding popup HTML right after body tag -->
@@ -216,18 +129,20 @@
       <!-- Header Area -->
       <div class="app-content-header">
         <h1>Uni Hub Dashboard</h1>
-        <button class="mode-switch" title="Switch Theme">
-          <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="none" stroke="currentColor" stroke-width="2">
-            <path d="M21 12.79A9 9 0 1111.21 3 7 7 0 0021 12.79z"></path>
-          </svg>
-        </button>
-        <button class="notification-button" id="notificationToggle" title="Notifications">
-          <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="none" stroke="currentColor"
-               stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-            <path d="M18 8a6 6 0 0 0-12 0c0 7-3 9-3 9h18s-3-2-3-9" />
-            <path d="M13.73 21a2 2 0 0 1-3.46 0" />
-          </svg>
-        </button>
+        <div class="header-icons">
+          <button class="mode-switch" title="Switch Theme">
+            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M21 12.79A9 9 0 1111.21 3 7 7 0 0021 12.79z"></path>
+            </svg>
+          </button>
+          <button class="notification-button" id="notificationToggle" title="Notifications">
+            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="none" stroke="currentColor"
+                 stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M18 8a6 6 0 0 0-12 0c0 7-3 9-3 9h18s-3-2-3-9" />
+              <path d="M13.73 21a2 2 0 0 1-3.46 0" />
+            </svg>
+          </button>
+        </div>
         <div class="notification-wrapper">
           <div id="notificationPanel" class="notification-panel">
             {% if notifications %}
@@ -299,95 +214,184 @@
         </div>
         {% endif %}
 
-        <div class="news-feed">
-          <div class="post">
-            <h3>New Community Launched: Academic Circle</h3>
-            <p>Join fellow students to discuss study tips, share resources, and grow together.</p>
-            <span class="post-meta">Posted 2 hours ago</span>
+        <!-- Profile Completion Card -->
+        <div class="profile-completion-card">
+          <div class="profile-completion-header">
+            <h3>
+              <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" fill="currentColor" viewBox="0 0 16 16">
+                <path d="M8 15A7 7 0 1 1 8 1a7 7 0 0 1 0 14zm0 1A8 8 0 1 0 8 0a8 8 0 0 0 0 16z"/>
+                <path d="M8 4a.5.5 0 0 1 .5.5v3h3a.5.5 0 0 1 0 1h-3v3a.5.5 0 0 1-1 0v-3h-3a.5.5 0 0 1 0-1h3v-3A.5.5 0 0 1 8 4z"/>
+              </svg>
+              Complete Your Profile
+            </h3>
+            <div class="profile-completion-progress">
+              <div class="progress-bar" id="profileCompletionBar">
+                <div class="progress-fill" id="profileCompletionFill"></div>
+              </div>
+              <span class="progress-text" id="profileCompletionText">0%</span>
+            </div>
           </div>
-          <div class="post">
-            <h3>Orientation Week Kickoff</h3>
-            <p>Get ready for an exciting start to the semester with fun activities across campus!</p>
-            <span class="post-meta">Posted 5 hours ago</span>
+          <div class="profile-completion-items">
+            <div class="completion-item" id="profilePicItem">
+              <div class="completion-item-icon">
+                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" viewBox="0 0 16 16">
+                  <path d="M6.002 5.5a1.5 1.5 0 1 1-3 0 1.5 1.5 0 0 1 3 0z"/>
+                  <path d="M1.5 2A1.5 1.5 0 0 0 0 3.5v9A1.5 1.5 0 0 0 1.5 14h13a1.5 1.5 0 0 0 1.5-1.5v-9A1.5 1.5 0 0 0 14.5 2h-13zm13 1a.5.5 0 0 1 .5.5v6l-3.775-1.947a.5.5 0 0 0-.577.093l-3.71 3.71-2.66-1.772a.5.5 0 0 0-.63.062L1.002 12v.54A.5.5 0 0 1 1 12.5v-9a.5.5 0 0 1 .5-.5h13z"/>
+                </svg>
+              </div>
+              <div class="completion-item-content">
+                <span class="completion-item-title">Profile Picture</span>
+                <span class="completion-item-status" id="profilePicStatus">{% if user.profile_image %}Complete{% else %}Incomplete{% endif %}</span>
+              </div>
+              <a href="#profile" class="completion-item-action" onclick="activateTab('profile')">Add</a>
+            </div>
+            <div class="completion-item" id="interestsItem">
+              <div class="completion-item-icon">
+                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" viewBox="0 0 16 16">
+                  <path d="M8 16a2 2 0 0 0 2-2H6a2 2 0 0 0 2 2zM8 1.918l-.797.161A4.002 4.002 0 0 0 4 6c0 .628-.134 2.197-.459 3.742-.16.767-.376 1.566-.663 2.258h10.244c-.287-.692-.502-1.49-.663-2.258C12.134 8.197 12 6.628 12 6a4.002 4.002 0 0 0-3.203-3.92L8 1.917zM14.22 12c.223.447.481.801.78 1H1c.299-.199.557-.553.78-1C2.68 10.2 3 6.88 3 6c0-2.42 1.72-4.44 4.005-4.901a1 1 0 1 1 1.99 0A5.002 5.002 0 0 1 13 6c0 .88.32 4.2 1.22 6z"/>
+                </svg>
+              </div>
+              <div class="completion-item-content">
+                <span class="completion-item-title">Personal Interests</span>
+                <span class="completion-item-status" id="interestsStatus">{% if user.interests %}Complete{% else %}Incomplete{% endif %}</span>
+              </div>
+              <a href="#profile" class="completion-item-action" onclick="activateTab('profile')">Add</a>
+            </div>
+            <div class="completion-item" id="academicItem">
+              <div class="completion-item-icon">
+                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" viewBox="0 0 16 16">
+                  <path d="M1 2.828c.885-.37 2.154-.769 3.388-.893 1.33-.134 2.458.063 3.112.752v9.746c-.935-.53-2.12-.603-3.213-.493-1.18.12-2.37.461-3.287.811V2.828zm7.5-.141c.654-.689 1.782-.886 3.112-.752 1.234.124 2.503.523 3.388.893v9.923c-.918-.35-2.107-.692-3.287-.81-1.094-.111-2.278-.039-3.213.492V2.687zM8 1.783C7.015.936 5.587.81 4.287.94c-1.514.153-3.042.672-3.994 1.105A.5.5 0 0 0 0 2.5v11a.5.5 0 0 0 .707.455c.882-.4 2.303-.881 3.68-1.02 1.409-.142 2.59.087 3.223.877a.5.5 0 0 0 .78 0c.633-.79 1.814-1.019 3.222-.877 1.378.139 2.8.62 3.681 1.02A.5.5 0 0 0 16 13.5v-11a.5.5 0 0 0-.293-.455c-.952-.433-2.48-.952-3.994-1.105C10.413.809 8.985.936 8 1.783z"/>
+                </svg>
+              </div>
+              <div class="completion-item-content">
+                <span class="completion-item-title">Academic Profile</span>
+                <span class="completion-item-status" id="academicStatus">{% if user.campus_involvement or user.achievements %}Complete{% else %}Incomplete{% endif %}</span>
+              </div>
+              <a href="#profile" class="completion-item-action" onclick="activateTab('profile')">Add</a>
+            </div>
+            <div class="completion-item" id="addressItem">
+              <div class="completion-item-icon">
+                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" viewBox="0 0 16 16">
+                  <path d="M12.166 8.94c-.524 1.062-1.234 2.12-1.96 3.07A31.493 31.493 0 0 1 8 14.58a31.481 31.481 0 0 1-2.206-2.57c-.726-.95-1.436-2.008-1.96-3.07C3.304 7.867 3 6.862 3 6a5 5 0 0 1 10 0c0 .862-.305 1.867-.834 2.94zM8 16s6-5.686 6-10A6 6 0 0 0 2 6c0 4.314 6 10 6 10z"/>
+                  <path d="M8 8a2 2 0 1 1 0-4 2 2 0 0 1 0 4zm0 1a3 3 0 1 0 0-6 3 3 0 0 0 0 6z"/>
+                </svg>
+              </div>
+              <div class="completion-item-content">
+                <span class="completion-item-title">Address Information</span>
+                <span class="completion-item-status" id="addressStatus">{% if user.street_address and user.city and user.postcode %}Complete{% else %}Incomplete{% endif %}</span>
+              </div>
+              <a href="#profile" class="completion-item-action" onclick="activateTab('profile')">Add</a>
+            </div>
+          </div>
+        </div>
+
+        <!-- Quick Shortcuts Card -->
+        <div class="home-shortcuts">
+          <h3>Quick Shortcuts</h3>
+          <div class="shortcuts-grid">
+            <a href="#communities" class="shortcut-card" onclick="activateTab('communities')">
+              <div class="shortcut-icon">
+                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="currentColor" viewBox="0 0 16 16">
+                  <path d="M7 14s-1 0-1-1 1-4 5-4 5 3 5 4-1 1-1 1H7zm4-6a3 3 0 1 0 0-6 3 3 0 0 0 0 6z"/>
+                  <path fill-rule="evenodd" d="M5.216 14A2.238 2.238 0 0 1 5 13c0-1.355.68-2.75 1.936-3.72A6.325 6.325 0 0 0 5 9c-4 0-5 3-5 4s1 1 1 1h4.216z"/>
+                  <path d="M4.5 8a2.5 2.5 0 1 0 0-5 2.5 2.5 0 0 0 0 5z"/>
+                </svg>
+              </div>
+              <h4>Explore Communities</h4>
+              <p>Discover groups that match your interests</p>
+            </a>
+            <a href="#events" class="shortcut-card" onclick="activateTab('events')">
+              <div class="shortcut-icon">
+                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="currentColor" viewBox="0 0 16 16">
+                  <path d="M3.5 0a.5.5 0 0 1 .5.5V1h8V.5a.5.5 0 0 1 1 0V1h1a2 2 0 0 1 2 2v11a2 2 0 0 1-2 2H2a2 2 0 0 1-2-2V3a2 2 0 0 1 2-2h1V.5a.5.5 0 0 1 .5-.5zM1 4v10a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1V4H1z"/>
+                  <path d="M6.445 11.688V6.354h-.633A12.6 12.6 0 0 0 4.5 7.16v.695c.375-.257.969-.62 1.258-.777h.012v4.61h.675zm1.188-1.305c.047.64.594 1.406 1.703 1.406 1.258 0 2-1.066 2-2.871 0-1.934-.781-2.668-1.953-2.668-.926 0-1.797.672-1.797 1.809 0 1.16.824 1.77 1.676 1.77.746 0 1.23-.376 1.383-.79h.027c-.004 1.316-.461 2.164-1.305 2.164-.664 0-1.008-.45-1.05-.82h-.684zm2.953-2.317c0 .696-.559 1.18-1.184 1.18-.601 0-1.144-.383-1.144-1.2 0-.823.582-1.21 1.168-1.21.633 0 1.16.398 1.16 1.23z"/>
+                </svg>
+              </div>
+              <h4>Upcoming Events</h4>
+              <p>Find campus events and activities</p>
+            </a>
+            <a href="#friends" class="shortcut-card" onclick="activateTab('friends')">
+              <div class="shortcut-icon">
+                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="currentColor" viewBox="0 0 16 16">
+                  <path d="M2 2a2 2 0 0 1 2-2h8a2 2 0 0 1 2 2v13.5a.5.5 0 0 1-.777.416L8 13.101l-5.223 2.815A.5.5 0 0 1 2 15.5V2zm2-1a1 1 0 0 0-1 1v12.566l4.723-2.482a.5.5 0 0 1 .554 0L13 14.566V2a1 1 0 0 0-1-1H4z"/>
+                </svg>
+              </div>
+              <h4>My Friends</h4>
+              <p>View your connections and friendships</p>
+            </a>
+            <a href="#profile" class="shortcut-card" onclick="activateTab('profile')">
+              <div class="shortcut-icon">
+                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="currentColor" viewBox="0 0 16 16">
+                  <path d="M11 6a3 3 0 1 1-6 0 3 3 0 0 1 6 0z"/>
+                  <path fill-rule="evenodd" d="M0 8a8 8 0 1 1 16 0A8 8 0 0 1 0 8zm8-7a7 7 0 0 0-5.468 11.37C3.242 11.226 4.805 10 8 10s4.757 1.225 5.468 2.37A7 7 0 0 0 8 1z"/>
+                </svg>
+              </div>
+              <h4>Update Profile</h4>
+              <p>Keep your profile information up-to-date</p>
+            </a>
+          </div>
+        </div>
+
+        <!-- Today's Date Card -->
+        <div class="date-highlights-card">
+          <div class="today-date">
+            <h3>Today's Date</h3>
+            <div class="date-display" id="todayDate">
+              <div class="date-weekday" id="currentWeekday">Wednesday</div>
+              <div class="date-main" id="currentDate">May 7, 2025</div>
+            </div>
+          </div>
+          <div class="semester-progress">
+            <h4>Current Semester Progress</h4>
+            <div class="progress-bar semester-progress-bar">
+              <div class="semester-progress-fill" id="semesterProgressFill"></div>
+            </div>
+            <div class="semester-dates">
+              <span id="semesterStartDate">Jan 15, 2025</span>
+              <span id="semesterProgressLabel">65% Complete</span>
+              <span id="semesterEndDate">Jun 30, 2025</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Tips and Resources Card -->
+        <div class="tips-resources-card">
+          <h3>Campus Tips & Resources</h3>
+          <div class="tip-card">
+            <div class="tip-icon">
+              <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="currentColor" viewBox="0 0 16 16">
+                <path d="M8 16A8 8 0 1 0 8 0a8 8 0 0 0 0 16zm.93-9.412-1 4.705c-.07.34.029.533.304.533.194 0 .487-.07.686-.246l-.088.416c-.287.346-.92.598-1.465.598-.703 0-1.002-.422-.808-1.319l.738-3.468c.064-.293.006-.399-.287-.47l-.451-.081.082-.381 2.29-.287zM8 5.5a1 1 0 1 1 0-2 1 1 0 0 1 0 2z"/>
+              </svg>
+            </div>
+            <div class="tip-content">
+              <h4>Library Study Rooms</h4>
+              <p>Book study rooms up to 2 weeks in advance through the library website for group projects or quiet study sessions.</p>
+            </div>
+          </div>
+          <div class="tip-card">
+            <div class="tip-icon">
+              <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="currentColor" viewBox="0 0 16 16">
+                <path d="M8 16A8 8 0 1 0 8 0a8 8 0 0 0 0 16zm.93-9.412-1 4.705c-.07.34.029.533.304.533.194 0 .487-.07.686-.246l-.088.416c-.287.346-.92.598-1.465.598-.703 0-1.002-.422-.808-1.319l.738-3.468c.064-.293.006-.399-.287-.47l-.451-.081.082-.381 2.29-.287zM8 5.5a1 1 0 1 1 0-2 1 1 0 0 1 0 2z"/>
+              </svg>
+            </div>
+            <div class="tip-content">
+              <h4>Academic Support Center</h4>
+              <p>Free tutoring sessions are available at the Academic Support Center in the Student Union, Room 234. Book online through the student portal.</p>
+            </div>
+          </div>
+          <div class="tip-card">
+            <div class="tip-icon">
+              <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="currentColor" viewBox="0 0 16 16">
+                <path d="M2 2v13.5a.5.5 0 0 0 .74.439L8 13.069l5.26 2.87A.5.5 0 0 0 14 15.5V2a2 2 0 0 0-2-2H4a2 2 0 0 0-2 2zm6.5 4.56a.5.5 0 0 1 0 .88l-3.5 2a.5.5 0 0 1-.5 0 .5.5 0 0 1-.5-.5v-4a.5.5 0 0 1 .5-.5.5.5 0 0 1 .5 0l3.5 2z"/>
+              </svg>
+            </div>
+            <div class="tip-content">
+              <h4>Campus Recreation</h4>
+              <p>The fitness center offers free group classes for students. Check the recreation center's website for the current schedule.</p>
+            </div>
           </div>
         </div>
       </div>
-
-      <style>
-        .home-header {
-          display: flex;
-          justify-content: space-between;
-          align-items: flex-start;
-          margin-bottom: 2rem;
-          padding: 1rem;
-        }
-
-        .welcome-section {
-          flex: 1;
-        }
-
-        .search-section {
-          flex: 0 0 auto;
-          margin-left: 2rem;
-        }
-
-        .user-search-form {
-          display: flex;
-          gap: 0.5rem;
-        }
-
-        .user-search-form .search-bar {
-          min-width: 300px;
-        }
-
-        .search-button {
-          padding: 0.5rem 1rem;
-          background-color: var(--action-color);
-          color: white;
-          border: none;
-          border-radius: 4px;
-          cursor: pointer;
-          transition: background-color 0.3s;
-        }
-
-        .search-button:hover {
-          background-color: var(--action-color-hover);
-        }
-
-        .search-results-section {
-          margin: 2rem 0;
-        }
-
-        .user-results-grid {
-          display: grid;
-          grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
-          gap: 1rem;
-          margin-top: 1rem;
-        }
-
-        .user-card {
-          background: var(--app-content-secondary-color);
-          border-radius: 8px;
-          padding: 1rem;
-          box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-        }
-
-        .user-card h4 {
-          margin: 0 0 0.5rem 0;
-          color: var(--app-content-main-color);
-        }
-
-        .user-info {
-          color: var(--app-content-main-color);
-          margin-bottom: 0.5rem;
-        }
-
-        .user-interests {
-          color: var(--app-content-main-color);
-          font-size: 0.9rem;
-          margin-bottom: 1rem;
-        }
-      </style>
 
       <!-- COMMUNITIES TAB -->
       <div class="tab-content" id="communities" style="display: none;">
@@ -467,6 +471,24 @@
           <button class="community-profile-btn" onclick="viewCommunityMembers()">View Community Members</button>
           <p>Here you can participate in discussions and view community posts.</p>
 
+          <!-- Post search container inside community detail view -->
+          <div class="post-search-container">
+            <form id="community-post-search-form" action="{% url 'search_community_posts' 0 %}" method="GET" class="post-search-form">
+              <input type="text" class="post-search-input" name="post_query" placeholder="Search posts by title, content, tags..." value="{{ search_query|default:'' }}">
+              <button type="submit" class="post-search-button">
+                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" viewBox="0 0 16 16">
+                  <path d="M11.742 10.344a6.5 6.5 0 1 0-1.397 1.398h-.001c.03.04.062.078.098.115l3.85 3.85a1 1 0 0 0 1.415-1.414l-3.85-3.85a1.007 1.007 0 0 0-.115-.1zM12 6.5a5.5 5.5 0 1 1-11 0 5.5 5.5 0 0 1 11 0z"/>
+                </svg>
+              </button>
+            </form>
+            {% if search_query %}
+              <div class="search-results-info">
+                <p>Showing results for: <strong>"{{ search_query }}"</strong></p>
+                <a href="#" id="clear-search-link" class="clear-search">Clear search</a>
+              </div>
+            {% endif %}
+          </div>
+
           <!-- Members List Modal -->
           <div id="membersModal" class="modal">
             <div class="modal-content">
@@ -477,120 +499,7 @@
               </div>
             </div>
           </div>
-
-          <!-- Add modal styles -->
-          <style>
-            .modal {
-              display: none;
-              position: fixed;
-              z-index: 1000;
-              left: 0;
-              top: 0;
-              width: 100%;
-              height: 100%;
-              background-color: rgba(0,0,0,0.4);
-            }
-
-            .modal-content {
-              background-color: var(--app-content-secondary-color);
-              margin: 15% auto;
-              padding: 20px;
-              border: 1px solid var(--table-border);
-              border-radius: 8px;
-              width: 80%;
-              max-width: 600px;
-              position: relative;
-            }
-
-            .close-modal {
-              color: var(--app-content-main-color);
-              float: right;
-              font-size: 28px;
-              font-weight: bold;
-              cursor: pointer;
-            }
-
-            .members-list {
-              margin-top: 20px;
-            }
-
-            .member-item {
-              padding: 10px;
-              border-bottom: 1px solid var(--table-border);
-              display: flex;
-              align-items: center;
-              justify-content: space-between;
-              gap: 10px;
-            }
-
-            .member-info {
-              display: flex;
-              flex-direction: column;
-            }
-
-            .member-name {
-              font-weight: bold;
-              color: var(--app-content-main-color);
-            }
-
-            .member-role {
-              color: var(--action-color);
-              font-size: 0.9em;
-            }
-
-            .friend-request-btn {
-              padding: 5px 10px;
-              border: none;
-              border-radius: 4px;
-              cursor: pointer;
-              font-size: 0.9em;
-              transition: all 0.3s ease;
-            }
-
-            .friend-request-btn.send {
-              background-color: var(--action-color);
-              color: white;
-            }
-
-            .friend-request-btn.send:hover {
-              background-color: var(--action-color-hover);
-            }
-
-            .friend-request-btn.pending {
-              background-color: #f0ad4e;
-              color: white;
-              cursor: not-allowed;
-            }
-
-            .friend-request-btn.friends {
-              background-color: #5cb85c;
-              color: white;
-              cursor: default;
-            }
-
-            .remove-member-btn {
-              margin-left: 10px;
-              padding: 5px 10px;
-              background-color: #dc3545;
-              color: white;
-              border: none;
-              border-radius: 4px;
-              cursor: pointer;
-              font-size: 0.9em;
-              transition: background-color 0.3s;
-            }
-
-            .remove-member-btn:hover {
-              background-color: #c82333;
-            }
-
-            .member-actions {
-              display: flex;
-              align-items: center;
-              gap: 10px;
-            }
-          </style>
-
+          
           <!-- Scrollable posts container -->
           <div class="community-posts-container">
             <div class="community-posts" id="communityPostsContainer"></div>
@@ -1040,6 +949,14 @@
         if ('{{ active_tab }}' === 'communities') {
           communitiesGrid.style.display = 'block';
           communityDetail.style.display = 'none';
+          
+          {% if show_community_detail %}
+          // If show_community_detail is true, find and click the community item
+          const communityItem = document.querySelector('.community-list-item[data-community-id="{{ community.id }}"]');
+          if (communityItem) {
+            communityItem.click();
+          }
+          {% endif %}
         }
       {% else %}
         // Otherwise check for hash in URL
@@ -1051,7 +968,117 @@
           activateTab('home');
         }
       {% endif %}
+      
+      // Set up community post search functionality
+      setupCommunityPostSearch();
     });
+    
+    // Function to set up the community post search
+    function setupCommunityPostSearch() {
+      const postSearchForm = document.getElementById('community-post-search-form');
+      const clearSearchLink = document.getElementById('clear-search-link');
+      
+      if (postSearchForm) {
+        // Update the form action when a community is selected
+        communitySubItems.forEach(item => {
+          item.addEventListener('click', function() {
+            const commId = this.dataset.communityId;
+            const searchUrl = `{% url 'search_community_posts' 0 %}`.replace('0', commId);
+            postSearchForm.action = searchUrl;
+          });
+        });
+        
+        // Handle form submission via AJAX
+        postSearchForm.addEventListener('submit', function(e) {
+          e.preventDefault();
+          const communityId = document.getElementById('leaveCommunityId').value;
+          if (!communityId) {
+            alert('Please select a community first');
+            return;
+          }
+          
+          const searchUrl = postSearchForm.action;
+          const formData = new FormData(postSearchForm);
+          
+          fetch(searchUrl + '?' + new URLSearchParams(formData).toString(), {
+            headers: {
+              'X-Requested-With': 'XMLHttpRequest'
+            }
+          })
+          .then(response => response.text())
+          .then(html => {
+            const container = document.getElementById('communityPostsContainer');
+            if (container && html) {
+              container.innerHTML = html;
+              
+              // Show search results info if there's a query
+              const query = postSearchForm.querySelector('input[name="post_query"]').value;
+              if (query) {
+                // Check if search results info exists, create if not
+                let searchInfo = document.querySelector('.search-results-info');
+                if (!searchInfo) {
+                  searchInfo = document.createElement('div');
+                  searchInfo.className = 'search-results-info';
+                  postSearchForm.parentNode.appendChild(searchInfo);
+                }
+                
+                searchInfo.innerHTML = `
+                  <p>Showing results for: <strong>"${query}"</strong></p>
+                  <a href="#" id="clear-search-link" class="clear-search">Clear search</a>
+                `;
+                
+                // Add event listener to the newly created clear search link
+                document.getElementById('clear-search-link').addEventListener('click', clearSearch);
+              }
+            }
+          })
+          .catch(error => {
+            console.error('Error during search:', error);
+          });
+        });
+      }
+      
+      // Set up the clear search link
+      if (clearSearchLink) {
+        clearSearchLink.addEventListener('click', clearSearch);
+      }
+      
+      // Function to clear search
+      function clearSearch(e) {
+        e.preventDefault();
+        const communityId = document.getElementById('leaveCommunityId').value;
+        const loadUrl = `{% url 'load_community_posts' 0 %}`.replace('0', communityId);
+        
+        // Clear the search input
+        const searchInput = document.querySelector('.post-search-input');
+        if (searchInput) {
+          searchInput.value = '';
+        }
+        
+        // Load all posts
+        fetch(loadUrl, {
+          headers: {
+            'X-Requested-With': 'XMLHttpRequest'
+          }
+        })
+        .then(response => response.text())
+        .then(html => {
+          const container = document.getElementById('communityPostsContainer');
+          if (container && html) {
+            container.innerHTML = html;
+            
+            // Remove search results info
+            const searchInfo = document.querySelector('.search-results-info');
+            if (searchInfo) {
+              searchInfo.remove(); // Remove the element entirely instead of just hiding it
+            }
+          }
+        })
+        .catch(error => {
+          console.error('Error clearing search:', error);
+        });
+      }
+    }
 
     // Clicking "Communities" top-level item => show #communitiesGrid, hide #communityDetail
     const communitiesParent = document.getElementById('communitiesParent');
@@ -1136,6 +1163,10 @@
           deleteCommunityForm.style.display = 'none';
           leaveCommunityForm.style.display = 'block';
         }
+
+        // Update the post search form action
+        const postSearchForm = document.getElementById('community-post-search-form');
+        postSearchForm.action = `{% url 'search_community_posts' 0 %}`.replace('0', commId);
       });
     });
 
@@ -1670,6 +1701,134 @@
           }
         });
       }
+    });
+
+    // New code for the home tab components
+    document.addEventListener('DOMContentLoaded', function() {
+      // Profile completion calculation
+      calculateProfileCompletion();
+      
+      // Set current date
+      updateCurrentDate();
+      
+      // Calculate semester progress
+      calculateSemesterProgress();
+    });
+    
+    // Calculate profile completion percentage
+    function calculateProfileCompletion() {
+      // Check completion items
+      const hasProfilePic = {% if user.profile_image %}true{% else %}false{% endif %};
+      const hasInterests = {% if user.interests %}true{% else %}false{% endif %};
+      const hasAcademic = {% if user.campus_involvement or user.achievements %}true{% else %}false{% endif %};
+      const hasAddress = {% if user.street_address and user.city and user.postcode %}true{% else %}false{% endif %};
+      
+      // Update status indicators
+      document.getElementById('profilePicStatus').textContent = hasProfilePic ? 'Complete' : 'Incomplete';
+      document.getElementById('profilePicStatus').style.color = hasProfilePic ? '#4caf50' : '#ff9800';
+      
+      document.getElementById('interestsStatus').textContent = hasInterests ? 'Complete' : 'Incomplete';
+      document.getElementById('interestsStatus').style.color = hasInterests ? '#4caf50' : '#ff9800';
+      
+      document.getElementById('academicStatus').textContent = hasAcademic ? 'Complete' : 'Incomplete';
+      document.getElementById('academicStatus').style.color = hasAcademic ? '#4caf50' : '#ff9800';
+      
+      document.getElementById('addressStatus').textContent = hasAddress ? 'Complete' : 'Incomplete';
+      document.getElementById('addressStatus').style.color = hasAddress ? '#4caf50' : '#ff9800';
+      
+      // Calculate completion percentage
+      const totalItems = 4; // profile pic, interests, academic, address
+      const completedItems = [hasProfilePic, hasInterests, hasAcademic, hasAddress].filter(Boolean).length;
+      const completionPercentage = Math.round((completedItems / totalItems) * 100);
+      
+      // Update progress bar
+      const progressFill = document.getElementById('profileCompletionFill');
+      const progressText = document.getElementById('profileCompletionText');
+      
+      progressFill.style.width = `${completionPercentage}%`;
+      progressText.textContent = `${completionPercentage}%`;
+      
+      // Add color indicator based on completion level
+      if (completionPercentage < 25) {
+        progressFill.style.backgroundColor = '#ff5252'; // Red
+      } else if (completionPercentage < 75) {
+        progressFill.style.backgroundColor = '#ff9800'; // Orange
+      } else if (completionPercentage < 100) {
+        progressFill.style.backgroundColor = '#2196f3'; // Blue
+      } else {
+        progressFill.style.backgroundColor = '#4caf50'; // Green
+      }
+    }
+    
+    // Update current date display
+    function updateCurrentDate() {
+      const weekdayEl = document.getElementById('currentWeekday');
+      const dateEl = document.getElementById('currentDate');
+      
+      const weekdays = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
+      const months = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'];
+      
+      const now = new Date();
+      const weekday = weekdays[now.getDay()];
+      const month = months[now.getMonth()];
+      const day = now.getDate();
+      const year = now.getFullYear();
+      
+      weekdayEl.textContent = weekday;
+      dateEl.textContent = `${month} ${day}, ${year}`;
+    }
+    
+    // Calculate semester progress
+    function calculateSemesterProgress() {
+      // Example academic calendar (customize as needed)
+      const semesterStart = new Date('September 15, 2024');
+      const semesterEnd = new Date('May 15, 2025');
+      const now = new Date();
+      
+      // Update semester dates display
+      document.getElementById('semesterStartDate').textContent = 'Sept 15, 2024';
+      document.getElementById('semesterEndDate').textContent = 'May 15, 2025';
+      
+      // Calculate progress percentage
+      const totalDays = Math.round((semesterEnd - semesterStart) / (1000 * 60 * 60 * 24));
+      const elapsedDays = Math.max(0, Math.round((now - semesterStart) / (1000 * 60 * 60 * 24)));
+      const progressPercentage = Math.min(100, Math.round((elapsedDays / totalDays) * 100));
+      
+      // Update progress bar
+      document.getElementById('semesterProgressFill').style.width = `${progressPercentage}%`;
+      document.getElementById('semesterProgressLabel').textContent = `${progressPercentage}% Complete`;
+    }
+      // Hamburger menu functionality
+    document.addEventListener('DOMContentLoaded', function() {
+      // Get the hamburger menu (using the pseudo-element)
+      const appContainer = document.querySelector('.app-container');
+      
+      // Create overlay if it doesn't exist
+      let overlay = document.querySelector('.mobile-menu-overlay');
+      if (!overlay) {
+        overlay = document.createElement('div');
+        overlay.className = 'mobile-menu-overlay';
+        document.body.appendChild(overlay);
+      }
+      
+      // Toggle menu when hamburger is clicked
+      appContainer.addEventListener('click', function(e) {
+        // Check if the click was on the hamburger menu pseudo-element
+        // This checks if the click was in the top-left area where our hamburger is positioned
+        const rect = appContainer.getBoundingClientRect();
+        if (e.clientX < rect.left + 50 && e.clientY < rect.top + 50) {
+          const sidebar = document.querySelector('.sidebar');
+          sidebar.classList.toggle('active');
+          overlay.classList.toggle('active');
+        }
+      });
+      
+      // Close menu when clicking overlay
+      overlay.addEventListener('click', function() {
+        const sidebar = document.querySelector('.sidebar');
+        sidebar.classList.remove('active');
+        overlay.classList.remove('active');
+      });
     });
   </script>
 </body>

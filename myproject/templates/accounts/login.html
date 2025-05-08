@@ -31,7 +31,8 @@
       box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
       text-align: center;
       max-width: 400px;
-      width: 100%;
+      width: 90%;
+      margin: 0 auto;
     }
 
     .logo {
@@ -114,6 +115,61 @@
 
     .no-account a:hover {
       text-decoration: underline;
+    }
+    
+    /* iPad specific styles */
+    @media only screen and (min-width: 768px) and (max-width: 1024px) {
+      body {
+        padding-top: 80px;
+        align-items: center;
+      }
+      
+      .container {
+        max-width: 600px;
+        width: 80%;
+        padding: 60px;
+      }
+      
+      .logo {
+        font-size: 32px;
+        margin-bottom: 30px;
+      }
+      
+      h1 {
+        font-size: 28px;
+        margin-bottom: 40px;
+      }
+      
+      form input {
+        padding: 16px 20px;
+        font-size: 18px;
+        margin-bottom: 25px;
+        border-radius: 6px;
+      }
+      
+      .actions button {
+        padding: 16px 28px;
+        font-size: 20px;
+        border-radius: 6px;
+        margin-top: 10px;
+      }
+      
+      .no-account {
+        margin-top: 35px;
+        font-size: 18px;
+      }
+    }
+    
+    /* iPad in landscape orientation */
+    @media only screen and (min-width: 1024px) and (max-width: 1366px) and (orientation: landscape) {
+      body {
+        padding-top: 50px;
+      }
+      
+      .container {
+        max-width: 550px;
+        width: 50%;
+      }
     }
   </style>     
 </head>
