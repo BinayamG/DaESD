@@ -3,6 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    
     <title>Update Event</title>
     <link rel="stylesheet" href="/static/css/dashboard.css">
     <link rel="stylesheet" href="/static/css/createevent.css">
@@ -10,14 +11,15 @@
 <body>
     <div class="app-container">
         <div class="app-content">
+            <!-- Header Section -->
             <div class="app-content-header">
                 <h2>Update Event: {{ event.title }}</h2>
                 <p class="community-info">Community: {{ community.name }}</p>
             </div>
-            
+
+            <!-- Update Event Form -->
             <form method="post" class="event-form">
                 {% csrf_token %}
-                
                 {% for field in form %}
                 <div class="form-group">
                     <label for="{{ field.id_for_label }}">{{ field.label }}</label>
@@ -30,11 +32,11 @@
                     {% endif %}
                 </div>
                 {% endfor %}
-                
                 <button type="submit" class="submit-button">Update Event</button>
                 <a href="/myapp/main/#events" class="cancel-button">Cancel</a>
             </form>
-            
+
+            <!-- Delete Event Section -->
             <div class="delete-section">
                 <h3>Delete This Event</h3>
                 <form method="post" action="{% url 'delete_event' event.id %}" onsubmit="return confirm('Are you sure you want to delete this event? This action cannot be undone.');">

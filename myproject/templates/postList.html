@@ -440,9 +440,9 @@
 </style>
 
 <script>
-  // Toggle the dropdown menus for posts and comments
+  // Toggles the dropdown menus for posts and comments
   function togglePostActions(event, button) {
-    event.stopPropagation(); // Prevent event from bubbling up
+    event.stopPropagation(); 
     const dropdown = button.nextElementSibling;
     
     // Close all dropdowns first
@@ -452,22 +452,20 @@
       }
     });
     
-    // Toggle the current dropdown
+    // Toggles the current dropdown
     dropdown.style.display = dropdown.style.display === 'block' ? 'none' : 'block';
   }
   
   function toggleCommentActions(event, button) {
-    event.stopPropagation(); // Prevent event from bubbling up
+    event.stopPropagation(); 
     const dropdown = button.nextElementSibling;
     
-    // Close all dropdowns first
     document.querySelectorAll('.post-action-dropdown, .comment-action-dropdown').forEach(el => {
       if (el !== dropdown) {
         el.style.display = 'none';
       }
     });
     
-    // Toggle the current dropdown
     dropdown.style.display = dropdown.style.display === 'block' ? 'none' : 'block';
   }
   
@@ -481,18 +479,17 @@
     }
   }
   
-  // Show reply form when "Reply" button is clicked
+  // Show reply form when the "Reply" button is clicked
   function showReplyForm(postId, commentId) {
-    // Hide all other reply forms first
+    // Hides all the other reply forms first
     document.querySelectorAll('.comment-reply-form').forEach(el => {
       el.style.display = 'none';
     });
     
-    // Show the specific reply form
+    // Shows the specific reply form
     const replyForm = document.getElementById(`reply-form-${commentId}`);
     if (replyForm) {
       replyForm.style.display = 'block';
-      // Focus on the textarea
       const textarea = replyForm.querySelector('textarea');
       if (textarea) {
         textarea.focus();
@@ -502,7 +499,7 @@
     }
   }
   
-  // Hide reply form when "Cancel" button is clicked
+  // Hides reply form when the "Cancel" button is clicked
   function hideReplyForm(commentId) {
     const replyForm = document.getElementById(`reply-form-${commentId}`);
     if (replyForm) {
@@ -510,7 +507,7 @@
     }
   }
   
-  // Close dropdowns when clicking outside
+  // Closes dropdowns when clicking outside the dropdown
   document.addEventListener('click', function(event) {
     if (!event.target.closest('.post-action-btn') && 
         !event.target.closest('.comment-action-btn') && 
@@ -522,7 +519,7 @@
     }
   });
   
-  // Initialize dropdowns to be hidden on page load
+  // Initialises dropdowns to be hidden on page load
   document.addEventListener('DOMContentLoaded', function() {
     document.querySelectorAll('.post-action-dropdown, .comment-action-dropdown').forEach(el => {
       el.style.display = 'none';
