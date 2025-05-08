@@ -113,12 +113,12 @@ class Post(models.Model):
     ]
 
     user = models.ForeignKey(CustomUser, on_delete=models.CASCADE)
-    community = models.ForeignKey(Community, on_delete=models.CASCADE, related_name='posts', null=True, blank=True) #SUMANTH adding related_name = "posts"lets you access all posts from a community instance:    
+    community = models.ForeignKey(Community, on_delete=models.CASCADE, related_name='posts', null=True, blank=True) #adding related_name = "posts"lets you access all posts from a community instance:    
     title = models.CharField(max_length=255)
     content = models.TextField()
     category = models.CharField(max_length=50, choices=CATEGORY_CHOICES)
     created_at = models.DateTimeField(auto_now_add=True)
-    tags = models.CharField(max_length=255, blank=True)  # SUMANTH and below
+    tags = models.CharField(max_length=255, blank=True)
     attachment = models.FileField(upload_to='post_attachments/', blank=True, null=True)
 
     def __str__(self):
@@ -191,7 +191,7 @@ class RemovedMember(models.Model):
     def __str__(self):
         return f"{self.user.username} removed from {self.community.name}"
     
-class Comments(models.Model): #Sumanth
+class Comments(models.Model):
     post = models.ForeignKey(Post, on_delete=models.CASCADE, related_name='comments')
     user = models.ForeignKey(CustomUser, on_delete=models.CASCADE)
     content = models.TextField()
