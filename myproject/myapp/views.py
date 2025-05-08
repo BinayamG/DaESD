@@ -13,7 +13,6 @@ from django.utils import timezone
 import os
 from django.conf import settings
 
-
 # Decorator for super_users
 superuser_required = user_passes_test(lambda u: u.is_authenticated and u.is_superuser)
 
@@ -124,7 +123,7 @@ def main_view(request):
     owned_communities = user.owned_communities.all()
 
     user_communities = (joined_communities | owned_communities).distinct()
-    form = PostForm() #SUMANTH
+    form = PostForm()
 
     # Get user's community IDs for filtering events
     user_community_ids = user_communities.values_list('id', flat=True)
@@ -140,10 +139,11 @@ def main_view(request):
         events = Event.objects.all()
     else:
         # Regular users see only public events and events from their communities
-        # 1. Get public events
+
+        # Get public events
         public_events = Event.objects.filter(event_type='Public')
         
-        # 2. Get community-only events for communities the user is a member of
+        # Get community-only events for communities the user is a member of
         community_events = Event.objects.filter(
             event_type='Community', 
             community__id__in=user_community_ids
@@ -169,9 +169,9 @@ def main_view(request):
         'all_communities': all_communities,
         "is_superuser": user.is_superuser, 
         "events": events,
-        'form': form, #Sumanth
+        'form': form,
         'friend_requests': pending_requests,
-        'notifications': notifications, # SUMANTH
+        'notifications': notifications, 
     }
     return render(request, "accounts/main.html", context)
 
@@ -283,6 +283,7 @@ def join_community(request, community_id):
             return response
     except Exception as e:
         # If RemovedMember table doesn't exist, we can safely ignore this check
+
         # This will handle the case until the proper migration is created
         pass
         
@@ -334,17 +335,17 @@ def delete_community(request):
             # Use raw SQL to delete the community and related data to bypass RemovedMember validation
             from django.db import connection
             with connection.cursor() as cursor:
-                # 1. First get all event IDs for this community
+                # First gets all event IDs for this community
                 cursor.execute("SELECT id FROM myapp_event WHERE community_id = %s", [community_id])
                 event_ids = [row[0] for row in cursor.fetchall()]
                 
-                # 2. Delete the event-user relationship records (interested users)
+                # Second delete the event-user relationship records (interested users)
                 if event_ids:
                     # Create placeholders for the SQL IN clause
                     placeholders = ','.join(['%s'] * len(event_ids))
                     cursor.execute(f"DELETE FROM myapp_event_interested_users WHERE event_id IN ({placeholders})", event_ids)
                 
-                # 3. Delete any existing comments on posts in this community
+                # Third deletes any existing comments on posts in this community
                 cursor.execute("""
                     DELETE FROM myapp_comments 
                     WHERE post_id IN (
@@ -352,16 +353,16 @@ def delete_community(request):
                     )
                 """, [community_id])
                 
-                # 4. Delete all associated posts
+                # Fourth deletes all associated posts
                 cursor.execute("DELETE FROM myapp_post WHERE community_id = %s", [community_id])
                 
-                # 5. Delete all events related to this community
+                # Fifth deletes all events related to this community
                 cursor.execute("DELETE FROM myapp_event WHERE community_id = %s", [community_id])
                 
-                # 6. Remove all members from the community
+                # Sixth removes all members from the community
                 cursor.execute("DELETE FROM myapp_community_members WHERE community_id = %s", [community_id])
                 
-                # 7. Finally delete the community itself
+                # Seventh deletes the community itself
                 cursor.execute("DELETE FROM myapp_community WHERE id = %s", [community_id])
             
             # Create notification for the user
@@ -417,10 +418,10 @@ def search_communities(request):
         # Get user's community IDs for filtering events
         user_community_ids = user_communities.values_list('id', flat=True)
         
-        # 1. Get public events
+        # Gets public events
         public_events = Event.objects.filter(event_type='Public')
         
-        # 2. Get community-only events for communities the user is a member of
+        # Gets community-only events for communities the user is a member of
         community_events = Event.objects.filter(
             event_type='Community', 
             community__id__in=user_community_ids
@@ -459,7 +460,7 @@ def search_events(request):
     query = request.GET.get('event_query', '').strip()
     search_query = ''
     
-    # Get user's community IDs for filtering events
+    # Get users community IDs for filtering events
     joined_communities = user.joined_communities.all()
     owned_communities = user.owned_communities.all()
     user_communities = (joined_communities | owned_communities).distinct()
@@ -504,7 +505,7 @@ def search_events(request):
             
             search_results = public_events | community_events
         else:
-            # No query - show all accessible events
+            # No query then show all accessible events
             public_events = Event.objects.filter(event_type='Public')
             community_events = Event.objects.filter(
                 event_type='Community',
@@ -574,7 +575,8 @@ def toggle_event_interest(request, event_id):
         })
     
     # For non-AJAX requests, redirect back to the events tab
-    # Use the same URL format for both register and unregister to maintain consistency
+
+    # Uses the same URL format for both register and unregister to maintain consistency
     return redirect('/myapp/main/#events')
 
 @login_required
@@ -582,7 +584,7 @@ def update_event_view(request, event_id):
     event = get_object_or_404(Event, id=event_id)
     community = event.community
     
-    # Check if the logged-in user is the creator of the community
+    # Checks if the logged-in user is the creator of the community
     if community.created_by != request.user:
         messages.error(request, 'Only the community leader can update events')
         return redirect('/myapp/main/#events')
@@ -623,7 +625,7 @@ def delete_event(request, event_id):
     return redirect('/myapp/main/#events')
 
 
-@login_required #SUMANTH
+@login_required 
 def create_post(request, community_id):
     community = get_object_or_404(Community, id=community_id)
 
@@ -647,7 +649,7 @@ def create_post(request, community_id):
         form = PostForm()
     return render(request, 'create_post.html', {'form': form, 'community': community})
 
-@login_required #SUMANTH
+@login_required
 def load_community_posts(request, community_id):
     community = get_object_or_404(Community, id=community_id)
     posts = community.posts.order_by('-created_at')
@@ -701,11 +703,9 @@ def get_community_members(request, community_id):
         community = Community.objects.get(id=community_id)
         current_user = request.user
         members_data = []
-        
-        # Add creator
         creator = community.created_by
         creator_data = {
-            'id': str(creator.id),  # Convert to string to match JavaScript comparison
+            'id': str(creator.id),  # Converts to string to match JavaScript comparison
             'name': f"{creator.get_full_name()} ({creator.username})",
             'role': 'Community Leader',
         }
@@ -713,11 +713,11 @@ def get_community_members(request, community_id):
             creator_data['friend_status'] = get_friend_status(current_user, creator)
         members_data.append(creator_data)
         
-        # Add other members
+        # Adds other members
         for member in community.members.all():
-            if member != creator:  # Skip creator as they're already added
+            if member != creator:  # Skips the creator as they're already added
                 member_data = {
-                    'id': str(member.id),  # Convert to string to match JavaScript comparison
+                    'id': str(member.id),  # Converts to string to match JavaScript comparison
                     'name': f"{member.get_full_name()} ({member.username})",
                     'role': 'Member',
                 }
@@ -742,11 +742,11 @@ def get_community_members(request, community_id):
 
 def get_friend_status(user1, user2):
     """Helper function to determine friend status between two users"""
-    # Check if they're already friends
+    # Checks if they're already friends
     if user1.friends.filter(id=user2.id).exists():
         return 'friends'
     
-    # Check for pending friend requests
+    # Checks for pending friend requests
     pending_request = FriendRequest.objects.filter(
         (models.Q(from_user=user1, to_user=user2) | 
          models.Q(from_user=user2, to_user=user1)),
@@ -767,7 +767,7 @@ def send_friend_request(request, user_id):
         messages.error(request, "You cannot send a friend request to yourself.")
         return JsonResponse({'success': False, 'error': 'Cannot friend yourself'})
 
-    # Check if a friend request already exists in either direction
+    # Checks if a friend request already exists in either direction
     existing_request = FriendRequest.objects.filter(
         (models.Q(from_user=from_user, to_user=to_user) |
          models.Q(from_user=to_user, to_user=from_user)),
@@ -778,12 +778,12 @@ def send_friend_request(request, user_id):
         messages.error(request, "A friend request already exists between you and this user.")
         return JsonResponse({'success': False, 'error': 'Request already exists'})
 
-    # Check if they're already friends
+    # Checks if they're already friends
     if from_user.friends.filter(id=to_user.id).exists():
         messages.error(request, "You are already friends with this user.")
         return JsonResponse({'success': False, 'error': 'Already friends'})
 
-    # Create the friend request
+    # Creates the friend request
     FriendRequest.objects.create(from_user=from_user, to_user=to_user)
     Notification.objects.create(
         user=request.user,
@@ -812,7 +812,7 @@ def handle_friend_request(request, request_id):
 
 @login_required
 def friend_requests_view(request):
-    # Get all pending friend requests for the current user
+    # Gets all the pending friend requests for the current user
     pending_requests = FriendRequest.objects.filter(
         to_user=request.user,
         status='pending'
@@ -835,7 +835,7 @@ def remove_friend(request, friend_id):
         friend = get_object_or_404(CustomUser, id=friend_id)
         user = request.user
         
-        # Remove both users from each other's friends list
+        # Removes both users from each other's friends list
         user.friends.remove(friend)
         friend.friends.remove(user)
         Notification.objects.create(
@@ -850,14 +850,14 @@ def remove_friend(request, friend_id):
 def search_users(request):
     search_query = request.GET.get('user_query', '')
     if search_query:
-        # Search in users by name or interests
+        # Searches in "users" by name or interests
         user_search_results = CustomUser.objects.filter(
             Q(first_name__icontains=search_query) |
             Q(last_name__icontains=search_query) |
             Q(interests__icontains=search_query)
         ).exclude(id=request.user.id)  # Exclude the current user
 
-        # Annotate each user with their friend request status
+        # Annotates each user with their friend request status
         for user_result in user_search_results:
             pending_request = FriendRequest.objects.filter(
                 (Q(from_user=request.user) & Q(to_user=user_result)) |
@@ -870,32 +870,31 @@ def search_users(request):
     else:
         user_search_results = []
 
-    # Get user's community IDs for filtering events
+    # Gets users community IDs for filtering of events
     user = request.user
     joined_communities = user.joined_communities.all()
     owned_communities = user.owned_communities.all()
     user_communities = (joined_communities | owned_communities).distinct()
     user_community_ids = user_communities.values_list('id', flat=True)
     
-    # Get events and filter out past events
+    # Gets events and filters out past events
     if user.is_superuser:
         # For admins, show all events
         events = Event.objects.all()
     else:
         # Regular users see only public events and events from their communities
-        # 1. Get public events
         public_events = Event.objects.filter(event_type='Public')
         
-        # 2. Get community-only events for communities the user is a member of
+        # Gets the community-only events for communities the user is a member of
         community_events = Event.objects.filter(
             event_type='Community', 
             community__id__in=user_community_ids
         )
         
-        # Combine the two querysets
+        # Combines the two querysets
         events = public_events | community_events
     
-    # Filter out past events
+    # Filters out past events
     current_time = timezone.now()
     events = events.filter(
         Q(end_date__isnull=True) | Q(end_date__gt=current_time)
@@ -924,11 +923,11 @@ def update_profile_image(request):
         user = request.user
         image = request.FILES['profile_image']
         
-        # Create the profile_images directory if it doesn't exist
+        # Creates the profile_images directory if it doesn't exist
         upload_path = os.path.join(settings.MEDIA_ROOT, 'profile_images')
         os.makedirs(upload_path, exist_ok=True)
         
-        # Save the file
+        # Saves the file
         filename = f'profile_{user.id}_{image.name}'
         filepath = os.path.join(upload_path, filename)
         
@@ -936,7 +935,7 @@ def update_profile_image(request):
             for chunk in image.chunks():
                 destination.write(chunk)
         
-        # Update user's profile_image field
+        # Updates the user's profile_image field
         user.profile_image = f'profile_images/{filename}'
         user.save()
         Notification.objects.create(
@@ -960,14 +959,13 @@ def remove_community_member(request, community_id, member_id):
                 'error': 'Only community leaders can remove members'
             })
             
-        # Can't remove the community leader
-        if member == community.created_by:
+        # Ensures the community leader cannot be removed
             return JsonResponse({
                 'success': False,
                 'error': 'Cannot remove the community leader'
             })
             
-        # Remove the member
+        # Member removal
         community.members.remove(member)
         RemovedMember.objects.create(
             user=member,
@@ -989,7 +987,7 @@ def remove_community_member(request, community_id, member_id):
         'error': 'Invalid request method'
     })
 
-@login_required #SUMAMNTH
+@login_required
 def add_comment(request, post_id):
     post = get_object_or_404(Post, id=post_id)
 
@@ -1010,16 +1008,16 @@ def add_comment(request, post_id):
     
     return redirect('main') 
 
-@login_required #SUMANTH
+@login_required
 def notification_view(request):
     notifications = Notification.objects.filter(user=request.user).order_by('-created_at')
     return render(request, 'notifications.html', {'notifications': notifications})
 
-@login_required  #SUMANTH
+@login_required 
 def delete_comment(request, comment_id):
     comment = get_object_or_404(Comments, id=comment_id)
     post = comment.post
-    # Allow deletion only if the current user created the comment or is the community leader
+    # Allows deletion only if the current user created the comment or is the community leader
     if request.user != comment.user and request.user != post.community.created_by:
         messages.error(request, "You do not have permission to delete this comment.")
         return redirect('main')
@@ -1037,7 +1035,7 @@ def delete_comment(request, comment_id):
 @login_required
 def delete_post(request, post_id):
     post = get_object_or_404(Post, id=post_id)
-    # Allow deletion only if the current user created the post or is the community leader for that community
+    # Allows deletion only if the current user created the post or is the community leader for that community
     if request.user != post.user and request.user != post.community.created_by:
         messages.error(request, "You do not have permission to delete this post.")
         return redirect('main')
@@ -1059,7 +1057,7 @@ def search_community_posts(request, community_id):
     comment_form = CommentForm()
     
     if query:
-        # Search for posts by title, content, category, or tags
+        # Searches for posts by title, content, category, or tags
         posts = Post.objects.filter(
             community=community
         ).filter(

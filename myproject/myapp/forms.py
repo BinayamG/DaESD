@@ -60,7 +60,8 @@ class EventForm(forms.ModelForm):
             'maximum_capacity': forms.NumberInput(attrs={'min': '1', 'placeholder': 'Leave blank for unlimited'}),
             'required_materials': forms.Textarea(attrs={'rows': 3, 'placeholder': 'List any materials participants should bring'})
         }
-        
+
+# Post creation form      \  
 class PostForm(forms.ModelForm): #SUMANTH
     class Meta:
         model = Post
@@ -77,6 +78,7 @@ class PostForm(forms.ModelForm): #SUMANTH
                 raise ValidationError("Only PNG and JPEG images are allowed.")
         return attachment
 
+# Comment creation form for posts
 class CommentForm(forms.ModelForm): #SUMANTH
     class Meta:
         model = Comments

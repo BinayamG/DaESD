@@ -42,8 +42,8 @@ urlpatterns = [
     path('remove-friend/<int:friend_id>/', remove_friend, name='remove_friend'),
     path('search-users/', search_users, name='search_users'),
     path('update-profile-image/', update_profile_image, name='update_profile_image'),
-    path('post/<int:post_id>/comment/', add_comment, name='add_comment'), #SUMANTH
+    path('post/<int:post_id>/comment/', add_comment, name='add_comment'),
     path('notifications/', notification_view, name='notifications'),
-    path('delete-comment/<int:comment_id>/', delete_comment, name='delete_comment'), #SUMANTH
-    path('delete-post/<int:post_id>/', delete_post, name='delete_post'), #SUMANTH
+    path('delete-comment/<int:comment_id>/', delete_comment, name='delete_comment'),
+    path('delete-post/<int:post_id>/', delete_post, name='delete_post'),
 ]

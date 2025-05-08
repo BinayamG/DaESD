@@ -2,14 +2,11 @@ from django.db import models
 from django.contrib.auth.models import AbstractUser
 from django.utils import timezone
 
-# Create your models here.
 class CustomUser(AbstractUser):
     
-    # Custom fields from the signup form:
+    # Adding additional fields to the user model for vision.
     student_number = models.CharField(max_length=20, unique=True)
     date_of_birth = models.DateField(null=True)
-    
-    # Address fields
     street_address = models.CharField(max_length=255, blank=True, null=True)
     city = models.CharField(max_length=100, blank=True, null=True)
     postcode = models.CharField(max_length=20, blank=True, null=True)
