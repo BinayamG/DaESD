@@ -749,7 +749,7 @@ def get_friend_status(user1, user2):
     # Check for pending friend requests
     pending_request = FriendRequest.objects.filter(
         (models.Q(from_user=user1, to_user=user2) | 
-         models.Q(from_user=user2, to_user=user1)),
+         models.Q(from_user=to_user, to_user=user1)),
         status='pending'
     ).first()
     
@@ -889,8 +889,7 @@ def search_users(request):
         # 2. Get community-only events for communities the user is a member of
         community_events = Event.objects.filter(
             event_type='Community', 
-            community__id__in=user_community_ids
-        )
+            community__id__in=user_community_ids)
         
         # Combine the two querysets
         events = public_events | community_events
@@ -992,6 +991,7 @@ def remove_community_member(request, community_id, member_id):
 @login_required #SUMAMNTH
 def add_comment(request, post_id):
     post = get_object_or_404(Post, id=post_id)
+    community_id = post.community.id
 
     if request.method == 'POST':
         form = CommentForm(request.POST)
@@ -1008,7 +1008,8 @@ def add_comment(request, post_id):
         else:
             messages.error(request, "Error adding comment.")
     
-    return redirect('main') 
+    # Redirect to main with community-specific fragment identifier
+    return redirect(f'/myapp/main/#community-{community_id}')
 
 @login_required #SUMANTH
 def notification_view(request):
@@ -1019,10 +1020,12 @@ def notification_view(request):
 def delete_comment(request, comment_id):
     comment = get_object_or_404(Comments, id=comment_id)
     post = comment.post
+    community_id = post.community.id
+    
     # Allow deletion only if the current user created the comment or is the community leader
     if request.user != comment.user and request.user != post.community.created_by:
         messages.error(request, "You do not have permission to delete this comment.")
-        return redirect('main')
+        return redirect(f'/myapp/main/#community-{community_id}')
     
     if request.method == 'POST':
         comment.delete()
@@ -1032,15 +1035,18 @@ def delete_comment(request, comment_id):
         )
         messages.success(request, "Comment deleted.")
     
-    return redirect('main')
+    # Redirect to the specific community view
+    return redirect(f'/myapp/main/#community-{community_id}')
 
 @login_required
 def delete_post(request, post_id):
     post = get_object_or_404(Post, id=post_id)
+    community_id = post.community.id
+    
     # Allow deletion only if the current user created the post or is the community leader for that community
     if request.user != post.user and request.user != post.community.created_by:
         messages.error(request, "You do not have permission to delete this post.")
-        return redirect('main')
+        return redirect(f'/myapp/main/#communities')
     
     if request.method == 'POST':
         post.delete()
@@ -1050,7 +1056,8 @@ def delete_post(request, post_id):
         )
         messages.success(request, "Post deleted.")
     
-    return redirect('main')
+    # Redirect to the communities tab instead of home
+    return redirect(f'/myapp/main/#communities')
 
 @login_required
 def search_community_posts(request, community_id):

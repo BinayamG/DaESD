@@ -12,7 +12,11 @@
   <!-- Header -->
   <header class="header">
     <div class="logo-container">
-      <a href="#" class="logo">Uni Hub</a>
+      {% if user.is_authenticated %}
+        <a href="{% url 'main' %}" class="logo">Uni Hub</a>
+      {% else %}
+        <a href="#" class="logo">Uni Hub</a>
+      {% endif %}
       <span class="affiliation">in partnership with UWE Bristol</span>
     </div>
     <div class="mobile-menu-button">
@@ -34,7 +38,14 @@
         <li><a href="#">Events</a></li>
       </ul>
     </nav>
-    <a href="{% url 'login' %}" class="login-button">Login</a>
+    {% if user.is_authenticated %}
+      <form method="POST" action="{% url 'logout' %}" class="logout-form" style="margin: 0;">
+        {% csrf_token %}
+        <button type="submit" class="login-button">Logout</button>
+      </form>
+    {% else %}
+      <a href="{% url 'login' %}" class="login-button">Login</a>
+    {% endif %}
   </header>
   
   <!-- Hero Section -->
@@ -42,7 +53,11 @@
     <div class="hero-text">
       <h1>Enhance Your Campus Experience</h1>
       <p>Join Uni Hub – the ultimate platform for building connections, discovering communities, and thriving in university life at UWE Bristol.</p>
-      <a href="#" class="primary-button">Get Started</a>
+      {% if user.is_authenticated %}
+        <a href="{% url 'main' %}" class="primary-button">Get Started</a>
+      {% else %}
+        <a href="{% url 'login' %}" class="primary-button">Get Started</a>
+      {% endif %}
     </div>
     <div class="hero-image">
       <img src="static/images/uwe.jpg" alt="Campus Community">
